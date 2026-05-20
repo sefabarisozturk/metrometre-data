@@ -1,0 +1,2326 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>metrometre | raylı sistem projeleri takip paneli</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:         #F0F0F0;
+  --surface:    #FFFFFF;
+  --surface-2:  #F7F7F7;
+  --border:     #E4E4E4;
+  --border-2:   #D1D1D1;
+  --text:       #111111;
+  --text-muted: #6B6B6B;
+  --text-dim:   #757575;
+  --accent:     #B4271F;
+  --header-h:   52px;
+  --font:       'Inter', sans-serif;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 13px;
+  overflow: hidden;
+}
+
+/* ──── ERİŞİLEBİLİRLİK ──── */
+/* Odak halkası yalnızca klavye gezinmesinde görünür; fare tıklamasında bastırılır. */
+:focus-visible            { outline: 2px solid var(--accent); outline-offset: 2px; }
+:focus:not(:focus-visible){ outline: none; }
+/* Kart odağı kaydırma kabında kırpılmasın diye halka içe alınır */
+.card:focus-visible       { outline-offset: -2px; }
+
+/* ──── ÜST BAŞLIK ──── */
+#header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--header-h);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 1000;
+}
+
+#logo-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  height: 36px;
+}
+#logo-img { height: 26px; width: auto; display: block; flex-shrink: 0; }
+#logo-fallback {
+  display: none;
+  font-family: var(--font);
+  font-size: 17px; font-weight: 700;
+  color: var(--text); letter-spacing: -0.03em;
+  flex-shrink: 0;
+}
+#logo-fallback span { font-weight: 400; color: var(--text-muted); }
+#logo-tagline {
+  font-size: 10px; font-weight: 500;
+  color: var(--text-dim);
+  letter-spacing: .02em;
+  line-height: 1.35;
+  padding-left: 12px;
+  border-left: 1px solid var(--border);
+}
+
+#info-btn {
+  width: 32px; height: 32px;
+  border: 1px solid var(--border-2); border-radius: 50%;
+  background: transparent; color: var(--text-muted);
+  cursor: pointer; font-size: 15px;
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color .15s, color .15s, background .15s;
+  flex-shrink: 0;
+}
+#info-btn:hover { border-color: var(--accent); color: var(--accent); background: #FEF2F2; }
+
+/* ──── UYGULAMA İSKELETİ ──── */
+#app {
+  display: flex;
+  height: 100vh;
+  padding-top: var(--header-h);
+}
+
+/* ──── SOL PANEL ──── */
+/* padding-top: metrik şeridi (~64px) için fixed konumlu #metrics altına boşluk bırakır. */
+#left-panel {
+  width: 28%;
+  min-width: 300px;
+  max-width: 400px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-top: 64px;
+}
+
+/* ──── METRİKLER (3 eşit sütun) ──── */
+/* Sol panel genişliğiyle eşleşen fixed bir şerit; mobilde header altına oturur. */
+#metrics {
+  position: fixed;
+  top: var(--header-h);
+  left: 0;
+  width: 28%;
+  min-width: 300px;
+  max-width: 400px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  background: var(--surface);
+  z-index: 200;
+  flex-shrink: 0;
+}
+.metric {
+  padding: 10px 10px 9px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  min-height: 64px;
+}
+.metric:not(:last-child) { border-right: 1px solid var(--border); }
+.metric-val {
+  font-size: 16px; font-weight: 700; color: var(--text);
+  line-height: 1.1; word-break: break-word; hyphens: auto;
+}
+.metric-val.loading {
+  background: var(--border); border-radius: 4px;
+  width: 36px; height: 16px;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+.metric-lbl {
+  font-size: 9px; font-weight: 600; color: var(--text-dim);
+  letter-spacing: .04em; text-transform: uppercase; line-height: 1.3;
+}
+@keyframes shimmer { 0%,100%{ opacity:.5 } 50%{ opacity:1 } }
+
+/* ──── SIRALAMA ÇUBUĞU ──── */
+#sort-bar {
+  padding: 7px 12px;
+  display: flex; align-items: center; gap: 5px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0; overflow-x: auto;
+}
+#sort-bar::-webkit-scrollbar { display: none; }
+.sort-lbl {
+  font-size: 10px; font-weight: 700; color: var(--text-dim);
+  letter-spacing: .05em; text-transform: uppercase;
+  white-space: nowrap; flex-shrink: 0; margin-right: 2px;
+}
+.sort-btn {
+  padding: 3px 10px;
+  border: 1px solid var(--border-2); border-radius: 99px;
+  background: transparent; font-family: var(--font);
+  font-size: 11px; font-weight: 500; color: var(--text-muted);
+  cursor: pointer; white-space: nowrap; transition: all .12s; flex-shrink: 0;
+}
+.sort-btn:hover  { border-color: var(--accent); color: var(--accent); }
+.sort-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* ──── KART LİSTESİ ──── */
+#cards-list {
+  flex: 1; overflow-y: auto;
+  padding: 10px; display: flex; flex-direction: column; gap: 8px;
+}
+#cards-list::-webkit-scrollbar { width: 4px; }
+#cards-list::-webkit-scrollbar-track { background: transparent; }
+#cards-list::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 2px; }
+
+/* Yükleme iskeleti */
+.card-skel { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
+.sk { background: var(--border); border-radius: 4px; animation: shimmer 1.4s ease-in-out infinite; display: block; }
+
+/* ──── KART (sabit yükseklik) ──── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 11px 12px 11px 15px;
+  cursor: pointer;
+  transition: box-shadow .15s, border-color .15s;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.card:hover  { box-shadow: 0 2px 10px rgba(0,0,0,.08); border-color: var(--border-2); }
+.card.active { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(180,39,31,.1); }
+.card-top { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 6px; }
+
+.card-icon-wrap { position: relative; flex-shrink: 0; }
+.card-icon {
+  width: 42px; height: 42px; border-radius: 50%;
+  overflow: hidden; display: flex; align-items: center; justify-content: center;
+  background: #F0F0F0; border: 1.5px solid var(--border);
+}
+.card-icon img { width: 100%; height: 100%; object-fit: cover; }
+.card-icon-fallback {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; font-size: 12px; font-weight: 700; color: #fff; letter-spacing: -0.04em;
+}
+.card-kurum {
+  position: absolute; bottom: -2px; right: -2px;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: #fff; border: 1px solid var(--border);
+  overflow: hidden; display: flex; align-items: center; justify-content: center;
+}
+.card-kurum img { width: 13px; height: 13px; object-fit: contain; }
+
+.card-info { flex: 1; min-width: 0; }
+.card-name { font-size: 13px; font-weight: 700; color: var(--text); line-height: 1.3; margin-bottom: 5px; word-break: break-word; }
+.card-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
+.card-tag  { font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 4px; }
+.card-chip { font-size: 10px; color: var(--text-muted); display: flex; align-items: center; gap: 2px; }
+.chip-sep  { color: var(--border-2); }
+
+/* Durum rozeti renkleri */
+.st-isletme { background: #ECFDF5; color: #065F46; }
+.st-test    { background: #FFFBEB; color: #92400E; }
+.st-insaat  { background: #EFF6FF; color: #1E40AF; }
+.st-bekle   { background: #F5F5F5; color: #525252; }
+.st-proje   { background: #F5F3FF; color: #5B21B6; }
+.st-devre   { background: #F4F4F5; color: #71717A; }
+
+.card-progress { margin-top: 8px; }
+.card-progress-head { display: flex; justify-content: space-between; margin-bottom: 4px; }
+.card-progress-lbl { font-size: 9px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: .05em; }
+.card-progress-pct { font-size: 10px; font-weight: 700; color: var(--text); }
+.card-progress-bar  { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.card-progress-fill { height: 100%; border-radius: 2px; transition: width .5s ease; }
+
+.card-bottom { margin-top: auto; padding-top: 8px; display: flex; gap: 14px; flex-wrap: wrap; }
+.card-field-lbl {
+  font-size: 9px; font-weight: 700; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: .05em; margin-bottom: 3px; line-height: 1;
+}
+.card-field-val { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.2; }
+
+/* ──── SAĞ PANEL ──── */
+#right-panel { flex: 1; display: flex; flex-direction: column; min-width: 0; position: relative; }
+
+/* ──── SEKME ÇUBUĞU ──── */
+/* Masaüstünde harita üzerinde fixed olarak yüzer; konum, header + metrik şeridi yüksekliğini hesaba katar. */
+#tab-bar {
+  display: flex;
+  background: transparent;
+  border-bottom: none;
+  flex-shrink: 0;
+  padding: 10px 20px;
+  justify-content: center;
+  gap: 6px;
+  position: fixed;
+  top: calc(var(--header-h) + 10px);
+  left: 28%;
+  right: 0;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.tab {
+  pointer-events: all;
+  flex: 0.2;
+  justify-content: center;
+  padding: 0;
+  height: 36px;
+  display: flex; align-items: center;
+  font-family: var(--font);
+  font-size: 12px; font-weight: 600; color: var(--text-muted);
+  cursor: pointer;
+  border: 1px solid var(--border-2);
+  border-radius: 99px;
+  background: rgba(255,255,255,.85);
+  backdrop-filter: blur(6px);
+  transition: all .15s;
+  white-space: nowrap; user-select: none;
+}
+.tab:hover { background: #fff; color: var(--text); }
+.tab.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* ──── HARİTA KONTEYNERİ ──── */
+#map-container { flex: 1; position: relative; }
+#map { width: 100%; height: 100%; }
+
+.maplibregl-ctrl-attrib  { display: none !important; }
+.maplibregl-ctrl-logo    { display: none !important; }
+.maplibregl-ctrl-top-right { display: none !important; }
+
+/* ──── HARİTA ARAÇLARI (yüzen) ──── */
+#map-tools {
+  position: absolute;
+  top: 12px; right: 12px;
+  display: flex; flex-direction: column; gap: 6px;
+  z-index: 200;
+}
+.map-tool-btn {
+  width: 36px; height: 36px;
+  background: rgba(255,255,255,.92);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(0,0,0,.1);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-size: 15px; color: var(--text-muted);
+  transition: background .12s, color .12s, box-shadow .12s;
+  box-shadow: 0 1px 4px rgba(0,0,0,.1);
+  flex-shrink: 0;
+}
+.map-tool-btn:hover { background: #fff; color: var(--accent); box-shadow: 0 2px 8px rgba(0,0,0,.15); }
+
+/* ──── ARAMA PANELİ ──── */
+#search-panel {
+  display: none;
+  position: absolute;
+  top: 12px; right: 54px;
+  width: 220px;
+  background: rgba(255,255,255,.96);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(0,0,0,.1);
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.12);
+  overflow: hidden;
+  z-index: 200;
+}
+#search-panel.open { display: block; }
+#search-input {
+  width: 100%; padding: 9px 12px;
+  border: none; outline: none;
+  font-family: var(--font); font-size: 12px; font-weight: 500;
+  background: transparent; color: var(--text);
+}
+#search-input::placeholder { color: var(--text-dim); }
+#search-results { max-height: 180px; overflow-y: auto; }
+.search-result {
+  padding: 8px 12px; cursor: pointer;
+  font-size: 12px; color: var(--text);
+  border-top: 1px solid var(--border);
+  transition: background .1s;
+  display: flex; align-items: center; gap: 8px;
+}
+.search-result:hover { background: var(--surface-2); }
+.search-result-swatch { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.search-result-name { flex: 1; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.search-result-kod  { font-size: 10px; color: var(--text-dim); font-weight: 600; }
+
+/* ──── HAT DETAY POPUP ──── */
+#detail-popup {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: rgba(255,255,255,.97);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid var(--border);
+  padding: 14px 18px;
+  display: flex; align-items: flex-start; gap: 14px;
+  z-index: 150;
+  transform: translateY(100%);
+  transition: transform .3s cubic-bezier(.4,0,.2,1);
+  box-shadow: 0 -4px 20px rgba(0,0,0,.08);
+}
+#detail-popup.open { transform: translateY(0); }
+
+/* İkon sarmalı — kart yapısıyla aynı: kurum rozeti ikonun üzerine bindirilir */
+#detail-icon-wrap { position: relative; flex-shrink: 0; }
+#detail-icon {
+  width: 44px; height: 44px; border-radius: 50%;
+  overflow: hidden; display: flex; align-items: center; justify-content: center;
+  background: #F0F0F0; border: 1.5px solid var(--border);
+}
+#detail-icon img { width: 100%; height: 100%; object-fit: cover; }
+#detail-icon-fallback {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; font-size: 13px; font-weight: 700; color: #fff;
+}
+
+/* Kurum rozeti — kart-kurum ile aynı: ikonun sağ alt köşesine bindirilmiş küçük daire */
+#detail-kurum {
+  position: absolute; bottom: -2px; right: -2px;
+  width: 19px; height: 19px; border-radius: 50%;
+  background: #fff; border: 1px solid var(--border);
+  overflow: hidden; display: flex; align-items: center; justify-content: center;
+}
+#detail-kurum img { width: 14px; height: 14px; object-fit: contain; }
+
+#detail-body  { flex: 1; min-width: 0; }
+
+#detail-header {
+  display: flex; align-items: center; gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 5px;
+}
+#detail-name  {
+  font-size: 14px; font-weight: 700; line-height: 1.25;
+  word-break: break-word;
+}
+
+/* ──── DETAY META: durum rozeti + km/istasyon chip'leri (kart-meta ile aynı) ──── */
+#detail-meta {
+  display: flex; flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+#detail-status { font-size: 11px; padding: 2px 8px; }
+#detail-stats {
+  display: inline-flex; flex-wrap: wrap;
+  align-items: center;
+}
+.detail-stat {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+.detail-stat-sep {
+  color: var(--border-2);
+  margin: 0 6px;
+  user-select: none;
+}
+
+/* ──── DETAY ALT BLOK: Açılış Tarihi / Tahmini Açılış (kart-bottom ile aynı) ──── */
+#detail-bottom { margin-top: 8px; }
+#detail-acilis-lbl {
+  font-size: 9px; font-weight: 700; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: .05em; margin-bottom: 3px; line-height: 1;
+}
+#detail-acilis-val { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.2; }
+
+/* ──── DETAY FİZİKİ İLERLEME ──── */
+#detail-progress { margin-top: 7px; }
+#detail-progress-head {
+  display: flex; justify-content: space-between;
+  margin-bottom: 4px;
+}
+#detail-progress-lbl { font-size: 9px; font-weight: 700;
+  color: var(--text-dim); text-transform: uppercase; letter-spacing: .05em; }
+
+#detail-progress-pct {
+  font-size: 10px; font-weight: 700;
+  color: var(--text);
+}
+#detail-progress-bar {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+#detail-progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width .5s ease;
+}
+
+#detail-text  {
+  font-size: 12px; color: var(--text-muted); line-height: 1.55;
+  margin-top: 7px;
+}
+#detail-text:empty { display: none; }
+
+/* ──── DETAY AKSİYON BUTONLARI ──── */
+#detail-actions {
+  display: flex; align-items: center; gap: 6px;
+  flex-shrink: 0;
+}
+.detail-action-btn {
+  width: 28px; height: 28px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .12s;
+  flex-shrink: 0;
+  padding: 0;
+  font-family: var(--font);
+}
+.detail-action-btn:hover {
+  border-color: var(--text-muted);
+  color: var(--text);
+}
+#detail-share:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+#detail-share svg { display: block; }
+
+/* ──── PAYLAŞ POPOVER ──── */
+#share-popover {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 18px;
+  width: 320px;
+  max-width: calc(100vw - 36px);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.12);
+  padding: 14px;
+  z-index: 160;
+  display: none;
+}
+#share-popover.open { display: block; }
+
+#share-actions {
+  display: flex; gap: 6px;
+}
+.share-btn {
+  flex: 1;
+  height: 34px;
+  border: 1px solid var(--border-2);
+  border-radius: 8px;
+  background: var(--surface);
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all .12s;
+  display: flex; align-items: center; justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
+}
+.share-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.share-btn.primary {
+  background: var(--text);
+  border-color: var(--text);
+  color: #fff;
+}
+.share-btn.primary:hover {
+  background: #000;
+  border-color: #000;
+  color: #fff;
+}
+.share-btn.copied {
+  border-color: #065F46;
+  color: #065F46;
+  background: #ECFDF5;
+}
+.share-btn.copied:hover {
+  border-color: #065F46;
+  color: #065F46;
+}
+.share-btn svg { display: block; flex-shrink: 0; }
+
+/* ──── YÜKLEME / HATA / BOŞ ──── */
+#loading-overlay {
+  position: absolute; inset: 0;
+  background: rgba(240,240,240,.85); backdrop-filter: blur(4px);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+  z-index: 500; transition: opacity .25s;
+}
+#loading-overlay.hidden { opacity: 0; pointer-events: none; }
+.spinner {
+  width: 28px; height: 28px;
+  border: 2px solid var(--border-2); border-top-color: var(--accent);
+  border-radius: 50%; animation: spin .75s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-txt { font-size: 12px; font-weight: 500; color: var(--text-muted); }
+
+#error-state {
+  display: none; position: absolute; inset: 0;
+  align-items: center; justify-content: center; flex-direction: column; gap: 10px;
+  z-index: 400; background: rgba(240,240,240,.9);
+}
+#error-state.show { display: flex; }
+.error-icon { font-size: 28px; opacity: .3; }
+.error-msg  { color: var(--text-muted); font-size: 13px; text-align: center; max-width: 280px; line-height: 1.6; }
+.retry-btn {
+  margin-top: 4px; padding: 7px 20px;
+  border: 1px solid var(--border-2); border-radius: 6px;
+  background: var(--surface); font-family: var(--font);
+  font-size: 12px; font-weight: 600; color: var(--text-muted);
+  cursor: pointer; transition: all .12s;
+}
+.retry-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+#empty-state {
+  display: none; position: absolute; inset: 0;
+  align-items: center; justify-content: center; z-index: 300; pointer-events: none;
+}
+#empty-state.show { display: flex; }
+.empty-msg { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 18px; font-size: 12px; color: var(--text-dim); }
+
+/* ──── BİLGİ MODALİ ──── */
+#modal-backdrop {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.3); z-index: 2000;
+  align-items: center; justify-content: center;
+}
+#modal-backdrop.show { display: flex; }
+#modal {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 24px 26px;
+  width: 480px; max-width: 90vw; max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 40px rgba(0,0,0,.18); position: relative;
+}
+.modal-title { font-size: 16px; font-weight: 700; margin-bottom: 14px; }
+.modal-section-title {
+  font-size: 12px; font-weight: 700; color: var(--text);
+  margin: 14px 0 5px; text-transform: uppercase; letter-spacing: .04em;
+}
+.modal-body { font-size: 13px; color: var(--text-muted); line-height: 1.7; }
+.modal-body a { color: var(--accent); text-decoration: none; }
+.modal-body a:hover { text-decoration: underline; }
+.modal-body strong { color: var(--text); font-weight: 700; }
+.modal-close {
+  position: absolute; top: 16px; right: 16px;
+  width: 28px; height: 28px;
+  border: 1px solid var(--border); border-radius: 50%;
+  background: transparent; color: var(--text-dim);
+  cursor: pointer; font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .12s;
+}
+.modal-close:hover { border-color: var(--text-muted); color: var(--text); }
+.modal-divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
+.modal-footer { font-size: 11px; color: var(--text-dim); display: flex; gap: 14px; flex-wrap: wrap; }
+
+/* ──── MOBİL TOGGLE (varsayılan: gizli) ──── */
+#mobile-toggle {
+  display: none;
+}
+
+/* ──── MOBİL ──── */
+/* --mob-sticky-h: metrik (56) + sekme çubuğu (48) = 104px; --mob-toggle-h: alt bar = 56px. */
+@media (max-width: 768px) {
+  :root {
+    --mob-sticky-h:  104px;
+    --mob-toggle-h:  56px;
+  }
+
+  html, body { overflow: hidden; }
+
+  /* Üst başlık */
+  #logo-tagline { display: none; }
+  #logo-img { height: 22px; }
+
+  /* Yapışkan şerit (metrikler + sekme çubuğu): header altında her iki panel üzerinde sabit. */
+  #metrics, #tab-bar {
+    position: fixed;
+    left: 0; right: 0;
+    z-index: 400;
+    background: var(--surface);
+  }
+
+  /* Metrikler: header altında, tüm görüntü genişliğinde */
+  #metrics {
+    top: var(--header-h);
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    border-right: none;
+    border-bottom: none;
+  }
+  .metric { padding: 8px 8px 7px; min-height: 56px; align-items: center; }
+  .metric-val { font-size: 14px; }
+  .metric-lbl { font-size: 8px; }
+
+  /* Sekme çubuğu: metriklerin altında; masaüstündeki yüzen ayarlar sıfırlanır. */
+  #tab-bar {
+    top: calc(var(--header-h) + 56px);
+    padding: 8px 12px;
+    justify-content: center;
+    overflow-x: auto;
+    scrollbar-width: none;
+    border-bottom: 1px solid var(--border);
+    pointer-events: auto;
+    width: auto;
+    gap: 6px;
+  }
+  #tab-bar::-webkit-scrollbar { display: none; }
+  .tab { padding: 0; flex: 1; justify-content: center; max-width: none; font-size: 10px; height: 32px; flex-shrink: 0; pointer-events: all; }
+
+  /* ──── MOBİL TOGGLE BARI ──── */
+  #mobile-toggle {
+    display: flex;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 500;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 8px 12px;
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+    gap: 6px;
+    align-items: center;
+    justify-content: center;
+  }
+  .mtoggle-btn {
+    flex: 1;
+    height: 40px;
+    border: 1px solid var(--border-2);
+    border-radius: 8px;
+    background: transparent;
+    font-family: var(--font);
+    font-size: 13px; font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: all .15s;
+    max-width: 200px;
+  }
+  .mtoggle-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  /* ──── UYGULAMA İSKELETİ ──── */
+  /* Yatay iki panel; üstte header + yapışkan şerit, altta toggle bar yer kaplar. */
+  #app {
+    flex-direction: row;
+    margin-top: calc(var(--header-h) + var(--mob-sticky-h));
+    height: calc(100vh - var(--header-h) - var(--mob-sticky-h) - var(--mob-toggle-h));
+    width: 200vw;
+    overflow: hidden;
+    padding-top: 0;
+    transition: transform .32s cubic-bezier(.4,0,.2,1);
+  }
+  #app.mob-view-list { transform: translateX(0); }
+  #app.mob-view-map  { transform: translateX(-50%); }
+
+  /* Sol panel */
+  #left-panel {
+    width: 50%;
+    max-width: 50%;
+    min-width: 0;
+    height: 100%;
+    border-right: 1px solid var(--border);
+    border-bottom: none;
+    overflow: hidden;
+    flex-shrink: 0;
+    position: static;
+    z-index: auto;
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    padding-top: 0; /* #app zaten yapışkan şeridin altında başlar */
+  }
+
+  /* Sıralama çubuğu + kart listesi sol panelin kalan yüksekliğini doldurur */
+  #sort-bar  { flex-shrink: 0; }
+  #cards-list {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding-bottom: calc(12px + 56px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Sağ panel */
+  #right-panel {
+    width: 50%;
+    height: 100%;
+    flex: none;
+    position: static;
+    z-index: auto;
+  }
+
+  /* Dokunma hedefleri */
+  .map-tool-btn { width: 44px; height: 44px; font-size: 18px; }
+  .sort-btn { padding: 6px 12px; font-size: 11px; }
+  #info-btn { width: 40px; height: 40px; }
+
+  /* Arama paneli: araçların altında tam genişlikte açılır */
+  #search-panel {
+    right: 0; left: 0;
+    width: auto;
+    top: 54px;
+    border-radius: 0 0 10px 10px;
+    max-width: 100%;
+  }
+  #search-results { max-height: 220px; }
+  .search-result { padding: 10px 14px; font-size: 13px; }
+
+  /* Detay popup: kompakt yerleşim */
+  #detail-popup { flex-wrap: nowrap; padding: 12px 14px; padding-bottom: calc(12px + 56px + env(safe-area-inset-bottom, 0px)); gap: 10px; }
+  #detail-icon { width: 40px; height: 40px; }
+  #detail-kurum { width: 17px; height: 17px; }
+  #detail-kurum img { width: 12px; height: 12px; }
+  #detail-name  { font-size: 13px; }
+  #detail-text  { font-size: 11px; }
+  .detail-stat { font-size: 10.5px; }
+  .detail-stat-sep { margin: 0 5px; }
+
+  /* Paylaş popover: detay popup içinde tam genişlik */
+  #share-popover {
+    left: 14px;
+    right: 14px;
+    width: auto;
+    max-width: none;
+  }
+
+  /* Bilgi modali: bottom-sheet stili */
+  #modal-backdrop { align-items: flex-end; }
+  #modal {
+    border-radius: 16px 16px 0 0;
+    max-height: 88vh;
+    width: 100%;
+    max-width: 100%;
+    padding: 20px 18px;
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- ÜST BAŞLIK -->
+<header id="header">
+  <a id="logo-link" href="/">
+    <img id="logo-img"
+      src="https://raw.githubusercontent.com/sefabarisozturk/metrometre-data/main/metrometre_logotype.png"
+      alt="metrometre"
+      onerror="this.style.display='none';document.getElementById('logo-fallback').style.display='block'">
+    <div id="logo-fallback"><span>metro</span>metre</div>
+    <span id="logo-tagline">raylı sistem projeleri<br>takip paneli</span>
+  </a>
+  <button id="info-btn" type="button" aria-label="metrometre hakkında" aria-haspopup="dialog" title="metrometre hakkında">ⓘ</button>
+</header>
+
+<!-- YAPIŞKAN ŞERİT: metrikler + sekme çubuğu
+     Masaüstünde sol panel içinde akışa otururlar; mobilde (≤768px) header altına fixed yerleşirler. -->
+<div id="metrics">
+  <div class="metric"><div class="metric-val loading" id="m0"></div><div class="metric-lbl" id="m0-lbl">Yükleniyor</div></div>
+  <div class="metric"><div class="metric-val loading" id="m1"></div><div class="metric-lbl" id="m1-lbl">Yükleniyor</div></div>
+  <div class="metric"><div class="metric-val loading" id="m2"></div><div class="metric-lbl" id="m2-lbl">Yükleniyor</div></div>
+</div>
+<div id="tab-bar" role="group" aria-label="Hat durumu kategorileri">
+  <button class="tab" type="button" aria-pressed="false" data-tab="isletme" data-label-long="İşletmedeki hatlar" data-label-short="İşletmede">İşletmedeki hatlar</button>
+  <button class="tab active" type="button" aria-pressed="true" data-tab="yapim" data-label-long="Yapımı süren hatlar" data-label-short="Yapımı süren">Yapımı süren hatlar</button>
+  <button class="tab" type="button" aria-pressed="false" data-tab="proje" data-label-long="Proje aşamasındaki hatlar" data-label-short="Proje halinde">Proje aşamasındaki hatlar</button>
+</div>
+
+<!-- UYGULAMA -->
+<div id="app">
+
+  <!-- SOL PANEL -->
+  <aside id="left-panel">
+    <div id="sort-bar"><span class="sort-lbl">Sırala</span></div>
+    <div id="cards-list" role="listbox" aria-label="Raylı sistem hatları">
+      <div class="card-skel" aria-hidden="true"><div class="sk" style="width:60%;height:12px;margin-bottom:8px"></div><div class="sk" style="width:90%;height:8px;margin-bottom:6px"></div><div class="sk" style="width:40%;height:8px"></div></div>
+      <div class="card-skel" aria-hidden="true"><div class="sk" style="width:55%;height:12px;margin-bottom:8px"></div><div class="sk" style="width:80%;height:8px;margin-bottom:6px"></div><div class="sk" style="width:50%;height:8px"></div></div>
+      <div class="card-skel" aria-hidden="true"><div class="sk" style="width:70%;height:12px;margin-bottom:8px"></div><div class="sk" style="width:75%;height:8px;margin-bottom:6px"></div><div class="sk" style="width:35%;height:8px"></div></div>
+    </div>
+  </aside>
+
+  <!-- SAĞ PANEL -->
+  <main id="right-panel">
+
+    <div id="map-container">
+      <div id="map"></div>
+
+      <div id="map-tools">
+        <button class="map-tool-btn" id="btn-zoom-in"    title="Yakınlaştır">+</button>
+        <button class="map-tool-btn" id="btn-zoom-out"   title="Uzaklaştır">−</button>
+        <button class="map-tool-btn" id="btn-fullscreen" title="Tam ekran">⛶</button>
+        <button class="map-tool-btn" id="btn-search"     title="Ara">⌕</button>
+      </div>
+
+      <div id="search-panel">
+        <input id="search-input" type="text" placeholder="Hat kodu veya adı ara…" autocomplete="off">
+        <div id="search-results"></div>
+      </div>
+
+      <div id="detail-popup">
+        <div id="detail-icon-wrap">
+          <div id="detail-icon">
+            <img id="detail-icon-img" src="" alt="" style="display:none">
+            <div id="detail-icon-fallback"></div>
+          </div>
+          <div id="detail-kurum" hidden>
+            <img id="detail-kurum-logo" alt="" style="display:none">
+          </div>
+        </div>
+        <div id="detail-body">
+          <div id="detail-header">
+            <div id="detail-name"></div>
+          </div>
+          <div id="detail-meta">
+            <span id="detail-status" class="card-tag" hidden></span>
+            <span id="detail-stats"></span>
+          </div>
+          <div id="detail-progress" hidden>
+            <div id="detail-progress-head">
+              <span id="detail-progress-lbl">Fiziki İlerleme</span>
+              <span id="detail-progress-pct"></span>
+            </div>
+            <div id="detail-progress-bar">
+              <div id="detail-progress-fill"></div>
+            </div>
+          </div>
+          <div id="detail-bottom" hidden>
+            <div id="detail-acilis-lbl"></div>
+            <div id="detail-acilis-val"></div>
+          </div>
+          <div id="detail-text"></div>
+        </div>
+        <div id="detail-actions">
+          <button id="detail-share" class="detail-action-btn" type="button" aria-label="Hattı paylaş" aria-haspopup="dialog" title="Paylaş">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="18" cy="5" r="3"/>
+              <circle cx="6" cy="12" r="3"/>
+              <circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+          </button>
+          <button id="detail-close" class="detail-action-btn" type="button" aria-label="Detayları kapat">✕</button>
+        </div>
+
+        <div id="share-popover" role="dialog" aria-label="Hattı paylaş" aria-modal="false">
+          <div id="share-actions">
+            <button class="share-btn" id="share-copy" type="button">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              <span>Bağlantıyı kopyala</span>
+            </button>
+            <button class="share-btn primary" id="share-twitter" type="button">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+              </svg>
+              <span>X'te paylaş</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="loading-overlay">
+        <div class="spinner"></div>
+        <div class="loading-txt">veri yükleniyor…</div>
+      </div>
+      <div id="error-state">
+        <div class="error-icon">⚠</div>
+        <div class="error-msg">Veri şu anda yüklenemedi, lütfen bağlantınızı kontrol edip tekrar deneyin.</div>
+        <button class="retry-btn" id="retry-btn">Tekrar Dene</button>
+      </div>
+      <div id="empty-state">
+        <div class="empty-msg">Bu kategoride hat bulunamadı.</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- BİLGİ MODALİ -->
+<div id="modal-backdrop">
+  <div id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-title" id="modal-title">metrometre hakkında</div>
+    <button class="modal-close" id="modal-close" type="button" aria-label="Pencereyi kapat">✕</button>
+    <div class="modal-body">
+      <p><strong>metrometre</strong>, İstanbul'da inşası süren raylı sistem projelerinin fiziksel ilerleme durumunu kamuya açık ve bağımsız bir şekilde izleyen bir paneldir. Herhangi bir kamu kurumu veya özel şirketle bağlantılı değildir; gönüllü olarak hazırlanmakta ve yönetilmektedir.</p>
+      <div class="modal-section-title">Veri kaynakları</div>
+      <p>İlerleme yüzdeleri ve tahmini açılış tarihleri, kurumların kamuoyuyla paylaştığı en güncel resmî açıklamalar esas alınarak derlenmektedir. Resmî açıklamaların yanı sıra İBB Çözüm Merkezi'ne ve CİMER'e yapılan bilgi edinme başvurularından elde edilen veriler de kullanılmaktadır. Veriler; X, YouTube ve çeşitli sosyal medya platformlarındaki bağımsız saha paylaşımlarıyla çapraz kontrol edilmektedir.</p>
+      <div class="modal-section-title">Güncelleme sıklığı</div>
+      <p>Panel aylık olarak güncellenmektedir. Açılış, test başlangıcı veya takvim değişikliği gibi önemli gelişmeler tespit edildiğinde ara güncelleme yapılmaktadır.</p>
+      <div class="modal-section-title">Sınırlılıklar</div>
+      <p>Fiziksel ilerleme yüzdeleri, kurumların kamuoyuyla paylaştığı bilgileri yansıtmaktadır. Yerinde bağımsız denetim yapılmamaktadır. Tahmini açılış tarihleri resmî açıklamalara dayalıdır ve değişime tabidir.</p>
+    </div>
+    <hr class="modal-divider">
+    <div class="modal-footer">
+      <span>© Barış Öztürk · <a href="mailto:sbarisozturk@gmail.com">sbarisozturk@gmail.com</a></span>
+      <span>
+        <a href="https://x.com/sefabarisozturk" target="_blank" rel="noopener">X</a> ·
+        <a href="https://www.linkedin.com/in/sefabarisozturk/" target="_blank" rel="noopener">LinkedIn</a>
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- MOBİL TOGGLE BARI -->
+<div id="mobile-toggle">
+  <button class="mtoggle-btn active" id="mtoggle-list">☰ Listele</button>
+  <button class="mtoggle-btn" id="mtoggle-map"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg> Haritayı Gör</button>
+</div>
+
+<script>
+// ═════════════════════════════════════════════════════
+//  AYARLAR
+// ═════════════════════════════════════════════════════
+const BASE      = 'https://raw.githubusercontent.com/sefabarisozturk/metrometre-data/main';
+// _ts query-string'i CDN/tarayıcı cache'ini bypass eder; her yenilemede taze veri gelir.
+const URL_HAT   = () => `${BASE}/RAYLI_SISTEM_HAT_LN.geojson?_ts=${Date.now()}`;
+const URL_DURAK = () => `${BASE}/RAYLI_SISTEM_DURAK_PT.geojson?_ts=${Date.now()}`;
+const BASEMAP   = 'https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json';
+
+// PR_DURUM kodlarının sekmelere dağılımı
+const TAB_FILTERS = {
+  isletme: ['0','1'],
+  yapim:   ['2','3','4'],
+  proje:   ['5','6','7','8'],
+};
+
+const DURUM_LABEL = {
+  '0':'Devre Dışı','1':'İşletmede',
+  '2':'Test Aşamasında','3':'İnşa Aşamasında','4':'Beklemede',
+  '5':'Uygulama projesi ✓','6':'Uygulama projesi sürüyor','7':'Etüt projesi ✓','8':'Etüt projesi sürüyor',
+};
+const DURUM_CLASS = {
+  '0':'st-devre','1':'st-isletme',
+  '2':'st-test','3':'st-insaat','4':'st-bekle',
+  '5':'st-proje','6':'st-proje','7':'st-proje','8':'st-proje',
+};
+
+// Her sekmenin sıralama seçenekleri (label ve karşılaştırıcı fn)
+const SORT_CONFIG = {
+  isletme: [
+    { key:'acilis',   label:'Açılış tarihi', fn:(a,b) => dateSortDesc(a.p.ACILIS, b.p.ACILIS) },
+    { key:'mesafe',   label:'Uzunluk',        fn:(a,b) => numDesc(a.p.MESAFE, b.p.MESAFE) },
+    { key:'istasyon', label:'İstasyon',       fn:(a,b) => numDesc(a.p.ISTASYON, b.p.ISTASYON) },
+  ],
+  yapim: [
+    { key:'acilis',   label:'Tahmini açılış', fn:(a,b) => numAsc(a.p.PR_ACILIS_SIRALAMA, b.p.PR_ACILIS_SIRALAMA) },
+    { key:'ilerleme', label:'İlerleme',        fn:(a,b) => numDesc(a.p.PR_ILERLEME, b.p.PR_ILERLEME) },
+    { key:'mesafe',   label:'Uzunluk',         fn:(a,b) => numDesc(a.p.MESAFE, b.p.MESAFE) },
+    { key:'istasyon', label:'İstasyon',        fn:(a,b) => numDesc(a.p.ISTASYON, b.p.ISTASYON) },
+  ],
+  proje: [
+    { key:'mesafe',   label:'Uzunluk',         fn:(a,b) => numDesc(a.p.MESAFE, b.p.MESAFE) },
+    { key:'acilis',   label:'Tahmini açılış',  fn:(a,b) => numAsc(a.p.PR_ACILIS_SIRALAMA, b.p.PR_ACILIS_SIRALAMA) },
+    { key:'istasyon', label:'İstasyon',        fn:(a,b) => numDesc(a.p.ISTASYON, b.p.ISTASYON) },
+  ],
+};
+
+// ──── Sıralama yardımcıları ────
+function numDesc(a,b){ return (parseFloat(b)||0) - (parseFloat(a)||0); }
+function numAsc(a,b) { return (parseFloat(a)||Infinity) - (parseFloat(b)||Infinity); }
+function dateSortDesc(a,b){
+  const pd = s => s ? new Date(s.split('.').reverse().join('-')) : new Date(0);
+  return pd(b) - pd(a);
+}
+
+// ──── Türkçe tarih biçimlendirici ────
+// Esnek biçim desteği veri kaynağında tek tip garanti edilemediği için gerekli.
+// Girdi örnekleri: "1.1.2026" | "01.2026" | "2026" | "2026-01-01"
+const TR_MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran',
+                   'Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+function fmtTRDate(raw){
+  if(!raw) return null;
+  const s = String(raw).trim();
+  const m0 = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(m0) return `${parseInt(m0[3],10)} ${TR_MONTHS[parseInt(m0[2],10)-1]} ${m0[1]}`;
+  const m1 = s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+  if(m1) return `${parseInt(m1[1],10)} ${TR_MONTHS[parseInt(m1[2],10)-1]} ${m1[3]}`;
+  const m2 = s.match(/^(\d{1,2})\.(\d{4})$/);
+  if(m2) return `${TR_MONTHS[parseInt(m2[1],10)-1]} ${m2[2]}`;
+  const m3 = s.match(/^(\d{4})$/);
+  if(m3) return m3[1];
+  return s;
+}
+
+// ──── Genel yardımcılar ────
+function normHex(h){
+  if(!h) return null;
+  const s = String(h).trim().replace(/^#+/,'');
+  return s ? '#'+s : null;
+}
+// HTML enjeksiyon koruması — özellik değerlerine yerleştirilen kullanıcı verisi için.
+function esc(s){
+  return String(s||'')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function showLoading(on){ document.getElementById('loading-overlay').classList.toggle('hidden',!on); }
+function showError()    { document.getElementById('error-state').classList.add('show'); }
+function hideError()    { document.getElementById('error-state').classList.remove('show'); }
+
+// ═════════════════════════════════════════════════════
+//  DURUM (state)
+// ═════════════════════════════════════════════════════
+let allHatlar       = [];
+let allDuraklar     = [];
+let activeTab       = 'yapim';
+let selectedFeature = null;   // o an seçili tek GeoJSON feature
+let globalBounds    = null;   // tüm hatların bounding box'ı: [[minLng,minLat],[maxLng,maxLat]]
+let map;
+let mapReady        = false;
+let initialFitDone  = false;  // loadData her çağrıldığında sıfırlanır; Retry sonrası ilk fit'in tekrar çalışmasını sağlar.
+
+const activeSortKey = { isletme:'acilis', yapim:'acilis', proje:'mesafe' };
+
+// ═════════════════════════════════════════════════════
+//  HARİTA KAYNAK / KATMAN ID'LERİ
+// ═════════════════════════════════════════════════════
+const SRC_HAT_ACTIVE     = 'hat-active';
+const SRC_HAT_OTHER      = 'hat-other';
+const SRC_DURAK_ACTIVE   = 'durak-active';
+const SRC_DURAK_OTHER    = 'durak-other';
+const SRC_HAT_SELECTED   = 'hat-selected';
+const SRC_DURAK_SELECTED = 'durak-selected';
+
+// ═════════════════════════════════════════════════════
+//  HARİTA KURULUMU
+// ═════════════════════════════════════════════════════
+function initMap(){
+  map = new maplibregl.Map({
+    container: 'map',
+    style: BASEMAP,
+    center: [28.97, 41.01],
+    zoom: 10,
+    minZoom: 8,
+    maxZoom: 16,
+    attributionControl: false,
+  });
+  map.on('load', () => {
+    mapReady = true;
+    initMapLayers();
+    attachMapClickHandlers();
+    // Veri haritadan önce yüklendiyse seçimi burada uygula — yarış koşulu önlemi.
+    if(allHatlar.length > 0){
+      renderMap();
+      selectHatFromHash();
+    }
+  });
+}
+
+// ═════════════════════════════════════════════════════
+//  VERİ YÜKLEME
+// ═════════════════════════════════════════════════════
+async function loadData(){
+  // Her loadData çağrısında ilk fit'i tekrar tetiklenir hâle getir (Retry de bunu kullanır).
+  initialFitDone = false;
+  showLoading(true);
+  hideError();
+  try {
+    const [rH, rD] = await Promise.all([fetch(URL_HAT()), fetch(URL_DURAK())]);
+    if(!rH.ok || !rD.ok) throw new Error('HTTP error');
+    const [hj, dj] = await Promise.all([rH.json(), rD.json()]);
+    allHatlar   = hj.features || [];
+    allDuraklar = dj.features || [];
+    // Bounds yalnızca hatlardan hesaplanır; duraklar zaten hat extent'inin içinde.
+    computeGlobalBounds();
+    onDataReady();
+  } catch(e) {
+    console.error('loadData error:', e);
+    showError();
+  } finally {
+    showLoading(false);
+  }
+}
+
+// Koordinat dizisinden bounding box çıkarır. Boş girişte null döner.
+function coordsToBbox(coordsList){
+  let minLng=Infinity, minLat=Infinity, maxLng=-Infinity, maxLat=-Infinity;
+  coordsList.forEach(([lng,lat]) => {
+    if(lng<minLng) minLng=lng; if(lat<minLat) minLat=lat;
+    if(lng>maxLng) maxLng=lng; if(lat>maxLat) maxLat=lat;
+  });
+  return isFinite(minLng) ? [[minLng,minLat],[maxLng,maxLat]] : null;
+}
+
+function computeGlobalBounds(){
+  const all = [];
+  allHatlar.forEach(f => { for(const c of flatCoords(f.geometry)) all.push(c); });
+  globalBounds = coordsToBbox(all);
+}
+
+function flatCoords(geometry){
+  if(!geometry) return [];
+  const {type, coordinates} = geometry;
+  if(type==='Point')           return [coordinates];
+  if(type==='LineString')      return coordinates;
+  if(type==='MultiLineString') return coordinates.flat();
+  if(type==='MultiPoint')      return coordinates;
+  return [];
+}
+
+// MapLibre paint ifadeleri güvenilir string-concat yapamadığı için
+// RENK_HEX'i '#RRGGBB' biçiminde önceden normalize ediyoruz.
+function normalizeFeatureColors(features){
+  features.forEach(f => {
+    const p   = f.properties || {};
+    const raw = String(p.RENK_HEX || '').trim();
+    const hex = raw.replace(/^#+/,'');
+    p.RENK_HEX_NORM = hex ? '#'+hex : '#9B9B9B';
+    f.properties = p;
+  });
+}
+
+function onDataReady(){
+  normalizeFeatureColors(allHatlar);
+  normalizeFeatureColors(allDuraklar);
+  document.querySelectorAll('.card-skel').forEach(el => el.remove());
+  applyHashState();
+  updateMetrics();
+  renderSortBar();
+  renderCards();
+  if(mapReady){
+    renderMap();
+    selectHatFromHash();
+  }
+}
+
+// ═════════════════════════════════════════════════════
+//  FİLTRELEME YARDIMCILARI
+// ═════════════════════════════════════════════════════
+function getHatlarForTab(tab){
+  return allHatlar.filter(f => TAB_FILTERS[tab].includes(String(f.properties?.PR_DURUM)));
+}
+function getDuraklarForTab(tab){
+  return allDuraklar.filter(f => TAB_FILTERS[tab].includes(String(f.properties?.PR_DURUM)));
+}
+function getHatlarOther(tab){
+  const vals = TAB_FILTERS[tab];
+  return allHatlar.filter(f => !vals.includes(String(f.properties?.PR_DURUM)));
+}
+function getDuraklarOther(tab){
+  const vals = TAB_FILTERS[tab];
+  return allDuraklar.filter(f => !vals.includes(String(f.properties?.PR_DURUM)));
+}
+
+// ═════════════════════════════════════════════════════
+//  HARİTA ÇİZİMİ
+// ═════════════════════════════════════════════════════
+function featureBbox(feature){
+  return coordsToBbox(flatCoords(feature.geometry));
+}
+
+function duraklarInBbox(duraklar, bbox){
+  if(!bbox) return [];
+  const [[w,s],[e,n]] = bbox;
+  return duraklar.filter(f => {
+    if(!f.geometry || f.geometry.type !== 'Point') return false;
+    const [lng,lat] = f.geometry.coordinates;
+    return lng>=w && lng<=e && lat>=s && lat<=n;
+  });
+}
+
+function upsertSource(id, data){
+  if(map.getSource(id)) {
+    map.getSource(id).setData(data);
+  } else {
+    map.addSource(id, { type:'geojson', data });
+  }
+}
+
+// Katmanlar harita 'load' anında tek seferlik kurulur.
+// Tüm görsel kararlar veri-odaklı ifadelerle (['get',...]) tanımlandığından
+// sekme/seçim değişiminde yalnızca kaynak verisi setData ile güncellenir,
+// katmanlar yeniden eklenmez.
+function initMapLayers(){
+  const EMPTY = () => ({ type:'FeatureCollection', features:[] });
+  upsertSource(SRC_HAT_ACTIVE,     EMPTY());
+  upsertSource(SRC_HAT_OTHER,      EMPTY());
+  upsertSource(SRC_DURAK_ACTIVE,   EMPTY());
+  upsertSource(SRC_DURAK_OTHER,    EMPTY());
+  upsertSource(SRC_HAT_SELECTED,   EMPTY());
+  upsertSource(SRC_DURAK_SELECTED, EMPTY());
+
+  // Çift kuruluma karşı koruma; ekleme SIRASI çizim sırasını belirler.
+  const add = spec => { if(!map.getLayer(spec.id)) map.addLayer(spec); };
+
+  // ──── Hatlar ────
+  add({ id:'other-lines', type:'line', source:SRC_HAT_OTHER,
+    paint:{
+      'line-color':['coalesce',['get','RENK_HEX_NORM'],'#9B9B9B'],
+      'line-width':['coalesce',['get','KALINLIK_LN'],3],
+      'line-opacity':0.2,
+    }, layout:{'line-cap':'round','line-join':'round'} });
+
+  add({ id:'active-lines', type:'line', source:SRC_HAT_ACTIVE,
+    paint:{
+      'line-color':['coalesce',['get','RENK_HEX_NORM'],'#9B9B9B'],
+      'line-width':['coalesce',['get','KALINLIK_LN'],3],
+      'line-opacity':1,
+    }, layout:{'line-cap':'round','line-join':'round'} });
+
+  // ──── Hat glow (seçim halkası) ────
+  add({ id:'glow-hat-1', type:'line', source:SRC_HAT_SELECTED,
+    paint:{
+      'line-color':['coalesce',['get','RENK_HEX_NORM'],'#9B9B9B'],
+      'line-width':['+',['coalesce',['get','KALINLIK_LN'],3],16],
+      'line-opacity':0.15, 'line-blur':12,
+    }, layout:{'line-cap':'round','line-join':'round'} });
+
+  add({ id:'glow-hat-2', type:'line', source:SRC_HAT_SELECTED,
+    paint:{
+      'line-color':['coalesce',['get','RENK_HEX_NORM'],'#9B9B9B'],
+      'line-width':['+',['coalesce',['get','KALINLIK_LN'],3],6],
+      'line-opacity':0.55, 'line-blur':3,
+    }, layout:{'line-cap':'round','line-join':'round'} });
+
+  add({ id:'selected-line', type:'line', source:SRC_HAT_SELECTED,
+    paint:{
+      'line-color':['coalesce',['get','RENK_HEX_NORM'],'#9B9B9B'],
+      'line-width':['+',['coalesce',['get','KALINLIK_LN'],3],2],
+      'line-opacity':1,
+    }, layout:{'line-cap':'round','line-join':'round'} });
+
+  // ──── Duraklar ────
+  add({ id:'other-stops', type:'circle', source:SRC_DURAK_OTHER,
+    minzoom:10, maxzoom:16,
+    paint:{
+      'circle-color':['coalesce',['get','RENK_HEX_NORM'],'#9B9B9B'],
+      'circle-radius':['coalesce',['get','BOYUT_PT'],5],
+      'circle-stroke-color':'#ffffff', 'circle-stroke-width':1.5,
+      'circle-opacity':0.2, 'circle-stroke-opacity':0.2,
+    } });
+
+  add({ id:'active-stops', type:'circle', source:SRC_DURAK_ACTIVE,
+    minzoom:10, maxzoom:16,
+    paint:{
+      'circle-color':['coalesce',['get','RENK_HEX_NORM'],'#9B9B9B'],
+      'circle-radius':['coalesce',['get','BOYUT_PT'],5],
+      'circle-stroke-color':'#ffffff', 'circle-stroke-width':1.5,
+      'circle-opacity':1,
+    } });
+
+  // ──── Durak glow ────
+  add({ id:'glow-stop-1', type:'circle', source:SRC_DURAK_SELECTED,
+    minzoom:8, maxzoom:16,
+    paint:{
+      'circle-color':['coalesce',['get','RENK_HEX_NORM'],'#9B9B9B'],
+      'circle-radius':['+',['coalesce',['get','BOYUT_PT'],5],10],
+      'circle-opacity':0.15, 'circle-blur':1, 'circle-stroke-width':0,
+    } });
+
+  add({ id:'glow-stop-2', type:'circle', source:SRC_DURAK_SELECTED,
+    minzoom:8, maxzoom:16,
+    paint:{
+      'circle-color':['coalesce',['get','RENK_HEX_NORM'],'#9B9B9B'],
+      'circle-radius':['+',['coalesce',['get','BOYUT_PT'],5],4],
+      'circle-opacity':0.45, 'circle-blur':0.5, 'circle-stroke-width':0,
+    } });
+
+  add({ id:'selected-stops', type:'circle', source:SRC_DURAK_SELECTED,
+    minzoom:8, maxzoom:16,
+    paint:{
+      'circle-color':['coalesce',['get','RENK_HEX_NORM'],'#9B9B9B'],
+      'circle-radius':['coalesce',['get','BOYUT_PT'],5],
+      'circle-stroke-color':'#ffffff', 'circle-stroke-width':2,
+      'circle-opacity':1,
+    } });
+
+  // ──── Durak etiketleri ────
+  add({ id:'stop-labels-other', type:'symbol', source:SRC_DURAK_OTHER,
+    minzoom:13,
+    layout:{
+      'text-field':['get','AD'],
+      'text-font':['Open Sans Regular','Arial Unicode MS Regular'],
+      'text-size':12, 'text-offset':[0,1.4], 'text-anchor':'top', 'text-max-width':8,
+    },
+    paint:{ 'text-color':['coalesce',['get','RENK_HEX_NORM'],'#444444'],'text-halo-color':'#ffffff','text-halo-width':1.5,'text-opacity':0.8 } });
+
+  add({ id:'stop-labels-active', type:'symbol', source:SRC_DURAK_ACTIVE,
+    minzoom:13,
+    layout:{
+      'text-field':['get','AD'],
+      'text-font':['Open Sans Bold','Arial Unicode MS Bold'],
+      'text-size':12, 'text-offset':[0,1.4], 'text-anchor':'top', 'text-max-width':8,
+    },
+    paint:{ 'text-color':['coalesce',['get','RENK_HEX_NORM'],'#444444'],'text-halo-color':'#ffffff','text-halo-width':2,'text-opacity':1 } });
+
+  add({ id:'stop-labels-selected', type:'symbol', source:SRC_DURAK_SELECTED,
+    minzoom:8,
+    layout:{
+      'text-field':['get','AD'],
+      'text-font':['Open Sans Bold','Arial Unicode MS Bold'],
+      'text-size':12, 'text-offset':[0,1.4], 'text-anchor':'top', 'text-max-width':8,
+    },
+    paint:{ 'text-color':['coalesce',['get','RENK_HEX_NORM'],'#111111'],'text-halo-color':'#ffffff','text-halo-width':2.5,'text-opacity':1 } });
+}
+
+function renderMap(){
+  if(!mapReady) return;
+
+  // İlk veri yüklemesinde tüm hatlara bir kez fit yap; Retry akışında initialFitDone sıfırlanır.
+  if(!initialFitDone && allHatlar.length > 0){
+    initialFitDone = true;
+    fitGlobalBounds(false);
+  }
+
+  const selObjId = selectedFeature?.properties?.OBJECTID ?? null;
+  const selKod   = selectedFeature?.properties?.KOD      ?? null;
+
+  const activeHatlar   = getHatlarForTab(activeTab);
+  const activeDuraklar = getDuraklarForTab(activeTab);
+  const otherHatlar    = getHatlarOther(activeTab);
+  const otherDuraklar  = getDuraklarOther(activeTab);
+
+  // Glow için seçili tek feature OBJECTID ile eşleştirilir (KOD aynı olabilir, OBJECTID benzersiz).
+  const selectedHatFeatures = selObjId !== null
+    ? activeHatlar.filter(f => String(f.properties?.OBJECTID) === String(selObjId))
+    : [];
+
+  // Seçili hattın bbox'ına düşen ve aynı KOD'a sahip durakları glow için topla.
+  const selBbox = selectedFeature ? featureBbox(selectedFeature) : null;
+  const selectedDurakFeatures = (selBbox && selKod)
+    ? duraklarInBbox(activeDuraklar.filter(f => f.properties?.KOD === selKod), selBbox)
+    : [];
+
+  // Seçili segment selected katmanlardan çizildiği için active'den çıkarılır (çift çizim önlenir).
+  const activeHatlarDisplay = selObjId !== null
+    ? activeHatlar.filter(f => String(f.properties?.OBJECTID) !== String(selObjId))
+    : activeHatlar;
+
+  // Sadece kaynak verisi güncellenir; katmanlar initMapLayers() içinde tek seferlik kuruldu.
+  upsertSource(SRC_HAT_ACTIVE,     { type:'FeatureCollection', features:activeHatlarDisplay });
+  upsertSource(SRC_HAT_OTHER,      { type:'FeatureCollection', features:otherHatlar });
+  upsertSource(SRC_DURAK_ACTIVE,   { type:'FeatureCollection', features:activeDuraklar });
+  upsertSource(SRC_DURAK_OTHER,    { type:'FeatureCollection', features:otherDuraklar });
+  upsertSource(SRC_HAT_SELECTED,   { type:'FeatureCollection', features:selectedHatFeatures });
+  upsertSource(SRC_DURAK_SELECTED, { type:'FeatureCollection', features:selectedDurakFeatures });
+
+  document.getElementById('empty-state').classList.toggle('show',
+    activeHatlar.length === 0 && allHatlar.length > 0);
+}
+
+// ═════════════════════════════════════════════════════
+//  TÜM HATLARA YAKINLAŞMA
+// ═════════════════════════════════════════════════════
+function fitGlobalBounds(animated){
+  if(!globalBounds || !mapReady) return;
+  map.fitBounds(globalBounds, {
+    padding: 40,
+    duration: animated === false ? 0 : 600,
+  });
+}
+
+// ═════════════════════════════════════════════════════
+//  KART ↔ HARİTA SENKRONU
+// ═════════════════════════════════════════════════════
+// Tüm kartların .active sınıfı ve aria-selected değerini selectedFeature'a göre eşitler.
+// Seçim mantığının tek doğruluk kaynağı.
+function syncCardSelectionUI(){
+  const selObjId = selectedFeature?.properties?.OBJECTID;
+  document.querySelectorAll('.card').forEach(c => {
+    const on = selObjId !== undefined && c.dataset.objectid === String(selObjId);
+    c.classList.toggle('active', on);
+    c.setAttribute('aria-selected', on ? 'true' : 'false');
+  });
+}
+
+function onCardSelect(feature){
+  const objId  = feature.properties?.OBJECTID;
+  const prevId = selectedFeature?.properties?.OBJECTID;
+
+  // Aynı karta ikinci tıklama → seçimi kaldır
+  if(prevId !== undefined && String(prevId) === String(objId)){
+    selectedFeature = null;
+    syncCardSelectionUI();
+    closeDetailPopup();
+    fitGlobalBounds();
+    renderMap();
+    writeHash();
+    return;
+  }
+
+  selectedFeature = feature;
+  syncCardSelectionUI();
+  renderMap();
+  zoomToHat(feature);
+  openDetailPopup(feature.properties);
+  writeHash();
+}
+
+function zoomToHat(feature){
+  const bbox = featureBbox(feature);
+  if(!bbox) return;
+  // Mobilde alt toggle bar + detay popup, masaüstünde sadece detay popup için yer bırak.
+  const bottomPad = isMobile() ? 160 : 120;
+  map.fitBounds(bbox, {
+    padding: { top:60, bottom:bottomPad, left:40, right:40 },
+    maxZoom: 14,
+    duration: 1200,
+  });
+}
+
+// ═════════════════════════════════════════════════════
+//  HAT DETAY POPUP
+// ═════════════════════════════════════════════════════
+function openDetailPopup(p){
+  const renk  = normHex(p.RENK_HEX) || '#9B9B9B';
+  const imgEl = document.getElementById('detail-icon-img');
+  const fbEl  = document.getElementById('detail-icon-fallback');
+
+  if(p.IKON_URL){
+    imgEl.src = p.IKON_URL;
+    imgEl.style.display = 'block';
+    fbEl.style.display  = 'none';
+    imgEl.onerror = () => { imgEl.style.display='none'; fbEl.style.display='flex'; };
+  } else {
+    imgEl.style.display = 'none';
+    fbEl.style.display  = 'flex';
+  }
+  fbEl.style.background = renk;
+  fbEl.textContent = (p.KOD || '?').slice(0,2);
+  // İkonun renk akcenti (kart .card-icon ile aynı stil)
+  document.getElementById('detail-icon').style.borderColor = `${renk}44`;
+
+  const nameEl = document.getElementById('detail-name');
+  nameEl.textContent = p.AD || '—';
+  nameEl.style.color = renk;
+
+  // ──── Kurum rozeti: ikonun sağ alt köşesinde küçük daire (kart-kurum ile aynı) ────
+  // Sadece logo gösterilir; rozet ismi yoktur. Logo eksikse rozet gizlenir.
+  const kurumEl     = document.getElementById('detail-kurum');
+  const kurumLogoEl = document.getElementById('detail-kurum-logo');
+  const kurumLogo   = p.PR_KURUM_LOGO || '';
+
+  if(kurumLogo){
+    kurumEl.hidden = false;
+    kurumLogoEl.src = kurumLogo;
+    kurumLogoEl.style.display = 'block';
+    kurumLogoEl.onerror = () => {
+      kurumLogoEl.style.display = 'none';
+      kurumEl.hidden = true;
+    };
+  } else {
+    kurumEl.hidden = true;
+    kurumLogoEl.style.display = 'none';
+  }
+
+  // ──── Durum + chips (kart-meta ile aynı satır) ────
+  const durum     = String(p.PR_DURUM ?? '');
+  const isIsletme = TAB_FILTERS.isletme.includes(durum);
+  const isYapim   = TAB_FILTERS.yapim.includes(durum);
+
+  const statusEl = document.getElementById('detail-status');
+  const durumLabel = DURUM_LABEL[durum] || durum;
+  if(durumLabel){
+    statusEl.hidden = false;
+    statusEl.className = `card-tag ${DURUM_CLASS[durum] || ''}`;
+    statusEl.textContent = durumLabel;
+  } else {
+    statusEl.hidden = true;
+  }
+
+  const statsEl = document.getElementById('detail-stats');
+  const chips   = [];
+  if(p.MESAFE != null && p.MESAFE !== ''){
+    const km = parseFloat(p.MESAFE) || 0;
+    chips.push(`${Math.round(km)} km`);
+  }
+  if(p.ISTASYON != null && p.ISTASYON !== ''){
+    const n = Math.round(parseFloat(p.ISTASYON) || 0);
+    chips.push(`${n} istasyon`);
+  }
+  statsEl.innerHTML = chips.map((c,i) =>
+    `<span class="detail-stat">${esc(c)}</span>${i<chips.length-1 ? '<span class="detail-stat-sep">·</span>' : ''}`
+  ).join('');
+  statsEl.style.display = chips.length ? '' : 'none';
+
+  // ──── Fiziki ilerleme (yalnızca yapımı süren hatlar) ────
+  const progressEl = document.getElementById('detail-progress');
+  const pct = (p.PR_ILERLEME != null && p.PR_ILERLEME !== '')
+    ? Math.round(parseFloat(p.PR_ILERLEME)) : null;
+  if(isYapim && pct !== null && !isNaN(pct)){
+    progressEl.hidden = false;
+    document.getElementById('detail-progress-pct').textContent = `%${pct}`;
+    const fill = document.getElementById('detail-progress-fill');
+    fill.style.width      = `${pct}%`;
+    fill.style.background = renk;
+  } else {
+    progressEl.hidden = true;
+  }
+
+  // ──── Alt blok: Açılış Tarihi / Tahmini Açılış (kart-bottom ile aynı) ────
+  const bottomEl = document.getElementById('detail-bottom');
+  const lblEl    = document.getElementById('detail-acilis-lbl');
+  const valEl    = document.getElementById('detail-acilis-val');
+  if(isIsletme){
+    const dateStr = fmtTRDate(p.ACILIS);
+    lblEl.textContent = 'Açılış Tarihi';
+    valEl.textContent = dateStr || '—';
+    bottomEl.hidden = false;
+  } else if(TAB_FILTERS.yapim.includes(durum) || TAB_FILTERS.proje.includes(durum)){
+    const dateStr = fmtTRDate(p.PR_ACILIS) || p.PR_ACILIS;
+    lblEl.textContent = 'Tahmini Açılış';
+    valEl.textContent = dateStr || '—';
+    bottomEl.hidden = false;
+  } else {
+    bottomEl.hidden = true;
+  }
+
+  document.getElementById('detail-text').textContent = p.PR_DETAY || p.PR_ACIKLAMA || '';
+
+  // Yeni hat seçildiğinde önceki paylaş popover'ı kapanmalı.
+  closeSharePopover();
+
+  document.getElementById('detail-popup').classList.add('open');
+}
+
+function closeDetailPopup(){
+  document.getElementById('detail-popup').classList.remove('open');
+  closeSharePopover();
+}
+
+document.getElementById('detail-close').addEventListener('click', () => {
+  closeDetailPopup();
+  selectedFeature = null;
+  syncCardSelectionUI();
+  fitGlobalBounds();
+  renderMap();
+  writeHash();
+});
+
+// ═════════════════════════════════════════════════════
+//  PAYLAŞ POPOVER
+// ═════════════════════════════════════════════════════
+// Seçili hat için paylaşılacak { metin, URL } üretir.
+// Metin: hat kodu + adı; yapımı süren hatlarda fiziki ilerleme yüzdesi de eklenir.
+function buildShareData(p){
+  const kod = String(p.KOD || '').trim();
+  const ad  = String(p.AD  || '').trim();
+  const durum = String(p.PR_DURUM ?? '');
+  const isYapim = TAB_FILTERS.yapim.includes(durum);
+
+  // Metin örneği: "M14 Altunizade–Bosna Bulvarı Metrosu"
+  let text = '';
+  if(kod && ad)      text = `${kod} ${ad}`;
+  else if(kod)       text = kod;
+  else               text = ad;
+
+  if(isYapim && p.PR_ILERLEME != null && p.PR_ILERLEME !== ''){
+    const pct = Math.round(parseFloat(p.PR_ILERLEME));
+    if(!isNaN(pct)) text += ` | Fiziki ilerleme: %${pct}`;
+  }
+
+  // URL: tarayıcının o anki adresi — writeHash her seçimde çalıştığı için hash günceldir.
+  return { text, url: window.location.href };
+}
+
+function openSharePopover(){
+  const p = selectedFeature?.properties;
+  if(!p) return;
+
+  resetShareButtons();
+  document.getElementById('share-popover').classList.add('open');
+}
+
+function closeSharePopover(){
+  const pop = document.getElementById('share-popover');
+  if(pop) pop.classList.remove('open');
+}
+
+function resetShareButtons(){
+  const cp = document.getElementById('share-copy');
+  if(!cp) return;
+  cp.classList.remove('copied');
+  cp.querySelector('span').textContent = 'Bağlantıyı kopyala';
+}
+
+document.getElementById('detail-share').addEventListener('click', e => {
+  e.stopPropagation();
+  const pop = document.getElementById('share-popover');
+  if(pop.classList.contains('open')) closeSharePopover();
+  else                                openSharePopover();
+});
+
+document.getElementById('share-copy').addEventListener('click', async () => {
+  if(!selectedFeature) return;
+  const data = buildShareData(selectedFeature.properties);
+  const full = `${data.text}\n${data.url}`;
+  const btn  = document.getElementById('share-copy');
+  const lbl  = btn.querySelector('span');
+
+  try {
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      await navigator.clipboard.writeText(full);
+    } else {
+      // Clipboard API yoksa eski textarea+execCommand yedeği
+      const ta = document.createElement('textarea');
+      ta.value = full;
+      ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    btn.classList.add('copied');
+    lbl.textContent = 'Kopyalandı ✓';
+    setTimeout(resetShareButtons, 1800);
+  } catch(err){
+    console.error('Kopyalama başarısız:', err);
+    lbl.textContent = 'Kopyalanamadı';
+    setTimeout(resetShareButtons, 1800);
+  }
+});
+
+document.getElementById('share-twitter').addEventListener('click', () => {
+  if(!selectedFeature) return;
+  const data = buildShareData(selectedFeature.properties);
+  const intent = 'https://x.com/intent/post'
+    + '?text=' + encodeURIComponent(data.text)
+    + '&url='  + encodeURIComponent(data.url);
+  window.open(intent, '_blank', 'noopener,noreferrer');
+});
+
+// Popover dışına tıklayınca kapat
+document.addEventListener('click', e => {
+  const pop = document.getElementById('share-popover');
+  const btn = document.getElementById('detail-share');
+  if(!pop.classList.contains('open')) return;
+  if(pop.contains(e.target)) return;
+  if(btn === e.target || btn.contains(e.target)) return;
+  closeSharePopover();
+});
+
+// Esc → popover'ı kapat. Modal Esc handler'ı bağımsız çalışmaya devam etsin diye olay burada durdurulmuyor.
+document.addEventListener('keydown', e => {
+  if(e.key !== 'Escape') return;
+  const pop = document.getElementById('share-popover');
+  if(pop.classList.contains('open')){
+    closeSharePopover();
+  }
+});
+
+// ═════════════════════════════════════════════════════
+//  METRİKLER
+// ═════════════════════════════════════════════════════
+function updateMetrics(){
+  const hatlar     = getHatlarForTab(activeTab);
+  const uniqueHatSayisi = new Set(hatlar.map(f => f.properties?.KOD)).size;
+  const durakCount = getDuraklarForTab(activeTab).length;
+  const mesafeSum  = hatlar.reduce((s,f) => s + (parseFloat(f.properties?.MESAFE)||0), 0);
+  const mesafeFmt  = mesafeSum > 0 ? Math.round(mesafeSum) + ' km' : '—';
+
+  let vals;
+  if(activeTab === 'isletme'){
+    vals = [
+      { val:uniqueHatSayisi, lbl:'İşletmedeki hat' },
+      { val:mesafeFmt,     lbl:'Toplam uzunluk'  },
+      { val:durakCount,    lbl:'İstasyon sayısı' },
+    ];
+  } else if(activeTab === 'yapim'){
+    vals = [
+      { val:hatlar.length, lbl:'Yapımı süren hat' },
+      { val:mesafeFmt,     lbl:'Toplam uzunluk'   },
+      { val:durakCount,    lbl:'İstasyon sayısı'  },
+    ];
+  } else {
+    vals = [
+      { val:hatlar.length, lbl:'Proje hat' },
+      { val:mesafeFmt,     lbl:'Toplam uzunluk'     },
+      { val:durakCount,    lbl:'İstasyon sayısı'    },
+    ];
+  }
+  vals.forEach((v,i) => {
+    const el = document.getElementById(`m${i}`);
+    const lb = document.getElementById(`m${i}-lbl`);
+    if(!el) return;
+    el.classList.remove('loading');
+    el.textContent = v.val;
+    lb.textContent = v.lbl;
+  });
+}
+
+// ═════════════════════════════════════════════════════
+//  SIRALAMA ÇUBUĞU
+// ═════════════════════════════════════════════════════
+function renderSortBar(){
+  const bar  = document.getElementById('sort-bar');
+  const opts = SORT_CONFIG[activeTab];
+  const cur  = activeSortKey[activeTab];
+  bar.innerHTML = '<span class="sort-lbl">Sırala</span>';
+  opts.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className   = 'sort-btn' + (opt.key === cur ? ' active' : '');
+    btn.textContent = opt.label;
+    btn.addEventListener('click', () => {
+      activeSortKey[activeTab] = opt.key;
+      renderSortBar();
+      renderCards();
+      writeHash();
+    });
+    bar.appendChild(btn);
+  });
+}
+
+// ═════════════════════════════════════════════════════
+//  KART ÇİZİMİ
+// ═════════════════════════════════════════════════════
+function renderCards(){
+  const list   = document.getElementById('cards-list');
+  const opts   = SORT_CONFIG[activeTab];
+  const sortFn = opts.find(o => o.key === activeSortKey[activeTab])?.fn;
+  let wrapped  = getHatlarForTab(activeTab).map(f => ({ f, p:f.properties||{} }));
+  if(sortFn) wrapped.sort(sortFn);
+
+  list.innerHTML = '';
+  if(wrapped.length === 0){
+    list.innerHTML = '<div style="padding:20px 10px;color:var(--text-dim);font-size:12px;font-weight:500">Bu kategoride hat bulunamadı.</div>';
+    return;
+  }
+
+  wrapped.forEach(({ f, p }) => {
+    const renk  = normHex(p.RENK_HEX) || '#9B9B9B';
+    const durum = String(p.PR_DURUM ?? '');
+    const pct   = p.PR_ILERLEME != null ? Math.round(parseFloat(p.PR_ILERLEME)) : null;
+
+    const iconContent = p.IKON_URL
+      ? `<img src="${esc(p.IKON_URL)}" alt="${esc(p.KOD||'')}"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+             style="width:100%;height:100%;object-fit:cover">
+         <div class="card-icon-fallback" style="display:none;background:${renk}">${esc((p.KOD||'?').slice(0,2))}</div>`
+      : `<div class="card-icon-fallback" style="background:${renk};display:flex">${esc((p.KOD||'?').slice(0,2))}</div>`;
+
+    const kurumContent = p.PR_KURUM_LOGO
+      ? `<img src="${esc(p.PR_KURUM_LOGO)}" alt=""
+             onerror="this.style.display='none'"
+             style="width:13px;height:13px;object-fit:contain">`
+      : '';
+
+    const chips = [
+      p.MESAFE   ? `${Math.round(parseFloat(p.MESAFE)||0)} km` : null,
+      p.ISTASYON ? `${Math.round(parseFloat(p.ISTASYON)||0)} istasyon` : null,
+    ].filter(Boolean).map((c,i,arr) =>
+      `<span class="card-chip">${esc(c)}</span>${i<arr.length-1 ? '<span class="chip-sep">·</span>' : ''}`
+    ).join('');
+
+    const progressHtml = (activeTab === 'yapim' && pct !== null) ? `
+      <div class="card-progress">
+        <div class="card-progress-head">
+          <span class="card-progress-lbl">Fiziki İlerleme</span>
+          <span class="card-progress-pct">%${pct}</span>
+        </div>
+        <div class="card-progress-bar">
+          <div class="card-progress-fill" style="width:${pct}%;background:${renk}"></div>
+        </div>
+      </div>` : '';
+
+    let bottomHtml;
+    if(activeTab === 'isletme'){
+      const dateStr = fmtTRDate(p.ACILIS);
+      bottomHtml = `<div class="card-bottom"><div>
+        <div class="card-field-lbl">Açılış Tarihi</div>
+        <div class="card-field-val">${esc(dateStr||'—')}</div>
+      </div></div>`;
+    } else if(activeTab === 'yapim' || activeTab === 'proje'){
+      const dateStr = fmtTRDate(p.PR_ACILIS);
+      bottomHtml = `<div class="card-bottom"><div>
+        <div class="card-field-lbl">Tahmini Açılış</div>
+        <div class="card-field-val">${esc(dateStr || p.PR_ACILIS || '—')}</div>
+      </div></div>`;
+    } else {
+      bottomHtml = '<div class="card-bottom"></div>';
+    }
+
+    const card = document.createElement('div');
+    card.className = 'card';
+    // OBJECTID kullanılır — aynı KOD'a sahip birden çok feature çakışmasın diye.
+    card.dataset.objectid = String(p.OBJECTID ?? '');
+
+    // Erişilebilirlik: kart bir listbox seçeneğidir; roving tabindex aşağıda kuruluyor.
+    card.setAttribute('role', 'option');
+    card.tabIndex = -1;
+
+    const selObjId = selectedFeature?.properties?.OBJECTID;
+    const isSel = selObjId !== undefined && String(p.OBJECTID) === String(selObjId);
+    card.setAttribute('aria-selected', isSel ? 'true' : 'false');
+    if(isSel) card.classList.add('active');
+
+    card.innerHTML = `
+      <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:${renk};border-radius:10px 0 0 10px"></div>
+      <div class="card-top">
+        <div class="card-icon-wrap">
+          <div class="card-icon" style="border-color:${renk}44">${iconContent}</div>
+          <div class="card-kurum">${kurumContent}</div>
+        </div>
+        <div class="card-info">
+          <div class="card-name">${esc(p.AD||'—')}</div>
+          <div class="card-meta">
+            <span class="card-tag ${esc(DURUM_CLASS[durum]||'')}">${esc(DURUM_LABEL[durum]||durum)}</span>
+            ${chips}
+          </div>
+        </div>
+      </div>
+      ${progressHtml}
+      ${bottomHtml}
+    `;
+
+    card.addEventListener('click', () => {
+      onCardSelect(f);
+      // Mobilde harita görünümüne kaydır
+      if(isMobile()) applyMobileView('map');
+    });
+
+    // Klavye: Enter/Space seçer (role="option" otomatik tetiklemez);
+    // ok tuşları / Home / End ile kartlar arası odak gezinmesi.
+    card.addEventListener('keydown', e => {
+      if(e.key === 'Enter' || e.key === ' '){
+        e.preventDefault();
+        onCardSelect(f);
+        if(isMobile()) applyMobileView('map');
+        return;
+      }
+      if(['ArrowDown','ArrowUp','Home','End'].includes(e.key)){
+        e.preventDefault();
+        const cards = Array.from(list.querySelectorAll('.card'));
+        const idx   = cards.indexOf(card);
+        let ni;
+        if(e.key === 'ArrowDown')    ni = Math.min(idx + 1, cards.length - 1);
+        else if(e.key === 'ArrowUp') ni = Math.max(idx - 1, 0);
+        else if(e.key === 'Home')    ni = 0;
+        else                         ni = cards.length - 1;
+        cards[ni]?.focus();
+      }
+    });
+
+    list.appendChild(card);
+  });
+
+  // Roving tabindex başlangıcı: seçili kart (yoksa ilk kart) tek Tab durağı olur.
+  const builtCards = list.querySelectorAll('.card');
+  if(builtCards.length){
+    (list.querySelector('.card[aria-selected="true"]') || builtCards[0]).tabIndex = 0;
+  }
+}
+
+// ═════════════════════════════════════════════════════
+//  DEEP-LINKING  (URL hash ↔ panel durumu)
+// ═════════════════════════════════════════════════════
+// Hash biçimi:  #tab=yapim&sort=ilerleme&hat=123
+//  - replaceState kullanıyoruz: paylaşılabilir link üretir,
+//    ama her tıklamada tarayıcı geçmişini kirletmez.
+
+function parseHash(){
+  const out = {};
+  location.hash.replace(/^#/, '').split('&').forEach(pair => {
+    const [k, v] = pair.split('=');
+    if(k && v != null) out[k] = decodeURIComponent(v);
+  });
+  return out;
+}
+
+// Mevcut panel durumunu hash'e yazar.
+function writeHash(){
+  const parts = ['tab=' + activeTab, 'sort=' + activeSortKey[activeTab]];
+  const objId = selectedFeature?.properties?.OBJECTID;
+  if(objId != null && objId !== '') parts.push('hat=' + objId);
+  const hash = '#' + parts.join('&');
+  if(location.hash !== hash) history.replaceState(null, '', hash);
+}
+
+// Hash'ten sekme + sıralama durumunu state'e uygular (render ETMEZ).
+// Kart render'ından ÖNCE çağrılmalı.
+function applyHashState(){
+  const h = parseHash();
+  if(h.tab && TAB_FILTERS[h.tab]){
+    activeTab = h.tab;
+    syncTabUI();
+  }
+  if(h.sort && SORT_CONFIG[activeTab].some(o => o.key === h.sort)){
+    activeSortKey[activeTab] = h.sort;
+  }
+}
+
+// Hash'te hat varsa ilgili kartı/feature'ı seçer.
+// Kartlar DOM'a basıldıktan ve harita hazır olduktan SONRA çağrılmalı.
+function selectHatFromHash(){
+  const h = parseHash();
+  if(!h.hat) return;
+  const objId   = String(h.hat);
+  const feature = getHatlarForTab(activeTab)
+    .find(f => String(f.properties?.OBJECTID) === objId);
+  if(!feature) return;
+  onCardSelect(feature);
+  const card = document.querySelector(`.card[data-objectid="${objId}"]`);
+  if(card) card.scrollIntoView({ block:'nearest' });
+}
+
+// Kullanıcı URL'yi elle değiştirirse / hash'li bir linke gelirse.
+// (replaceState kendi yazdığımız hash'lerde bu olayı tetiklemez → döngü yok.)
+window.addEventListener('hashchange', () => {
+  selectedFeature = null;
+  closeDetailPopup();
+  applyHashState();
+  updateMetrics();
+  renderSortBar();
+  renderCards();
+  renderMap();
+  if(parseHash().hat) selectHatFromHash();
+  else fitGlobalBounds();
+});
+
+// ═════════════════════════════════════════════════════
+//  HARİTA ARAÇLARI
+// ═════════════════════════════════════════════════════
+document.getElementById('btn-zoom-in').addEventListener('click', () => {
+  map.easeTo({ zoom: map.getZoom() + 1, duration: 300 });
+});
+document.getElementById('btn-zoom-out').addEventListener('click', () => {
+  map.easeTo({ zoom: map.getZoom() - 1, duration: 300 });
+});
+document.getElementById('btn-fullscreen').addEventListener('click', () => {
+  const mc = document.getElementById('map-container');
+  if(!document.fullscreenElement) {
+    mc.requestFullscreen?.();
+  } else {
+    document.exitFullscreen?.();
+  }
+});
+
+// ═════════════════════════════════════════════════════
+//  ARAMA
+// ═════════════════════════════════════════════════════
+const searchPanel   = document.getElementById('search-panel');
+const searchInput   = document.getElementById('search-input');
+const searchResults = document.getElementById('search-results');
+
+document.getElementById('btn-search').addEventListener('click', () => {
+  searchPanel.classList.toggle('open');
+  if(searchPanel.classList.contains('open')){
+    searchInput.focus();
+    renderSearchResults('');
+  }
+});
+
+document.addEventListener('click', e => {
+  if(!searchPanel.contains(e.target) && e.target !== document.getElementById('btn-search')){
+    searchPanel.classList.remove('open');
+  }
+});
+
+searchInput.addEventListener('input', () => renderSearchResults(searchInput.value));
+
+function renderSearchResults(query){
+  const q = query.trim().toLowerCase();
+  const results = allHatlar.filter(f => {
+    const p = f.properties || {};
+    return (p.KOD||'').toLowerCase().includes(q) || (p.AD||'').toLowerCase().includes(q);
+  }).slice(0,10);
+
+  searchResults.innerHTML = '';
+  if(results.length === 0 && q.length > 0){
+    searchResults.innerHTML = '<div class="search-result" style="color:var(--text-dim);cursor:default">Sonuç bulunamadı</div>';
+    return;
+  }
+  results.forEach(f => {
+    const p    = f.properties || {};
+    const renk = normHex(p.RENK_HEX) || '#9B9B9B';
+    const row  = document.createElement('div');
+    row.className = 'search-result';
+    row.innerHTML = `
+      <div class="search-result-swatch" style="background:${renk}"></div>
+      <span class="search-result-name">${esc(p.AD||'—')}</span>
+      <span class="search-result-kod">${esc(p.KOD||'')}</span>`;
+    row.addEventListener('click', () => {
+      searchPanel.classList.remove('open');
+      searchInput.value = '';
+      // Önce doğru sekmeye geç
+      const durum = String(p.PR_DURUM ?? '');
+      let targetTab = 'yapim';
+      if(TAB_FILTERS.isletme.includes(durum)) targetTab = 'isletme';
+      else if(TAB_FILTERS.proje.includes(durum)) targetTab = 'proje';
+      if(targetTab !== activeTab){
+        activeTab = targetTab;
+        syncTabUI();
+        updateMetrics();
+        renderSortBar();
+      }
+      selectedFeature = null;
+      renderCards();
+      renderMap();
+      // Kart eşleşmesi OBJECTID üzerinden (KOD benzersiz değil)
+      setTimeout(() => {
+        const objId = String(p.OBJECTID ?? '');
+        const card  = document.querySelector(`.card[data-objectid="${objId}"]`);
+        if(card){
+          onCardSelect(f);
+          card.scrollIntoView({ behavior:'smooth', block:'nearest' });
+        }
+      }, 50);
+    });
+    searchResults.appendChild(row);
+  });
+}
+
+// ═════════════════════════════════════════════════════
+//  SEKME GEÇİŞİ
+// ═════════════════════════════════════════════════════
+// Sekme görünümünü (aktif sınıf + aria-pressed) global
+// activeTab değerine göre eşitler. Sekme durumunu değiştiren
+// her yer önce activeTab'i atar, sonra bunu çağırır.
+function syncTabUI(){
+  document.querySelectorAll('.tab').forEach(t => {
+    const on = t.dataset.tab === activeTab;
+    t.classList.toggle('active', on);
+    t.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+}
+
+const tabEls = Array.from(document.querySelectorAll('.tab'));
+tabEls.forEach((tab, i) => {
+  tab.addEventListener('click', () => {
+    const t = tab.dataset.tab;
+    if(t === activeTab) return;
+    activeTab = t;
+    selectedFeature = null;
+    closeDetailPopup();
+    syncTabUI();
+    updateMetrics();
+    renderSortBar();
+    renderCards();
+    renderMap();
+    fitGlobalBounds();
+    writeHash();
+  });
+
+  // Klavye: ok tuşları / Home / End ile sekmeler arası odak gezinmesi.
+  // Etkinleştirme <button>'ın doğal Enter/Space davranışında kalır.
+  tab.addEventListener('keydown', e => {
+    let ni = null;
+    if(e.key === 'ArrowRight' || e.key === 'ArrowDown')     ni = (i + 1) % tabEls.length;
+    else if(e.key === 'ArrowLeft' || e.key === 'ArrowUp')   ni = (i - 1 + tabEls.length) % tabEls.length;
+    else if(e.key === 'Home')                               ni = 0;
+    else if(e.key === 'End')                                ni = tabEls.length - 1;
+    if(ni !== null){ e.preventDefault(); tabEls[ni].focus(); }
+  });
+});
+
+// ═════════════════════════════════════════════════════
+//  KART LİSTESİ — ROVING TABINDEX
+// ═════════════════════════════════════════════════════
+// Odaklanan kart tek Tab durağı olur; böylece uzun listede
+// Tab tuşu her karta tek tek uğramaz, ok tuşları gezdirir.
+// (#cards-list elemanı kalıcı — renderCards innerHTML'i temizlese de
+//  bu dinleyici hayatta kalır.)
+document.getElementById('cards-list').addEventListener('focusin', e => {
+  const card = e.target.closest('.card');
+  if(!card) return;
+  card.parentElement.querySelectorAll('.card').forEach(c => {
+    c.tabIndex = (c === card) ? 0 : -1;
+  });
+});
+
+// ═════════════════════════════════════════════════════
+//  BİLGİ MODALİ
+// ═════════════════════════════════════════════════════
+const backdrop  = document.getElementById('modal-backdrop');
+const modalEl   = document.getElementById('modal');
+const infoBtn   = document.getElementById('info-btn');
+let modalLastFocused = null;   // modal açılmadan önceki odak — kapanınca geri verilir
+
+// Modal içindeki odaklanabilir öğeler (DOM sırasında)
+function getModalFocusables(){
+  return Array.from(modalEl.querySelectorAll(
+    'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+  ));
+}
+
+function openModal(){
+  modalLastFocused = document.activeElement;
+  backdrop.classList.add('show');
+  // Odağı modalın içine al (ilk odaklanabilir öğe = kapat butonu)
+  const f = getModalFocusables();
+  (f[0] || modalEl).focus();
+}
+
+function closeModal(){
+  if(!backdrop.classList.contains('show')) return;
+  backdrop.classList.remove('show');
+  // Odağı modalı açan öğeye geri ver
+  if(modalLastFocused && typeof modalLastFocused.focus === 'function'){
+    modalLastFocused.focus();
+  }
+  modalLastFocused = null;
+}
+
+infoBtn.addEventListener('click', openModal);
+document.getElementById('modal-close').addEventListener('click', closeModal);
+backdrop.addEventListener('click', e => { if(e.target === backdrop) closeModal(); });
+
+// Esc kapatır; Tab odağı modal içinde döngüye sokar (focus trap)
+document.addEventListener('keydown', e => {
+  if(!backdrop.classList.contains('show')) return;
+
+  if(e.key === 'Escape'){
+    e.preventDefault();
+    closeModal();
+    return;
+  }
+
+  if(e.key === 'Tab'){
+    const f = getModalFocusables();
+    if(f.length === 0) return;
+    const first = f[0], last = f[f.length - 1];
+    if(e.shiftKey && document.activeElement === first){
+      e.preventDefault();
+      last.focus();
+    } else if(!e.shiftKey && document.activeElement === last){
+      e.preventDefault();
+      first.focus();
+    }
+  }
+});
+
+// ═════════════════════════════════════════════════════
+//  TEKRAR DENE
+// ═════════════════════════════════════════════════════
+document.getElementById('retry-btn').addEventListener('click', loadData);
+
+// ═════════════════════════════════════════════════════
+//  MOBİL TOGGLE (Liste / Harita)
+// ═════════════════════════════════════════════════════
+const isMobile = () => window.innerWidth <= 768;
+let mobileView = 'list'; // 'list' | 'map'
+
+function applyMobileView(view){
+  mobileView = view;
+  if(!isMobile()) return;
+  
+  const app     = document.getElementById('app');
+  const btnList = document.getElementById('mtoggle-list');
+  const btnMap  = document.getElementById('mtoggle-map');
+
+  if(view === 'list'){
+    app.classList.remove('mob-view-map');
+    app.classList.add('mob-view-list');
+    btnList.classList.add('active');
+    btnMap.classList.remove('active');
+  } else {
+    app.classList.remove('mob-view-list');
+    app.classList.add('mob-view-map');
+    btnMap.classList.add('active');
+    btnList.classList.remove('active');
+
+    // CSS slide animasyonu 300ms; bittikten sonra map.resize() doğru ölçüleri alır
+    setTimeout(() => {
+      if (typeof map !== 'undefined' && map) {
+        map.resize();
+      }
+    }, 350);
+  }
+}
+
+// Sayfa açılışında mobilse varsayılan görünüm: liste
+if(isMobile()){
+  document.getElementById('app').classList.add('mob-view-list');
+}
+
+document.getElementById('mtoggle-list').addEventListener('click', () => applyMobileView('list'));
+document.getElementById('mtoggle-map').addEventListener('click',  () => applyMobileView('map'));
+
+// Resize: mobil eşiğini geçerken görünüm sınıflarını sıfırla
+window.addEventListener('resize', () => {
+  const app = document.getElementById('app');
+  if(!isMobile()){
+    app.classList.remove('mob-view-list','mob-view-map');
+  } else {
+    applyMobileView(mobileView);
+  }
+});
+
+// ═════════════════════════════════════════════════════
+//  SEKME ETİKETİ DUYARLI (mobilde kısa)
+// ═════════════════════════════════════════════════════
+function updateTabLabels(){
+  document.querySelectorAll('.tab[data-label-short]').forEach(tab => {
+    tab.textContent = isMobile() ? tab.dataset.labelShort : tab.dataset.labelLong;
+  });
+}
+updateTabLabels();
+window.addEventListener('resize', updateTabLabels);
+
+// ═════════════════════════════════════════════════════
+//  HARİTA TIKLAMASI → HAT SEÇİMİ (yalnız aktif sekme)
+// ═════════════════════════════════════════════════════
+function attachMapClickHandlers(){
+  // Sadece aktif sekmedeki hatlar tıklanabilir; pasif hatlar arka plan
+  map.on('click', 'active-lines', e => {
+    const feature = e.features && e.features[0];
+    if(!feature) return;
+
+    const clickedObjId = String(feature.properties?.OBJECTID ?? '');
+    const activeHatlar = getHatlarForTab(activeTab);
+    const matchedFeature = activeHatlar.find(f => String(f.properties?.OBJECTID) === clickedObjId);
+
+    if(!matchedFeature) return;
+
+    onCardSelect(matchedFeature);
+
+    // Mobilde harita görünümüne kaydır
+    if(isMobile()) applyMobileView('map');
+  });
+
+  // Hover'da işaretçi (yalnız aktif hat katmanı)
+  map.on('mouseenter', 'active-lines', () => { map.getCanvas().style.cursor = 'pointer'; });
+  map.on('mouseleave', 'active-lines', () => { map.getCanvas().style.cursor = ''; });
+}
+
+// ═════════════════════════════════════════════════════
+//  BAŞLATMA
+// ═════════════════════════════════════════════════════
+initMap();
+loadData();
+</script>
+</body>
+</html>
