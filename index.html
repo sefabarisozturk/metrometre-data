@@ -623,6 +623,19 @@ html, body {
   align-items: center; justify-content: center;
 }
 #modal-backdrop.show { display: flex; }
+#cmp-backdrop {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.3); z-index: 2000;
+  align-items: center; justify-content: center;
+}
+#cmp-backdrop.show { display: flex; }
+#cmp-modal {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 24px 26px;
+  width: 820px; max-width: 92vw; max-height: 86vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 40px rgba(0,0,0,.18); position: relative;
+}
 #modal {
   background: var(--surface); border: 1px solid var(--border);
   border-radius: 14px; padding: 24px 26px;
@@ -651,6 +664,50 @@ html, body {
 .modal-close:hover { border-color: var(--text-muted); color: var(--text); }
 .modal-divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
 .modal-footer { font-size: 11px; color: var(--text-dim); display: flex; gap: 14px; flex-wrap: wrap; }
+
+/* ──── İLERLEME KARŞILAŞTIRMA MODALİ (büyük grafik) ──── */
+#chart-btn {
+  display: flex; align-items: center; gap: 7px;
+  height: 32px; padding: 0 13px 0 11px;
+  border: 1px solid var(--accent); border-radius: 99px;
+  background: var(--accent); color: #fff;
+  cursor: pointer;
+  font-family: var(--font); font-size: 12px; font-weight: 600;
+  letter-spacing: -0.01em; white-space: nowrap;
+  transition: background .15s, box-shadow .15s, transform .05s;
+  flex-shrink: 0;
+}
+#chart-btn:hover  { background: #9C1F18; box-shadow: 0 2px 8px rgba(180,39,31,.28); }
+#chart-btn:active { transform: translateY(.5px); }
+#chart-btn .chart-btn-icon { width: 15px; height: 15px; flex-shrink: 0; }
+#chart-btn .chart-btn-text { line-height: 1; }
+#header-actions { display: flex; align-items: center; gap: 10px; }
+
+#modal.modal-wide { width: 820px; }
+#cmp-empty { font-size: 13px; color: var(--text-muted); padding: 30px 0; text-align: center; }
+#cmp-chart-wrap { margin: 6px 0 14px; }
+#cmp-chart-svg { width: 100%; height: 340px; display: block; overflow: visible; }
+#cmp-chart-svg .grid-line { stroke: var(--border); stroke-width: 1; }
+#cmp-chart-svg .grid-line.zero { stroke: var(--border-2); }
+#cmp-chart-svg .axis-lbl  { fill: var(--text-dim); font-size: 10px; font-family: var(--font); }
+#cmp-chart-svg .cmp-line  { fill: none; stroke-width: 2; }
+#cmp-chart-svg .cmp-dot   { stroke: #fff; stroke-width: 1.5; }
+#cmp-chart-svg .cmp-line.dim { opacity: .12; }
+#cmp-chart-svg .cmp-dot.dim  { opacity: .12; }
+#cmp-legend {
+  display: flex; flex-wrap: wrap; gap: 6px 8px; margin-top: 4px;
+}
+.cmp-leg-item {
+  display: flex; align-items: center; gap: 6px;
+  padding: 3px 9px; border: 1px solid var(--border-2); border-radius: 99px;
+  font-size: 11px; font-weight: 600; color: var(--text-muted);
+  cursor: pointer; transition: all .12s; user-select: none;
+}
+.cmp-leg-item:hover { border-color: var(--text-muted); }
+.cmp-leg-item.off { opacity: .4; }
+.cmp-leg-swatch { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.cmp-leg-pct { color: var(--text); font-weight: 700; margin-left: 2px; }
+#cmp-note { font-size: 11px; color: var(--text-dim); margin-top: 10px; line-height: 1.6; }
 
 /* ──── MOBİL TOGGLE (varsayılan: gizli) ──── */
 #mobile-toggle {
@@ -796,6 +853,10 @@ html, body {
   .map-tool-btn { width: 44px; height: 44px; font-size: 18px; }
   .sort-btn { padding: 6px 12px; font-size: 11px; }
   #info-btn { width: 40px; height: 40px; }
+  /* Dar ekranda metin gizlenir, buton ikon-only daireye döner (yer kazanımı) */
+  #chart-btn { height: 40px; width: 40px; padding: 0; justify-content: center; gap: 0; border-radius: 50%; }
+  #chart-btn .chart-btn-text { display: none; }
+  #chart-btn .chart-btn-icon { width: 18px; height: 18px; }
 
   /* Arama paneli: araçların altında tam genişlikte açılır */
   #search-panel {
@@ -827,8 +888,8 @@ html, body {
   }
 
   /* Bilgi modali: bottom-sheet stili */
-  #modal-backdrop { align-items: flex-end; }
-  #modal {
+  #modal-backdrop, #cmp-backdrop { align-items: flex-end; }
+  #modal, #cmp-modal {
     border-radius: 16px 16px 0 0;
     max-height: 88vh;
     width: 100%;
@@ -851,7 +912,13 @@ html, body {
     <div id="logo-fallback"><span>metro</span>metre</div>
     <span id="logo-tagline">raylı sistem projeleri<br>takip paneli</span>
   </a>
-  <button id="info-btn" type="button" aria-label="metrometre hakkında" aria-haspopup="dialog" title="metrometre hakkında">ⓘ</button>
+  <div id="header-actions">
+    <button id="chart-btn" type="button" style="display:none" aria-label="Aylık ilerleme karşılaştırması" aria-haspopup="dialog" title="Aylık ilerleme karşılaştırması">
+      <svg class="chart-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 17 9 11 13 15 21 6"/><polyline points="15 6 21 6 21 12"/></svg>
+      <span class="chart-btn-text">Aylık ilerleme</span>
+    </button>
+    <button id="info-btn" type="button" aria-label="metrometre hakkında" aria-haspopup="dialog" title="metrometre hakkında">ⓘ</button>
+  </div>
 </header>
 
 <!-- YAPIŞKAN ŞERİT: metrikler + sekme çubuğu
@@ -1004,7 +1071,21 @@ html, body {
   </div>
 </div>
 
-<!-- MOBİL TOGGLE BARI -->
+<!-- İLERLEME KARŞILAŞTIRMA MODALİ -->
+<div id="cmp-backdrop" class="modal-backdrop-shared">
+  <div id="cmp-modal" role="dialog" aria-modal="true" aria-labelledby="cmp-title">
+    <div class="modal-title" id="cmp-title">Aylık İlerleme Karşılaştırması</div>
+    <button class="modal-close" id="cmp-close" type="button" aria-label="Pencereyi kapat">✕</button>
+    <div id="cmp-empty" hidden>Henüz aylık ilerleme verisi yüklenmedi.</div>
+    <div id="cmp-content">
+      <div id="cmp-chart-wrap">
+        <svg id="cmp-chart-svg" role="img" aria-label="Aylık ilerleme karşılaştırma grafiği"></svg>
+      </div>
+      <div id="cmp-legend"></div>
+      <div id="cmp-note">Yüzde değerleri her ayın sonundaki fiziki ilerlemeyi gösterir. Bir hattı gizley/göstermek için etiketine tıklayın.</div>
+    </div>
+  </div>
+</div>
 <div id="mobile-toggle">
   <button class="mtoggle-btn active" id="mtoggle-list">☰ Listele</button>
   <button class="mtoggle-btn" id="mtoggle-map"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg> Haritayı Gör</button>
@@ -1019,6 +1100,27 @@ const BASE      = 'https://raw.githubusercontent.com/sefabarisozturk/metrometre-
 const URL_HAT   = () => `${BASE}/RAYLI_SISTEM_HAT_LN.geojson?_ts=${Date.now()}`;
 const URL_DURAK = () => `${BASE}/RAYLI_SISTEM_DURAK_PT.geojson?_ts=${Date.now()}`;
 const BASEMAP   = 'https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json';
+
+// ──── AYLIK İLERLEME VERİSİ (GitHub raw CSV) ────
+// Veri, GeoJSON'larla aynı repodaki bir CSV dosyasından canlı çekilir.
+// Dosya: github.com/sefabarisozturk/metrometre-data → fiziki_ilerleme_tablosu
+// Güncelleme: repoya yeni satırlar ekleyip push etmeniz yeterli (CDN ~birkaç dk).
+//
+// BEKLENEN SÜTUNLAR (UZUN format — her satır = bir hat + bir ay):
+//   OBJECTID  → GeoJSON'daki hatla eşleşen benzersiz kimlik (zorunlu)
+//   Kod       → hat kodu, etiket için (örn. M11)
+//   Hat       → hat adı (örn. Arnavutköy-Halkalı)
+//   YilAy     → YYYY-MM (örn. 2026-02)
+//   Ilerleme  → 0–100 yüzde ("96,00%" / 96 / 52,7 — hepsi okunur)
+//   Durum     → o aydaki durum metni (opsiyonel)
+//   Aciklama  → o ayın açıklaması (opsiyonel; her ay kendi metnini taşır)
+// "(bekleniyor)" gibi parantezli değerler o ay için atlanır.
+//
+// Not: Başlık adları büyük/küçük harf ve birkaç eşanlama toleranslıdır
+// (Kod/Hat Kodu, YilAy/Yıl_Ay/Ay/Tarih, Ilerleme/Yüzde, Aciklama/Açıklama/Not).
+// Eski GENİŞ format (ay sütunları "Şubat 2026" gibi) da hâlâ desteklenir.
+// Farklı bir kaynak isterseniz PROGRESS_URL'i değiştirin (boş = özellik kapalı).
+const PROGRESS_URL = `${BASE}/fiziki_ilerleme_tablosu`; // GitHub raw CSV (uzun format)
 
 // PR_DURUM kodlarının sekmelere dağılımı
 const TAB_FILTERS = {
@@ -1106,6 +1208,11 @@ function hideError()    { document.getElementById('error-state').classList.remov
 // ═════════════════════════════════════════════════════
 let allHatlar       = [];
 let allDuraklar     = [];
+// progressByOid: OBJECTID(string) → { kod, hat, durum, kurum, son, sonMetin,
+//                                     series:[{ ym:'2026-02', pct:96 }, …] (ym artan) }
+// OBJECTID anahtar çünkü KOD benzersiz değil (örn. M7 iki ayrı hatta).
+let progressByOid   = new Map();
+let progressMonths  = [];     // tüm hatları kapsayan benzersiz, sıralı YIL_AY listesi
 let activeTab       = 'yapim';
 let selectedFeature = null;   // o an seçili tek GeoJSON feature
 let globalBounds    = null;   // tüm hatların bounding box'ı: [[minLng,minLat],[maxLng,maxLat]]
@@ -1167,6 +1274,8 @@ async function loadData(){
     // Bounds yalnızca hatlardan hesaplanır; duraklar zaten hat extent'inin içinde.
     computeGlobalBounds();
     onDataReady();
+    // Aylık ilerleme verisi ikincil; hata ana akışı bozmamalı.
+    loadProgress();
   } catch(e) {
     console.error('loadData error:', e);
     showError();
@@ -2315,6 +2424,439 @@ function attachMapClickHandlers(){
   map.on('mouseenter', 'active-lines', () => { map.getCanvas().style.cursor = 'pointer'; });
   map.on('mouseleave', 'active-lines', () => { map.getCanvas().style.cursor = ''; });
 }
+
+// ═════════════════════════════════════════════════════
+//  AYLIK İLERLEME — VERİ + GRAFİKLER
+// ═════════════════════════════════════════════════════
+
+// Basit ama RFC-4180 uyumlu CSV ayrıştırıcı (tırnaklı alanlar, gömülü virgül
+// ve çift tırnak kaçışı dahil). Google'ın yayımladığı CSV bu biçimdedir.
+function parseCSV(text){
+  const rows = [];
+  let row = [], field = '', i = 0, inQuotes = false;
+  const s = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  while(i < s.length){
+    const c = s[i];
+    if(inQuotes){
+      if(c === '"'){
+        if(s[i+1] === '"'){ field += '"'; i += 2; continue; }
+        inQuotes = false; i++; continue;
+      }
+      field += c; i++; continue;
+    }
+    if(c === '"'){ inQuotes = true; i++; continue; }
+    if(c === ','){ row.push(field); field = ''; i++; continue; }
+    if(c === '\n'){ row.push(field); rows.push(row); row = []; field = ''; i++; continue; }
+    field += c; i++;
+  }
+  // Son alan/satır (dosya sonunda yeni satır yoksa)
+  if(field.length || row.length){ row.push(field); rows.push(row); }
+  return rows;
+}
+
+// Türkçe ay adı → ay numarası (1–12). Başlıklardaki "Şubat 2026" gibi sütunları çözmek için.
+const TR_MONTH_NAMES = {
+  'ocak':1,'şubat':2,'subat':2,'mart':3,'nisan':4,'mayıs':5,'mayis':5,'haziran':6,
+  'temmuz':7,'ağustos':8,'agustos':8,'eylül':9,'eylul':9,'ekim':10,'kasım':11,'kasim':11,'aralık':12,'aralik':12
+};
+
+// Bir başlık hücresini 'YYYY-MM'e çevirmeye çalışır; ay sütunu değilse null.
+// Kabul: "Şubat 2026" | "2026-02" | "2026/2" | "02.2026"
+function headerToYM(raw){
+  if(!raw) return null;
+  const s = String(raw).trim();
+  // "Şubat 2026"
+  let m = s.match(/^([A-Za-zÇçĞğİıÖöŞşÜü]+)\s+(\d{4})$/);
+  if(m){
+    const mo = TR_MONTH_NAMES[m[1].toLowerCase()];
+    if(mo) return `${m[2]}-${String(mo).padStart(2,'0')}`;
+  }
+  // "2026-02" / "2026/2"
+  m = s.match(/^(\d{4})[-/.](\d{1,2})$/);
+  if(m){ const mo = parseInt(m[2],10); if(mo>=1&&mo<=12) return `${m[1]}-${String(mo).padStart(2,'0')}`; }
+  // "02.2026"
+  m = s.match(/^(\d{1,2})[-/.](\d{4})$/);
+  if(m){ const mo = parseInt(m[1],10); if(mo>=1&&mo<=12) return `${m[2]}-${String(mo).padStart(2,'0')}`; }
+  return null;
+}
+
+// "96,00%" / "29,15 %" / "100,00%" → 96 / 29.15 / 100. Sayı yoksa null.
+// "(bekleniyor)", "(beklendi)", boş gibi metinler → null (o ay atlanır).
+function parsePct(raw){
+  if(raw == null) return null;
+  const s = String(raw).trim();
+  if(!s || s.startsWith('(')) return null;
+  const cleaned = s.replace('%','').replace(/\s/g,'').replace(',', '.');
+  const v = parseFloat(cleaned);
+  if(isNaN(v)) return null;
+  return Math.max(0, Math.min(100, v));
+}
+
+// 'YYYY-MM' → kısa Türkçe etiket: 'Şub 26'
+const TR_MON_SHORT = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+function ymLabel(ym){
+  const [y, mo] = ym.split('-');
+  return `${TR_MON_SHORT[parseInt(mo,10)-1]} ${y.slice(2)}`;
+}
+
+// Ham CSV metnini parse edip progressByOid / progressMonths doldurur.
+// İKİ FORMAT otomatik algılanır:
+//   • UZUN  : her satır = bir hat + bir ay (YilAy + Ilerleme sütunları). Önerilen.
+//   • GENİŞ : ay başlıkları sütun olur ("Şubat 2026" / "2026-02"). Geriye uyumluluk.
+// Her iki formatta da seri noktaları { ym, pct, note } taşır (aylık açıklama).
+function parseProgressCSV(textContent){
+  const rows = parseCSV(textContent).filter(r => r.some(c => c.trim() !== ''));
+  if(rows.length < 2) throw new Error('veri satırı yok');
+
+  const head = rows[0].map(h => (h || '').trim());
+  const headLow = head.map(h => h.toLowerCase());
+
+  // Sabit sütunları esnek bul
+  const iOid   = headLow.findIndex(h => h === 'objectid' || h === 'object_id' || h === 'oid');
+  const iKod   = headLow.findIndex(h => h === 'kod' || h === 'hat kodu');
+  const iHat   = headLow.findIndex(h => h === 'hat' || h === 'ad' || h === 'hat adı');
+  const iDurum = headLow.findIndex(h => h === 'durum');
+  const iKurum = headLow.findIndex(h => h === 'kurum');
+
+  if(iOid < 0 && iKod < 0){
+    console.warn('parseProgressCSV: OBJECTID veya Kod sütunu bulunamadı.');
+    throw new Error('OBJECTID/Kod sütunu yok');
+  }
+
+  // UZUN format göstergeleri: tek bir YilAy + Ilerleme sütunu
+  const iYm  = headLow.findIndex(h => ['yilay','yıl_ay','yil_ay','yılay','ay','tarih','donem','dönem'].includes(h));
+  const iPct = headLow.findIndex(h => ['ilerleme','yuzde','yüzde','pct','oran'].includes(h));
+  const iNot = headLow.findIndex(h => ['aciklama','açıklama','not','metin'].includes(h));
+
+  const byOid    = new Map();
+  const monthSet = new Set();
+  let autoKey = 0;  // OBJECTID yoksa satır bazlı yedek anahtar
+
+  // Bir kayda nokta ekleyen ortak yardımcı (her iki format da kullanır)
+  function addPoint(key, meta, ym, pct, note){
+    if(!byOid.has(key)){
+      byOid.set(key, { oid: meta.oid, kod: meta.kod, hat: meta.hat,
+                       durum: meta.durum, kurum: meta.kurum, series: [] });
+    }
+    const rec = byOid.get(key);
+    // Aynı ay tekrarında son değer kazanır
+    const exist = rec.series.find(s => s.ym === ym);
+    if(exist){ exist.pct = pct; if(note) exist.note = note; }
+    else rec.series.push({ ym, pct, note: note || '' });
+    if(meta.durum) rec.durum = meta.durum;   // en güncel durumu yansıt
+    monthSet.add(ym);
+  }
+
+  if(iYm >= 0 && iPct >= 0){
+    // ──── UZUN FORMAT ────
+    for(let r = 1; r < rows.length; r++){
+      const c = rows[r];
+      const ym  = headerToYM((c[iYm] || '').trim());
+      const pct = parsePct(c[iPct]);
+      if(!ym || pct === null) continue;
+      const kod    = iKod   >= 0 ? (c[iKod]   || '').trim() : '';
+      const oidRaw = iOid   >= 0 ? (c[iOid]   || '').trim() : '';
+      const meta = {
+        oid: oidRaw, kod,
+        hat:   iHat   >= 0 ? (c[iHat]   || '').trim() : kod,
+        durum: iDurum >= 0 ? (c[iDurum] || '').trim() : '',
+        kurum: iKurum >= 0 ? (c[iKurum] || '').trim() : '',
+      };
+      const note = iNot >= 0 ? (c[iNot] || '').trim() : '';
+      const key  = oidRaw || (kod ? `kod:${kod}` : `row#${autoKey++}`);
+      addPoint(key, meta, ym, pct, note);
+    }
+  } else {
+    // ──── GENİŞ FORMAT (geriye uyumlu) ────
+    // Ay sütunları: başlığı 'YYYY-MM'e çevrilebilen yüzde sütunu.
+    // "… Metin" başlıklı sütunlar o ayın açıklamasıdır.
+    const monthCols = [];        // { idx, ym }
+    const textCols  = new Map(); // ym → idx
+    head.forEach((h, idx) => {
+      if(!h) return;
+      const isText = /metin$/i.test(h.trim());
+      const base = h.replace(/metin$/i,'').trim();
+      const ym = headerToYM(base);
+      if(!ym) return;
+      if(isText) textCols.set(ym, idx);
+      else monthCols.push({ idx, ym });
+    });
+    if(!monthCols.length){
+      console.warn('parseProgressCSV: ne YilAy/Ilerleme ne de ay sütunu bulundu.');
+      throw new Error('tanınabilir veri sütunu yok');
+    }
+    monthCols.sort((a,b) => a.ym.localeCompare(b.ym));
+
+    for(let r = 1; r < rows.length; r++){
+      const c = rows[r];
+      const kod    = iKod   >= 0 ? (c[iKod]   || '').trim() : '';
+      const oidRaw = iOid   >= 0 ? (c[iOid]   || '').trim() : '';
+      const meta = {
+        oid: oidRaw, kod,
+        hat:   iHat   >= 0 ? (c[iHat]   || '').trim() : kod,
+        durum: iDurum >= 0 ? (c[iDurum] || '').trim() : '',
+        kurum: iKurum >= 0 ? (c[iKurum] || '').trim() : '',
+      };
+      const key = oidRaw || (kod ? `kod:${kod}#${r}` : `row#${autoKey++}`);
+      for(const mc of monthCols){
+        const pct = parsePct(c[mc.idx]);
+        if(pct === null) continue;
+        const ti = textCols.get(mc.ym);
+        const note = (ti != null && c[ti]) ? c[ti].trim() : '';
+        addPoint(key, meta, mc.ym, pct, note);
+      }
+    }
+  }
+
+  // Serileri kronolojik sırala + özet alanları doldur
+  for(const rec of byOid.values()){
+    rec.series.sort((a,b) => a.ym.localeCompare(b.ym));
+    const last = rec.series[rec.series.length-1];
+    rec.son      = last ? last.pct  : null;
+    rec.sonMetin = last ? last.note : '';
+  }
+  // Hiç noktası olmayan kayıtları ele
+  for(const [k,rec] of byOid){ if(!rec.series.length) byOid.delete(k); }
+
+  progressByOid  = byOid;
+  progressMonths = Array.from(monthSet).sort((a,b) => a.localeCompare(b));
+  return progressByOid.size > 0;
+}
+
+// Veriyi canlı CSV linkinden (PROGRESS_URL) çeker ve parse eder.
+// Link boş, ulaşılamaz veya biçimi hatalıysa grafik özellikleri sessizce
+// kapanır (buton gizlenir); panel geri kalanı normal çalışmaya devam eder.
+async function loadProgress(){
+  if(!PROGRESS_URL){
+    progressByOid = new Map();
+    progressMonths = [];
+    syncProgressUI();
+    return;
+  }
+  try {
+    const sep = PROGRESS_URL.includes('?') ? '&' : '?';
+    const res = await fetch(`${PROGRESS_URL}${sep}_ts=${Date.now()}`);
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    parseProgressCSV(await res.text());
+  } catch(e){
+    console.warn('loadProgress: ilerleme verisi yüklenemedi.', e);
+    progressByOid = new Map();
+    progressMonths = [];
+  }
+  syncProgressUI();
+}
+
+// Bir GeoJSON feature için ilerleme kaydını bulur (önce OBJECTID, sonra KOD ile).
+function progressForFeature(p){
+  if(!p) return null;
+  const oid = String(p.OBJECTID ?? '');
+  if(oid && progressByOid.has(oid)) return progressByOid.get(oid);
+  // OBJECTID eşleşmezse KOD ile tek aday varsa onu kullan (yedek)
+  const kod = String(p.KOD || '').trim();
+  if(kod){
+    const matches = [...progressByOid.values()].filter(v => v.kod === kod);
+    if(matches.length === 1) return matches[0];
+  }
+  return null;
+}
+
+// Veri (yeniden) yüklenince açık panelleri tazeler.
+function syncProgressUI(){
+  // Buton görünürlüğü: veri yoksa karşılaştırma butonu gizli
+  const cbtn = document.getElementById('chart-btn');
+  if(cbtn) cbtn.style.display = progressByOid.size > 0 ? '' : 'none';
+  // Karşılaştırma modalı açıksa yeniden çiz
+  if(document.getElementById('cmp-backdrop').classList.contains('show')) renderCompareChart();
+}
+
+// ──── KARŞILAŞTIRMA MODALİ — ÇOKLU ÇİZGİ ────
+const cmpBackdrop = document.getElementById('cmp-backdrop');
+const cmpModal    = document.getElementById('cmp-modal');
+const chartBtn    = document.getElementById('chart-btn');
+let cmpLastFocused = null;
+const cmpHidden    = new Set();   // legend ile gizlenen kayıt anahtarları (OBJECTID)
+
+// Çoklu çizgi için ayırt edici palet (GeoJSON'da renk eşleşmezse sırayla atanır)
+const CMP_PALETTE = ['#B4271F','#1E6FD9','#2E9E5B','#E0840B','#7C3AED','#0EA5A5',
+                     '#D6336C','#5B6770','#8A6D00','#0F766E','#9333EA','#C2410C'];
+
+function getCmpFocusables(){
+  return Array.from(cmpModal.querySelectorAll(
+    'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+  ));
+}
+
+// Yüzde değerini TR biçiminde metne çevirir (tam sayıysa düz, değilse virgüllü).
+function pctText(v){
+  return Number.isInteger(v) ? String(v) : (Math.round(v*100)/100).toFixed(2).replace(/0$/,'').replace('.', ',');
+}
+
+// Karşılaştırma serileri: tablodaki her kayıt (OBJECTID anahtarlı).
+// Renk/ad önce GeoJSON'dan OBJECTID ile, sonra tablodaki 'hat' adından alınır.
+function getCompareSeries(){
+  // GeoJSON meta'sını OBJECTID ile indeksle (renk için)
+  const metaByOid = new Map();
+  allHatlar.forEach(f => {
+    const pp = f.properties || {};
+    const oid = String(pp.OBJECTID ?? '');
+    if(oid && !metaByOid.has(oid)) metaByOid.set(oid, pp);
+  });
+
+  const out = [];
+  let pi = 0;
+  for(const [key, rec] of progressByOid){
+    if(!rec.series.length) continue;
+    const meta = rec.oid ? metaByOid.get(rec.oid) : null;
+    const renk = (meta && normHex(meta.RENK_HEX)) || CMP_PALETTE[pi % CMP_PALETTE.length];
+    pi++;
+    out.push({
+      key,
+      kod: rec.kod || (meta && meta.KOD) || '',
+      ad:  rec.hat || (meta && meta.AD) || rec.kod || key,
+      durum: rec.durum || '',
+      renk,
+      series: rec.series,
+      last: rec.series[rec.series.length-1].pct,
+    });
+  }
+  // En yüksek güncel ilerleme üstte
+  out.sort((a,b) => b.last - a.last);
+  return out;
+}
+
+function renderCompareChart(){
+  const data = getCompareSeries();
+  const emptyEl = document.getElementById('cmp-empty');
+  const contentEl = document.getElementById('cmp-content');
+
+  if(!data.length || progressMonths.length < 1){
+    emptyEl.hidden = false;
+    contentEl.style.display = 'none';
+    return;
+  }
+  emptyEl.hidden = true;
+  contentEl.style.display = '';
+
+  const months = progressMonths;
+  const W = 760, H = 340, padL = 34, padR = 44, padT = 14, padB = 34;
+  const ix = W - padL - padR, iy = H - padT - padB;
+  const n = months.length;
+  const xIndex = new Map(months.map((m,i) => [m, i]));
+  const xAt = i => padL + (n === 1 ? ix/2 : (i/(n-1)) * ix);
+  const yAt = v => padT + iy - (v/100) * iy;   // sabit 0–100 ölçek
+
+  // Y ızgara çizgileri (0,25,50,75,100)
+  let grid = '';
+  [0,25,50,75,100].forEach(v => {
+    const y = yAt(v).toFixed(1);
+    grid += `<line class="grid-line${v===0?' zero':''}" x1="${padL}" y1="${y}" x2="${padL+ix}" y2="${y}"></line>`;
+    grid += `<text class="axis-lbl" x="${padL-6}" y="${(+y+3).toFixed(1)}" text-anchor="end">${v}</text>`;
+  });
+
+  // X ay etiketleri — kalabalıksa atlamalı göster (en çok ~10 etiket)
+  const step = Math.max(1, Math.ceil(n / 10));
+  let xLabels = '';
+  months.forEach((m,i) => {
+    if(i % step !== 0 && i !== n-1) return;
+    xLabels += `<text class="axis-lbl" x="${xAt(i).toFixed(1)}" y="${H-12}" text-anchor="middle">${esc(ymLabel(m))}</text>`;
+  });
+
+  // Görünür kayıtların son-etiket y konumlarını topla (çakışma ötelemesi için)
+  const lastLabels = [];
+
+  let lines = '';
+  data.forEach(d => {
+    const off = cmpHidden.has(d.key);
+    const cls = off ? ' dim' : '';
+    const visPts = d.series.filter(s => xIndex.has(s.ym));
+    if(!visPts.length) return;
+    const pts = visPts.map(s => `${xAt(xIndex.get(s.ym)).toFixed(1)},${yAt(s.pct).toFixed(1)}`);
+    lines += `<polyline class="cmp-line${cls}" points="${pts.join(' ')}" stroke="${d.renk}"></polyline>`;
+    visPts.forEach((s,k) => {
+      const isLast = k === visPts.length-1;
+      lines += `<circle class="cmp-dot${cls}" cx="${xAt(xIndex.get(s.ym)).toFixed(1)}" cy="${yAt(s.pct).toFixed(1)}" r="${isLast?3.5:2.5}" fill="${d.renk}"></circle>`;
+    });
+    if(!off){
+      const lp = visPts[visPts.length-1];
+      lastLabels.push({ x: xAt(xIndex.get(lp.ym)), y: yAt(lp.pct), renk: d.renk, txt: pctText(lp.pct) });
+    }
+  });
+
+  // Son-değer etiketlerini dikeyde çakışmayacak şekilde ötele
+  lastLabels.sort((a,b) => a.y - b.y);
+  for(let i=1;i<lastLabels.length;i++){
+    if(lastLabels[i].y - lastLabels[i-1].y < 11) lastLabels[i].y = lastLabels[i-1].y + 11;
+  }
+  lastLabels.forEach(l => {
+    lines += `<text class="axis-lbl" x="${(l.x+6).toFixed(1)}" y="${(l.y+3).toFixed(1)}" text-anchor="start" style="fill:${l.renk};font-weight:700">%${l.txt}</text>`;
+  });
+
+  const svg = document.getElementById('cmp-chart-svg');
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.innerHTML = grid + xLabels + lines;
+
+  // Legend (tıklanabilir aç/kapa)
+  const legend = document.getElementById('cmp-legend');
+  legend.innerHTML = data.map(d => {
+    const off = cmpHidden.has(d.key);
+    const label = d.kod ? `${d.kod} · ${d.ad}` : d.ad;
+    return `<span class="cmp-leg-item${off?' off':''}" data-key="${esc(d.key)}" role="button" tabindex="0" aria-pressed="${off?'false':'true'}" title="${esc(d.ad)}">
+      <span class="cmp-leg-swatch" style="background:${d.renk}"></span>
+      ${esc(label)}
+      <span class="cmp-leg-pct">%${pctText(d.last)}</span>
+    </span>`;
+  }).join('');
+}
+
+// Legend tıklama / klavye ile hat aç-kapa (event delegation)
+document.getElementById('cmp-legend').addEventListener('click', e => {
+  const item = e.target.closest('.cmp-leg-item');
+  if(!item) return;
+  toggleCmpKey(item.dataset.key);
+});
+document.getElementById('cmp-legend').addEventListener('keydown', e => {
+  if(e.key !== 'Enter' && e.key !== ' ') return;
+  const item = e.target.closest('.cmp-leg-item');
+  if(!item) return;
+  e.preventDefault();
+  toggleCmpKey(item.dataset.key);
+});
+function toggleCmpKey(key){
+  if(cmpHidden.has(key)) cmpHidden.delete(key);
+  else cmpHidden.add(key);
+  renderCompareChart();
+}
+
+function openCompare(){
+  cmpLastFocused = document.activeElement;
+  cmpBackdrop.classList.add('show');
+  renderCompareChart();
+  const f = getCmpFocusables();
+  (f[0] || cmpModal).focus();
+}
+function closeCompare(){
+  if(!cmpBackdrop.classList.contains('show')) return;
+  cmpBackdrop.classList.remove('show');
+  if(cmpLastFocused && typeof cmpLastFocused.focus === 'function') cmpLastFocused.focus();
+  cmpLastFocused = null;
+}
+
+chartBtn.addEventListener('click', openCompare);
+document.getElementById('cmp-close').addEventListener('click', closeCompare);
+cmpBackdrop.addEventListener('click', e => { if(e.target === cmpBackdrop) closeCompare(); });
+
+// Esc kapatır; Tab focus trap (bilgi modali ile aynı desen)
+document.addEventListener('keydown', e => {
+  if(!cmpBackdrop.classList.contains('show')) return;
+  if(e.key === 'Escape'){ e.preventDefault(); closeCompare(); return; }
+  if(e.key === 'Tab'){
+    const f = getCmpFocusables();
+    if(!f.length) return;
+    const first = f[0], last = f[f.length-1];
+    if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+    else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+  }
+});
 
 // ═════════════════════════════════════════════════════
 //  BAŞLATMA
