@@ -698,18 +698,26 @@ html, body {
 #cmp-chart-svg .cmp-line.dim { opacity: .12; }
 #cmp-chart-svg .cmp-dot.dim  { opacity: .12; }
 #cmp-legend {
-  display: flex; flex-wrap: wrap; gap: 6px 8px; margin-top: 4px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(232px, 1fr));
+  gap: 1px 16px; margin-top: 10px;
 }
 .cmp-leg-item {
-  display: flex; align-items: center; gap: 6px;
-  padding: 3px 9px; border: 1px solid var(--border-2); border-radius: 99px;
-  font-size: 11px; font-weight: 600; color: var(--text-muted);
-  cursor: pointer; transition: all .12s; user-select: none;
+  display: grid; grid-template-columns: auto 1fr auto;
+  align-items: center; gap: 9px;
+  padding: 6px 8px; border-radius: 7px;
+  font-size: 12px; font-weight: 500; color: var(--text-muted);
+  cursor: pointer; transition: background .12s, opacity .12s; user-select: none;
 }
-.cmp-leg-item:hover { border-color: var(--text-muted); }
+.cmp-leg-item:hover { background: var(--surface-2); }
 .cmp-leg-item.off { opacity: .4; }
+.cmp-leg-item.off .cmp-leg-label { text-decoration: line-through; }
 .cmp-leg-swatch { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-.cmp-leg-pct { color: var(--text); font-weight: 700; margin-left: 2px; }
+.cmp-leg-label  { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cmp-leg-pct {
+  color: var(--text); font-weight: 700;
+  font-variant-numeric: tabular-nums; text-align: right;
+}
 #cmp-note { font-size: 11px; color: var(--text-dim); margin-top: 10px; line-height: 1.6; }
 
 /* ──── MOBİL TOGGLE (varsayılan: gizli) ──── */
@@ -2802,10 +2810,10 @@ function renderCompareChart(){
   legend.innerHTML = data.map(d => {
     const off = cmpHidden.has(d.key);
     const label = d.kod ? `${d.kod} · ${d.ad}` : d.ad;
-    return `<span class="cmp-leg-item${off?' off':''}" data-key="${esc(d.key)}" role="button" tabindex="0" aria-pressed="${off?'false':'true'}" title="${esc(d.ad)}">
+    return `<span class="cmp-leg-item${off?' off':''}" data-key="${esc(d.key)}" role="button" tabindex="0" aria-pressed="${off?'false':'true'}" title="${esc(label)}">
       <span class="cmp-leg-swatch" style="background:${d.renk}"></span>
-      ${esc(label)}
-      <span class="cmp-leg-pct">%${pctText(d.last)}</span>
+      <span class="cmp-leg-label">${esc(label)}</span>
+      <span class="cmp-leg-pct">%${Math.round(d.last)}</span>
     </span>`;
   }).join('');
 }
