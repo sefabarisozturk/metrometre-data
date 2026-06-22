@@ -1241,6 +1241,19 @@ const SRC_DURAK_ACTIVE   = 'durak-active';
 const SRC_DURAK_OTHER    = 'durak-other';
 const SRC_HAT_SELECTED   = 'hat-selected';
 const SRC_DURAK_SELECTED = 'durak-selected';
+const SRC_HAT_LABEL      = 'hat-label';   // yapım hattı ikon etiketleri
+
+// ──── Yapım hattı ikon etiketleri yapılandırması ────
+// Her yapım hattının ortasına yakın TEK bir noktaya (anchor JS'te hesaplanır,
+// 'point' yerleşimi) IKON_URL'den çekilen ikon, sabit boyutlu bir label olarak
+// konur. SVG ikonlar sabit çözünürlükte rasterleştirilip aynı pixelRatio ile
+// eklendiğinden TÜM etiketler ekranda aynı boyda görünür.
+const HAT_IKON_PREFIX  = 'hat-ikon::';     // MapLibre image-id öneki
+const ICON_RASTER      = 96;               // canvas çözünürlüğü (keskinlik için yüksek)
+const ICON_CSS         = 24;               // ekrandaki kenar uzunluğu (px) — sabit
+const ICON_PIXEL_RATIO = ICON_RASTER / ICON_CSS;
+const iconUrlByName    = new Map();        // image-id → IKON_URL
+const iconLoading      = new Set();        // çift istek önlemek için yüklenmekte olanlar
 
 // ═════════════════════════════════════════════════════
 //  HARİTA KURULUMU
@@ -1258,6 +1271,7 @@ function initMap(){
   map.on('load', () => {
     mapReady = true;
     initMapLayers();
+    attachIkonLoader();
     attachMapClickHandlers();
     // Veri haritadan önce yüklendiyse seçimi burada uygula — yarış koşulu önlemi.
     if(allHatlar.length > 0){
@@ -1389,6 +1403,143 @@ function upsertSource(id, data){
   }
 }
 
+// ═════════════════════════════════════════════════════
+//  YAPIM HATTI İKON ETİKETLERİ — görsel yükleme
+// ═════════════════════════════════════════════════════
+// IKON_URL → benzersiz, kararlı bir MapLibre image-id üretir ve URL eşlemesini
+// kaydeder. Aynı URL (örn. iki M7 hattı) tek görsel olarak paylaşılır.
+function ikonNameForUrl(url){
+  const name = HAT_IKON_PREFIX + url;
+  if(!iconUrlByName.has(name)) iconUrlByName.set(name, url);
+  return name;
+}
+
+// SVG ikonu sabit ICON_RASTER×ICON_RASTER canvas'a "contain" olacak biçimde
+// çizip ImageData olarak ekler. Hepsi aynı çözünürlük + pixelRatio kullandığı
+// için ekranda tüm etiketler aynı boydadır. CORS (Wikimedia *: *) sayesinde
+// canvas tainted olmaz; yine de güvenli tarafta kalmak için fallback bırakıldı.
+function loadIkonImage(name, url){
+  if(!name || !url || !mapReady) return;
+  if(map.hasImage(name) || iconLoading.has(name)) return;
+  iconLoading.add(name);
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.decoding    = 'async';
+  img.onload = () => {
+    try {
+      const R   = ICON_RASTER;
+      const cv  = document.createElement('canvas');
+      cv.width  = R; cv.height = R;
+      const ctx = cv.getContext('2d');
+      const iw  = img.naturalWidth  || R;
+      const ih  = img.naturalHeight || R;
+      const s   = Math.min(R/iw, R/ih);        // orana sadık (contain)
+      const dw  = iw*s, dh = ih*s;
+      ctx.clearRect(0,0,R,R);
+      ctx.drawImage(img, (R-dw)/2, (R-dh)/2, dw, dh);
+      const data = ctx.getImageData(0,0,R,R);
+      if(!map.hasImage(name)) map.addImage(name, data, { pixelRatio: ICON_PIXEL_RATIO });
+    } catch(err){
+      // Canvas tainted olduysa (beklenmez): görseli doğrudan ekle
+      try { if(!map.hasImage(name)) map.addImage(name, img); } catch(_){}
+    } finally {
+      iconLoading.delete(name);
+      if(map.triggerRepaint) map.triggerRepaint();
+    }
+  };
+  img.onerror = () => { iconLoading.delete(name); };
+  img.src = url;
+}
+
+// MapLibre bir ikonu çizmek isteyip henüz yüklenmemişse burada tembel üretilir.
+function attachIkonLoader(){
+  map.on('styleimagemissing', e => {
+    const name = e && e.id;
+    if(typeof name !== 'string' || !name.startsWith(HAT_IKON_PREFIX)) return;
+    loadIkonImage(name, iconUrlByName.get(name));
+  });
+}
+
+// ═════════════════════════════════════════════════════
+//  İKON ETİKETİ İÇİN TEK ANCHOR NOKTASI HESABI
+// ═════════════════════════════════════════════════════
+// line-center yerleşimi GeoJSON kaynağı tile'lara bölününce her tile'ın kendi
+// "merkezini" çizdiği için yakınlaşınca aynı hatta birden çok ikon görünüyordu.
+// Çözüm: hat başına TEK bir nokta hesaplayıp 'point' yerleşimiyle çizmek —
+// nokta tek tile'da olduğundan tam olarak bir kez çizilir.
+
+// Yaklaşık düzlemsel segment uzunluğu (boylam enleme göre cos ile ölçeklenir).
+function segLen(a, b){
+  const k  = Math.cos((a[1]+b[1]) * 0.5 * Math.PI/180);
+  const dx = (a[0]-b[0]) * k;
+  const dy = (a[1]-b[1]);
+  return Math.hypot(dx, dy);
+}
+
+// Anchor için kullanılacak koordinat dizisi: LineString → kendisi,
+// MultiLineString → en uzun parça (kopuk parçalar arası yapay atlama olmasın).
+function lineCoordsForAnchor(geom){
+  if(!geom) return [];
+  if(geom.type === 'LineString') return geom.coordinates || [];
+  if(geom.type === 'MultiLineString'){
+    let best = [], bestLen = -1;
+    for(const part of (geom.coordinates || [])){
+      let len = 0;
+      for(let i=1;i<part.length;i++) len += segLen(part[i-1], part[i]);
+      if(len > bestLen){ bestLen = len; best = part; }
+    }
+    return best;
+  }
+  return [];
+}
+
+// Hattın orta bandındaki (%30–70 uzunluk) tepe noktaları arasından, istasyon
+// noktalarına EN UZAK olanı seçer; böylece ikon hattın ortasına yakın durur ama
+// istasyon noktaları/adı etiketleriyle çakışmaz. İstasyon yoksa %50 uzunluk
+// noktasına en yakın tepe seçilir.
+function labelAnchorForLine(geom, stations){
+  const coords = lineCoordsForAnchor(geom);
+  if(coords.length === 0) return null;
+  if(coords.length === 1) return coords[0].slice();
+
+  const cum = [0];
+  for(let i=1;i<coords.length;i++) cum.push(cum[i-1] + segLen(coords[i-1], coords[i]));
+  const total = cum[cum.length-1];
+  if(total === 0) return coords[0].slice();
+
+  const lo = 0.30*total, hi = 0.70*total, mid = 0.50*total;
+
+  // Orta banttaki aday tepe noktaları
+  const cand = [];
+  for(let i=0;i<coords.length;i++) if(cum[i] >= lo && cum[i] <= hi) cand.push(i);
+
+  // Bant boşsa %50 uzunlukta interpolasyon yap
+  if(cand.length === 0){
+    let i = 1; while(i < cum.length && cum[i] < mid) i++;
+    const t = (mid - cum[i-1]) / ((cum[i]-cum[i-1]) || 1);
+    return [ coords[i-1][0] + (coords[i][0]-coords[i-1][0])*t,
+             coords[i-1][1] + (coords[i][1]-coords[i-1][1])*t ];
+  }
+
+  // İstasyon yoksa: %50'ye en yakın aday
+  if(!stations || stations.length === 0){
+    let best = cand[0], bd = Infinity;
+    for(const i of cand){ const d = Math.abs(cum[i]-mid); if(d < bd){ bd = d; best = i; } }
+    return coords[best].slice();
+  }
+
+  // İstasyon varsa: en yakın istasyona uzaklığı en büyük olan aday
+  let best = cand[0], bestMin = -1;
+  for(const i of cand){
+    const c = coords[i];
+    let mn = Infinity;
+    for(const s of stations){ const d = segLen(c, s); if(d < mn) mn = d; }
+    if(mn > bestMin){ bestMin = mn; best = i; }
+  }
+  return coords[best].slice();
+}
+
+
 // Katmanlar harita 'load' anında tek seferlik kurulur.
 // Tüm görsel kararlar veri-odaklı ifadelerle (['get',...]) tanımlandığından
 // sekme/seçim değişiminde yalnızca kaynak verisi setData ile güncellenir,
@@ -1401,6 +1552,7 @@ function initMapLayers(){
   upsertSource(SRC_DURAK_OTHER,    EMPTY());
   upsertSource(SRC_HAT_SELECTED,   EMPTY());
   upsertSource(SRC_DURAK_SELECTED, EMPTY());
+  upsertSource(SRC_HAT_LABEL,      EMPTY());
 
   // Çift kuruluma karşı koruma; ekleme SIRASI çizim sırasını belirler.
   const add = spec => { if(!map.getLayer(spec.id)) map.addLayer(spec); };
@@ -1514,6 +1666,23 @@ function initMapLayers(){
       'text-size':12, 'text-offset':[0,1.4], 'text-anchor':'top', 'text-max-width':8,
     },
     paint:{ 'text-color':['coalesce',['get','RENK_HEX_NORM'],'#111111'],'text-halo-color':'#ffffff','text-halo-width':2.5,'text-opacity':1 } });
+
+  // ──── Yapım hattı ikon etiketleri ────
+  // Kaynak artık hat başına TEK bir Point içerir (anchor JS'te hesaplanır), bu
+  // yüzden 'point' yerleşimiyle her hatta yalnızca bir ikon çizilir — line-center
+  // gibi tile başına tekrarlanmaz. Görseller eşit çözünürlük + sabit icon-size
+  // kullandığından tüm etiketler aynı boydadır.
+  // allow-overlap=true + ignore-placement=true: tek ikon her zaman görünür ve
+  // istasyon adı etiketlerini de bastırmaz; çakışmadan kaçınma anchor konumuyla
+  // (istasyonlardan uzak orta nokta) sağlanır.
+  add({ id:'hat-ikon-label', type:'symbol', source:SRC_HAT_LABEL,
+    layout:{
+      'icon-image':['coalesce',['get','IKON_NAME'],''],
+      'icon-size':1,
+      'icon-allow-overlap':true,
+      'icon-ignore-placement':true,
+      'icon-anchor':'center',
+    } });
 }
 
 function renderMap(){
@@ -1556,6 +1725,38 @@ function renderMap(){
   upsertSource(SRC_DURAK_OTHER,    { type:'FeatureCollection', features:otherDuraklar });
   upsertSource(SRC_HAT_SELECTED,   { type:'FeatureCollection', features:selectedHatFeatures });
   upsertSource(SRC_DURAK_SELECTED, { type:'FeatureCollection', features:selectedDurakFeatures });
+
+  // ──── Yapım hattı ikon etiketleri ────
+  // Yalnızca "Yapımı süren hatlar" sekmesinde, IKON_URL'i olan her hat için TEK
+  // bir Point etiketi. Anchor, hattın orta bandında istasyonlardan en uzak nokta
+  // olarak seçilir (istasyon noktası/adı etiketiyle çakışmaz). Seçili hat da
+  // dahildir (kaynak seçimden bağımsız beslenir → seçimde ikon kaybolmaz).
+  let labelFeatures = [];
+  if(activeTab === 'yapim'){
+    labelFeatures = activeHatlar
+      .filter(f => f.properties && f.properties.IKON_URL && f.geometry)
+      .map(f => {
+        const p    = f.properties;
+        const url  = String(p.IKON_URL);
+        const name = ikonNameForUrl(url);
+        loadIkonImage(name, url);                  // proaktif yükleme (flicker azaltır)
+        // Bu hattın istasyon koordinatları (KOD + hat bbox'ı ile sınırlanır)
+        const bbox = featureBbox(f);
+        const stns = bbox
+          ? duraklarInBbox(activeDuraklar.filter(d => d.properties?.KOD === p.KOD), bbox)
+              .map(d => d.geometry?.coordinates).filter(Boolean)
+          : [];
+        const anchor = labelAnchorForLine(f.geometry, stns);
+        if(!anchor) return null;
+        return {
+          type:'Feature',
+          geometry:{ type:'Point', coordinates:anchor },
+          properties:{ IKON_NAME:name, KOD:p.KOD },
+        };
+      })
+      .filter(Boolean);
+  }
+  upsertSource(SRC_HAT_LABEL, { type:'FeatureCollection', features:labelFeatures });
 
   document.getElementById('empty-state').classList.toggle('show',
     activeHatlar.length === 0 && allHatlar.length > 0);
