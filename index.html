@@ -1651,6 +1651,17 @@ function initMapLayers(){
       'line-opacity':1,
     }, layout:{'line-cap':'round','line-join':'round'} });
 
+  // ──── Görünmez dokunma alanı ────
+  // İnce hatların rahat seçilebilmesi için aktif hatların üstünde geniş, saydam
+  // bir katman. Tıklama ve hover bu katmana bağlanır; opacity 0 olduğundan
+  // görsele etkisi yoktur ama queryRenderedFeatures isabet alanını genişletir.
+  add({ id:'active-lines-hit', type:'line', source:SRC_HAT_ACTIVE,
+    paint:{
+      'line-color':'#000000',
+      'line-width':['+',['coalesce',['get','KALINLIK_LN'],3],16],
+      'line-opacity':0,
+    }, layout:{'line-cap':'round','line-join':'round'} });
+
   // ──── Hat glow (seçim halkası) ────
   add({ id:'glow-hat-1', type:'line', source:SRC_HAT_SELECTED,
     paint:{
@@ -2723,8 +2734,10 @@ window.addEventListener('resize', updateTabLabels);
 //  HARİTA TIKLAMASI → HAT SEÇİMİ (yalnız aktif sekme)
 // ═════════════════════════════════════════════════════
 function attachMapClickHandlers(){
-  // Sadece aktif sekmedeki hatlar tıklanabilir; pasif hatlar arka plan
-  map.on('click', 'active-lines', e => {
+  // Sadece aktif sekmedeki hatlar tıklanabilir; pasif hatlar arka plan.
+  // Tıklama, ince görünür çizgi yerine geniş görünmez 'active-lines-hit' katmanına
+  // bağlıdır — böylece dokunma isabet alanı belirgin biçimde genişler.
+  map.on('click', 'active-lines-hit', e => {
     const feature = e.features && e.features[0];
     if(!feature) return;
 
@@ -2740,9 +2753,9 @@ function attachMapClickHandlers(){
     if(isMobile()) applyMobileView('map');
   });
 
-  // Hover'da işaretçi (yalnız aktif hat katmanı)
-  map.on('mouseenter', 'active-lines', () => { map.getCanvas().style.cursor = 'pointer'; });
-  map.on('mouseleave', 'active-lines', () => { map.getCanvas().style.cursor = ''; });
+  // Hover'da işaretçi (geniş dokunma alanı üzerinde)
+  map.on('mouseenter', 'active-lines-hit', () => { map.getCanvas().style.cursor = 'pointer'; });
+  map.on('mouseleave', 'active-lines-hit', () => { map.getCanvas().style.cursor = ''; });
 }
 
 // ═════════════════════════════════════════════════════
