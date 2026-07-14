@@ -733,13 +733,14 @@ body.detail-open #tab-bar { right: 352px; }
 #cmp-chart-svg .cmp-dot   { stroke: #fff; stroke-width: 1.5; }
 #cmp-chart-svg .cmp-line.dim { opacity: .12; }
 #cmp-chart-svg .cmp-dot.dim  { opacity: .12; }
-#cmp-chart-svg #cmp-hover-ring { pointer-events: none; }
+#cmp-chart-svg #cmp-guide { stroke: var(--text-dim); stroke-width: 1; stroke-dasharray: 4 3; opacity: .55; pointer-events: none; }
+#cmp-chart-svg #cmp-hover-dots circle { pointer-events: none; }
 
-/* Grafik hover tooltip'i */
+/* Grafik hover tooltip'i (ay başlığı + tüm görünür hatların yüzdeleri) */
 #cmp-tooltip {
   position: absolute; z-index: 5;
   display: none;
-  min-width: 118px; max-width: 240px;
+  min-width: 152px; max-width: 264px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -748,13 +749,19 @@ body.detail-open #tab-bar { right: 352px; }
   pointer-events: none;
   font-family: var(--font);
 }
-.cmp-tip-head { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; }
-.cmp-tip-sw { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
-.cmp-tip-name { font-size: 11.5px; font-weight: 600; color: var(--text); line-height: 1.2; }
-.cmp-tip-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
-.cmp-tip-month { font-size: 11px; color: var(--text-muted); }
-.cmp-tip-pct { font-size: 15px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
-.cmp-tip-note { margin-top: 6px; font-size: 10.5px; color: var(--text-dim); line-height: 1.45; }
+.cmp-tip-title {
+  font-size: 11px; font-weight: 700; color: var(--text);
+  padding-bottom: 6px; margin-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.cmp-tip-line {
+  display: grid; grid-template-columns: auto 1fr auto;
+  align-items: center; gap: 8px;
+  padding: 2px 0; font-size: 11.5px;
+}
+.cmp-tip-line .sw { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.cmp-tip-line .nm { color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.cmp-tip-line .pc { color: var(--text); font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
 #cmp-legend {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(232px, 1fr));
@@ -3032,7 +3039,8 @@ const chartBtn    = document.getElementById('chart-btn');
 const cmpChartSvg = document.getElementById('cmp-chart-svg');
 let cmpLastFocused = null;
 const cmpHidden    = new Set();   // legend ile gizlenen kayıt anahtarları (OBJECTID)
-let cmpPoints      = [];          // grafikteki görünür noktalar (hover için): {x,y,pct,ym,renk,label,note}
+let cmpMonthsX     = [];          // ay x konumları (hover'da ay yakalama): [{ym, x}]
+let cmpByMonth     = new Map();   // ym -> [{label, renk, pct, y}] görünür hatların o aydaki değerleri
 
 // Çoklu çizgi için ayırt edici palet (GeoJSON'da renk eşleşmezse sırayla atanır)
 const CMP_PALETTE = ['#B4271F','#1E6FD9','#2E9E5B','#E0840B','#7C3AED','#0EA5A5',
@@ -3121,7 +3129,8 @@ function renderCompareChart(){
 
   // Görünür kayıtların son-etiket y konumlarını topla (çakışma ötelemesi için)
   const lastLabels = [];
-  cmpPoints = [];   // hover için görünür noktaları yeniden topla
+  cmpByMonth = new Map();                              // hover: her ayın görünür hat değerleri
+  cmpMonthsX = months.map((m,i) => ({ ym:m, x: xAt(i) }));
 
   let lines = '';
   data.forEach(d => {
@@ -3138,10 +3147,8 @@ function renderCompareChart(){
     if(!off){
       const lbl = d.kod ? `${d.kod} · ${d.ad}` : d.ad;
       visPts.forEach(s => {
-        cmpPoints.push({
-          x: xAt(xIndex.get(s.ym)), y: yAt(s.pct),
-          pct: s.pct, ym: s.ym, renk: d.renk, label: lbl, note: s.note || ''
-        });
+        if(!cmpByMonth.has(s.ym)) cmpByMonth.set(s.ym, []);
+        cmpByMonth.get(s.ym).push({ label: lbl, renk: d.renk, pct: s.pct, y: yAt(s.pct) });
       });
       const lp = visPts[visPts.length-1];
       lastLabels.push({ x: xAt(xIndex.get(lp.ym)), y: yAt(lp.pct), renk: d.renk, txt: pctText(lp.pct) });
@@ -3159,8 +3166,8 @@ function renderCompareChart(){
 
   const svg = document.getElementById('cmp-chart-svg');
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-  const hoverRing = '<circle id="cmp-hover-ring" r="6" fill="none" stroke-width="2" pointer-events="none" style="display:none"></circle>';
-  svg.innerHTML = grid + xLabels + lines + hoverRing;
+  const hoverLayer = `<line id="cmp-guide" x1="0" x2="0" y1="${padT.toFixed(1)}" y2="${(padT+iy).toFixed(1)}" style="display:none"></line><g id="cmp-hover-dots"></g>`;
+  svg.innerHTML = grid + xLabels + lines + hoverLayer;
 
   // Legend (tıklanabilir aç/kapa)
   const legend = document.getElementById('cmp-legend');
@@ -3216,53 +3223,62 @@ cmpBackdrop.addEventListener('click', e => { if(e.target === cmpBackdrop) closeC
 // ──── Grafik üzerinde imleçle gezinme: en yakın noktanın yüzdesini göster ────
 const cmpTooltip = document.getElementById('cmp-tooltip');
 function cmpChartHover(e){
-  if(!cmpPoints.length){ cmpChartHideTip(); return; }
+  if(!cmpMonthsX.length){ cmpChartHideTip(); return; }
   const ctm = cmpChartSvg.getScreenCTM();
   if(!ctm) return;
   const sp = cmpChartSvg.createSVGPoint();
   sp.x = e.clientX; sp.y = e.clientY;
   const loc = sp.matrixTransform(ctm.inverse());   // ekran → viewBox koordinatı
 
-  let best = null, bestD = Infinity;
-  for(const pt of cmpPoints){
-    const dx = pt.x - loc.x, dy = pt.y - loc.y, d = dx*dx + dy*dy;
-    if(d < bestD){ bestD = d; best = pt; }
+  // İmlece en yakın ay sütunu
+  let mo = null, moD = Infinity;
+  for(const m of cmpMonthsX){
+    const d = Math.abs(m.x - loc.x);
+    if(d < moD){ moD = d; mo = m; }
   }
-  const THRESH = 24;   // viewBox birimi cinsinden yakalama yarıçapı
-  if(!best || bestD > THRESH*THRESH){ cmpChartHideTip(); return; }
+  if(!mo){ cmpChartHideTip(); return; }
+  const entries = (cmpByMonth.get(mo.ym) || []).slice().sort((a,b) => b.pct - a.pct);
+  if(!entries.length){ cmpChartHideTip(); return; }
 
-  const ring = document.getElementById('cmp-hover-ring');
-  if(ring){
-    ring.setAttribute('cx', best.x.toFixed(1));
-    ring.setAttribute('cy', best.y.toFixed(1));
-    ring.setAttribute('stroke', best.renk);
-    ring.style.display = '';
+  // Dikey kılavuz çizgisi
+  const guide = document.getElementById('cmp-guide');
+  if(guide){
+    guide.setAttribute('x1', mo.x.toFixed(1));
+    guide.setAttribute('x2', mo.x.toFixed(1));
+    guide.style.display = '';
   }
-
+  // Her görünür hattın o aydaki noktasında vurgu halkası
+  const dots = document.getElementById('cmp-hover-dots');
+  if(dots){
+    dots.innerHTML = entries.map(en =>
+      `<circle cx="${mo.x.toFixed(1)}" cy="${en.y.toFixed(1)}" r="4" fill="#fff" stroke="${en.renk}" stroke-width="2"></circle>`
+    ).join('');
+  }
+  // Liste tooltip: ay başlığı + her hat (yüzdeye göre azalan)
   cmpTooltip.innerHTML =
-      `<div class="cmp-tip-head"><span class="cmp-tip-sw" style="background:${best.renk}"></span>`
-    + `<span class="cmp-tip-name">${esc(best.label)}</span></div>`
-    + `<div class="cmp-tip-row"><span class="cmp-tip-month">${esc(ymLabel(best.ym))}</span>`
-    + `<span class="cmp-tip-pct">%${pctText(best.pct)}</span></div>`
-    + (best.note ? `<div class="cmp-tip-note">${esc(best.note)}</div>` : '');
+    `<div class="cmp-tip-title">${esc(ymLabel(mo.ym))}</div>` +
+    entries.map(en =>
+        `<div class="cmp-tip-line"><span class="sw" style="background:${en.renk}"></span>`
+      + `<span class="nm">${esc(en.label)}</span><span class="pc">%${pctText(en.pct)}</span></div>`
+    ).join('');
 
-  // Noktanın ekran konumu → grafik sarmalayıcısına göreli piksel
-  const sx = ctm.a*best.x + ctm.c*best.y + ctm.e;
-  const sy = ctm.b*best.x + ctm.d*best.y + ctm.f;
+  // Konum: kılavuzun sağına (sığmazsa soluna), imlecin dikey hizasında
+  const guideX = ctm.a * mo.x + ctm.e;            // kılavuzun ekran x'i
   const wr = document.getElementById('cmp-chart-wrap').getBoundingClientRect();
   cmpTooltip.style.display = 'block';
   const tw = cmpTooltip.offsetWidth, th = cmpTooltip.offsetHeight;
-  let left = sx - wr.left - tw/2;
-  let top  = sy - wr.top - th - 12;
-  left = Math.max(4, Math.min(wr.width - tw - 4, left));
-  if(top < 4) top = (sy - wr.top) + 16;   // üstte yer yoksa noktanın altına al
+  let left = (guideX - wr.left) + 14;
+  if(left + tw > wr.width - 4) left = (guideX - wr.left) - tw - 14;
+  left = Math.max(4, Math.min(Math.max(4, wr.width - tw - 4), left));
+  let top = (e.clientY - wr.top) - th / 2;
+  top = Math.max(4, Math.min(Math.max(4, wr.height - th - 4), top));
   cmpTooltip.style.left = left.toFixed(0) + 'px';
   cmpTooltip.style.top  = top.toFixed(0) + 'px';
 }
 function cmpChartHideTip(){
   cmpTooltip.style.display = 'none';
-  const ring = document.getElementById('cmp-hover-ring');
-  if(ring) ring.style.display = 'none';
+  const guide = document.getElementById('cmp-guide'); if(guide) guide.style.display = 'none';
+  const dots  = document.getElementById('cmp-hover-dots'); if(dots) dots.innerHTML = '';
 }
 cmpChartSvg.addEventListener('pointermove', cmpChartHover);
 cmpChartSvg.addEventListener('pointerdown', cmpChartHover);   // dokunmatikte de göster
