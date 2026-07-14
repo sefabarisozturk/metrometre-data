@@ -218,7 +218,7 @@ html, body {
   position: relative;
   overflow: hidden;
   flex-shrink: 0;
-  min-height: 140px;
+  min-height: 118px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -276,6 +276,15 @@ html, body {
 }
 .card-field-val { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.2; }
 
+/* İki sütunlu alt bölüm: solda fiziki ilerleme (çubuk + yüzde yan yana), sağda tahmini açılış */
+.card-bottom-split { align-items: flex-end; gap: 14px; flex-wrap: nowrap; }
+.card-prog-col { flex: 1; min-width: 0; }
+.card-prog-row { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+.card-prog-row .card-progress-bar { flex: 1; height: 6px; border-radius: 3px; }
+.card-prog-row .card-progress-fill { border-radius: 3px; }
+.card-prog-row .card-progress-pct { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; }
+.card-date-col { flex-shrink: 0; }
+
 /* ──── SAĞ PANEL ──── */
 #right-panel { flex: 1; display: flex; flex-direction: column; min-width: 0; position: relative; }
 
@@ -295,7 +304,11 @@ html, body {
   right: 0;
   z-index: 100;
   pointer-events: none;
+  transition: right .3s cubic-bezier(.4,0,.2,1);
 }
+
+/* Yandan panel açıkken sekme çubuğu da panelin soluna kayar (sekmeler panelin altında kalmasın) */
+body.detail-open #tab-bar { right: 352px; }
 
 .tab {
   pointer-events: all;
@@ -335,6 +348,7 @@ html, body {
   top: 12px; right: 12px;
   display: flex; flex-direction: column; gap: 6px;
   z-index: 200;
+  transition: right .3s cubic-bezier(.4,0,.2,1);
 }
 .map-tool-btn {
   width: 36px; height: 36px;
@@ -386,21 +400,44 @@ html, body {
 .search-result-name { flex: 1; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .search-result-kod  { font-size: 10px; color: var(--text-dim); font-weight: 600; }
 
-/* ──── HAT DETAY POPUP ──── */
+/* ──── HAT DETAY PANELİ (haritanın sağında) ──── */
 #detail-popup {
   position: absolute;
-  bottom: 0; left: 0; right: 0;
+  top: 0; right: 0; bottom: 0;
+  width: 340px;
+  max-width: 88%;
   background: rgba(255,255,255,.97);
   backdrop-filter: blur(8px);
-  border-top: 1px solid var(--border);
-  padding: 14px 18px;
-  display: flex; align-items: flex-start; gap: 14px;
+  border-left: 1px solid var(--border);
+  display: flex; flex-direction: column;
   z-index: 150;
-  transform: translateY(100%);
+  transform: translateX(100%);
   transition: transform .3s cubic-bezier(.4,0,.2,1);
-  box-shadow: 0 -4px 20px rgba(0,0,0,.08);
+  box-shadow: -4px 0 20px rgba(0,0,0,.08);
 }
-#detail-popup.open { transform: translateY(0); }
+#detail-popup.open { transform: translateX(0); }
+
+/* Panel açıkken harita araçları panelin soluna kayar (üstünü kapatmasın) */
+#map-container.detail-open #map-tools { right: 352px; }
+
+/* Başlık satırı: ikon + ad/meta + aksiyonlar */
+#detail-head {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+#detail-head-text { flex: 1; min-width: 0; }
+
+/* Kaydırılabilir içerik alanı */
+#detail-scroll {
+  flex: 1; overflow-y: auto;
+  padding: 18px 16px;
+  display: flex; flex-direction: column; gap: 18px;
+}
+#detail-scroll::-webkit-scrollbar { width: 4px; }
+#detail-scroll::-webkit-scrollbar-track { background: transparent; }
+#detail-scroll::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 2px; }
 
 /* İkon sarmalı — kart yapısıyla aynı: kurum rozeti ikonun üzerine bindirilir */
 #detail-icon-wrap { position: relative; flex-shrink: 0; }
@@ -461,41 +498,32 @@ html, body {
 }
 
 /* ──── DETAY ALT BLOK: Açılış Tarihi / Tahmini Açılış (kart-bottom ile aynı) ──── */
-#detail-bottom { margin-top: 8px; }
+#detail-bottom { }
 #detail-acilis-lbl {
   font-size: 9px; font-weight: 700; color: var(--text-dim);
   text-transform: uppercase; letter-spacing: .05em; margin-bottom: 3px; line-height: 1;
 }
 #detail-acilis-val { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.2; }
 
-/* ──── DETAY FİZİKİ İLERLEME ──── */
-#detail-progress { margin-top: 7px; }
-#detail-progress-head {
-  display: flex; justify-content: space-between;
-  margin-bottom: 4px;
+/* ──── DETAY FİZİKİ İLERLEME (donut) ──── */
+#detail-donut-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.detail-section-lbl {
+  font-size: 9px; font-weight: 700; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: .05em; line-height: 1;
+  align-self: flex-start;
 }
-#detail-progress-lbl { font-size: 9px; font-weight: 700;
-  color: var(--text-dim); text-transform: uppercase; letter-spacing: .05em; }
-
-#detail-progress-pct {
-  font-size: 10px; font-weight: 700;
-  color: var(--text);
-}
-#detail-progress-bar {
-  height: 4px;
-  background: var(--border);
-  border-radius: 2px;
-  overflow: hidden;
-}
-#detail-progress-fill {
-  height: 100%;
-  border-radius: 2px;
-  transition: width .5s ease;
+.detail-donut-box { position: relative; width: 138px; height: 138px; }
+.detail-donut-svg { width: 138px; height: 138px; display: block; }
+.donut-track { stroke: var(--border); }
+.donut-arc   { transition: stroke-dashoffset .6s cubic-bezier(.4,0,.2,1); }
+.donut-center {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; font-weight: 700; color: var(--text); letter-spacing: -0.02em;
 }
 
 #detail-text  {
   font-size: 12px; color: var(--text-muted); line-height: 1.55;
-  margin-top: 7px;
 }
 #detail-text:empty { display: none; }
 
@@ -531,10 +559,8 @@ html, body {
 /* ──── PAYLAŞ POPOVER ──── */
 #share-popover {
   position: absolute;
-  bottom: calc(100% + 8px);
-  right: 18px;
-  width: 320px;
-  max-width: calc(100vw - 36px);
+  top: 56px; left: 14px; right: 14px;
+  width: auto;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -783,6 +809,8 @@ html, body {
     gap: 6px;
   }
   #tab-bar::-webkit-scrollbar { display: none; }
+  /* Mobilde panel alttan açıldığı için sekme çubuğu kaymaz */
+  body.detail-open #tab-bar { right: 0; }
   .tab { padding: 0; flex: 1; justify-content: center; max-width: none; font-size: 10px; height: 32px; flex-shrink: 0; pointer-events: all; }
 
   /* ──── MOBİL TOGGLE BARI ──── */
@@ -910,8 +938,21 @@ html, body {
   #search-results { max-height: 220px; }
   .search-result { padding: 10px 14px; font-size: 13px; }
 
-  /* Detay popup: kompakt yerleşim */
-  #detail-popup { flex-wrap: nowrap; padding: 12px 14px; padding-bottom: calc(12px + 56px + env(safe-area-inset-bottom, 0px)); gap: 10px; }
+  /* Detay paneli: mobilde alttan açılan sheet (sağ panel yerine) */
+  #detail-popup {
+    top: auto; left: 0; right: 0; bottom: 0;
+    width: auto; max-width: 100%;
+    max-height: 74vh;
+    border-left: none;
+    border-top: 1px solid var(--border);
+    border-radius: 16px 16px 0 0;
+    transform: translateY(100%);
+    box-shadow: 0 -4px 20px rgba(0,0,0,.08);
+  }
+  #detail-popup.open { transform: translateY(0); }
+  /* Mobilde araçlar sağ üstte kalır; sheet alttan geldiği için kaydırma yok */
+  #map-container.detail-open #map-tools { right: 12px; }
+  #detail-scroll { padding-bottom: calc(18px + 56px + env(safe-area-inset-bottom, 0px)); }
   #detail-icon { width: 40px; height: 40px; }
   #detail-kurum { width: 17px; height: 17px; }
   #detail-kurum img { width: 12px; height: 12px; }
@@ -1007,49 +1048,57 @@ html, body {
       </div>
 
       <div id="detail-popup">
-        <div id="detail-icon-wrap">
-          <div id="detail-icon">
-            <img id="detail-icon-img" src="" alt="" style="display:none">
-            <div id="detail-icon-fallback"></div>
+        <div id="detail-head">
+          <div id="detail-icon-wrap">
+            <div id="detail-icon">
+              <img id="detail-icon-img" src="" alt="" style="display:none">
+              <div id="detail-icon-fallback"></div>
+            </div>
+            <div id="detail-kurum" hidden>
+              <img id="detail-kurum-logo" alt="" style="display:none">
+            </div>
           </div>
-          <div id="detail-kurum" hidden>
-            <img id="detail-kurum-logo" alt="" style="display:none">
+          <div id="detail-head-text">
+            <div id="detail-header">
+              <div id="detail-name"></div>
+            </div>
+            <div id="detail-meta">
+              <span id="detail-status" class="card-tag" hidden></span>
+              <span id="detail-stats"></span>
+            </div>
+          </div>
+          <div id="detail-actions">
+            <button id="detail-share" class="detail-action-btn" type="button" aria-label="Hattı paylaş" aria-haspopup="dialog" title="Paylaş">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="18" cy="5" r="3"/>
+                <circle cx="6" cy="12" r="3"/>
+                <circle cx="18" cy="19" r="3"/>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+              </svg>
+            </button>
+            <button id="detail-close" class="detail-action-btn" type="button" aria-label="Detayları kapat">✕</button>
           </div>
         </div>
-        <div id="detail-body">
-          <div id="detail-header">
-            <div id="detail-name"></div>
-          </div>
-          <div id="detail-meta">
-            <span id="detail-status" class="card-tag" hidden></span>
-            <span id="detail-stats"></span>
-          </div>
-          <div id="detail-progress" hidden>
-            <div id="detail-progress-head">
-              <span id="detail-progress-lbl">Fiziki İlerleme</span>
-              <span id="detail-progress-pct"></span>
-            </div>
-            <div id="detail-progress-bar">
-              <div id="detail-progress-fill"></div>
+
+        <div id="detail-scroll">
+          <div id="detail-donut-wrap" hidden>
+            <span class="detail-section-lbl">Fiziki İlerleme</span>
+            <div class="detail-donut-box">
+              <svg class="detail-donut-svg" viewBox="0 0 138 138" role="img" aria-label="Fiziki ilerleme yüzdesi">
+                <circle class="donut-track" cx="69" cy="69" r="56" fill="none" stroke-width="13"></circle>
+                <circle id="detail-donut-arc" class="donut-arc" cx="69" cy="69" r="56" fill="none" stroke-width="13" stroke-linecap="round" transform="rotate(-90 69 69)"></circle>
+              </svg>
+              <div id="detail-donut-center" class="donut-center"></div>
             </div>
           </div>
+
           <div id="detail-bottom" hidden>
             <div id="detail-acilis-lbl"></div>
             <div id="detail-acilis-val"></div>
           </div>
+
           <div id="detail-text"></div>
-        </div>
-        <div id="detail-actions">
-          <button id="detail-share" class="detail-action-btn" type="button" aria-label="Hattı paylaş" aria-haspopup="dialog" title="Paylaş">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <circle cx="18" cy="5" r="3"/>
-              <circle cx="6" cy="12" r="3"/>
-              <circle cx="18" cy="19" r="3"/>
-              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
-              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-            </svg>
-          </button>
-          <button id="detail-close" class="detail-action-btn" type="button" aria-label="Detayları kapat">✕</button>
         </div>
 
         <div id="share-popover" role="dialog" aria-label="Hattı paylaş" aria-modal="false">
@@ -1843,10 +1892,12 @@ function onCardSelect(feature){
 function zoomToHat(feature){
   const bbox = featureBbox(feature);
   if(!bbox) return;
-  // Mobilde alt toggle bar + detay popup, masaüstünde sadece detay popup için yer bırak.
-  const bottomPad = isMobile() ? 160 : 120;
+  // Mobilde alttan açılan sheet için altta, masaüstünde sağdaki panel için sağda yer bırak.
+  const padding = isMobile()
+    ? { top:60, bottom:300, left:40, right:40 }
+    : { top:60, bottom:60, left:40, right:360 };
   map.fitBounds(bbox, {
-    padding: { top:60, bottom:bottomPad, left:40, right:40 },
+    padding,
     maxZoom: 14,
     duration: 600,
   });
@@ -1927,18 +1978,15 @@ function openDetailPopup(p){
   ).join('');
   statsEl.style.display = chips.length ? '' : 'none';
 
-  // ──── Fiziki ilerleme (yalnızca yapımı süren hatlar) ────
-  const progressEl = document.getElementById('detail-progress');
+  // ──── Fiziki ilerleme (donut) — yalnızca yapımı süren hatlar ────
+  const donutWrap = document.getElementById('detail-donut-wrap');
   const pct = (p.PR_ILERLEME != null && p.PR_ILERLEME !== '')
     ? Math.round(parseFloat(p.PR_ILERLEME)) : null;
   if(isYapim && pct !== null && !isNaN(pct)){
-    progressEl.hidden = false;
-    document.getElementById('detail-progress-pct').textContent = `%${pct}`;
-    const fill = document.getElementById('detail-progress-fill');
-    fill.style.width      = `${pct}%`;
-    fill.style.background = renk;
+    donutWrap.hidden = false;
+    drawDetailDonut(pct, renk);
   } else {
-    progressEl.hidden = true;
+    donutWrap.hidden = true;
   }
 
   // ──── Alt blok: Açılış Tarihi / Tahmini Açılış (kart-bottom ile aynı) ────
@@ -1965,10 +2013,32 @@ function openDetailPopup(p){
   closeSharePopover();
 
   document.getElementById('detail-popup').classList.add('open');
+  document.getElementById('map-container').classList.add('detail-open');
+  document.body.classList.add('detail-open');
+}
+
+// Fiziki ilerleme donut'ını çizer. Her açılışta boştan doldurarak animasyon uygular.
+const DONUT_R = 56;
+const DONUT_C = 2 * Math.PI * DONUT_R;
+function drawDetailDonut(pct, color){
+  const arc    = document.getElementById('detail-donut-arc');
+  const center = document.getElementById('detail-donut-center');
+  const clamped = Math.max(0, Math.min(100, pct));
+  arc.setAttribute('stroke-dasharray', DONUT_C.toFixed(2));
+  arc.style.stroke = color;
+  // Önce boş konuma (geçişsiz), reflow, sonra hedefe → dolum animasyonu
+  arc.style.transition = 'none';
+  arc.style.strokeDashoffset = DONUT_C.toFixed(2);
+  arc.getBoundingClientRect();
+  arc.style.transition = '';
+  arc.style.strokeDashoffset = (DONUT_C * (1 - clamped / 100)).toFixed(2);
+  center.textContent = `%${clamped}`;
 }
 
 function closeDetailPopup(){
   document.getElementById('detail-popup').classList.remove('open');
+  document.getElementById('map-container').classList.remove('detail-open');
+  document.body.classList.remove('detail-open');
   closeSharePopover();
 }
 
@@ -2195,29 +2265,39 @@ function renderCards(){
       `<span class="card-chip">${esc(c)}</span>${i<arr.length-1 ? '<span class="chip-sep">·</span>' : ''}`
     ).join('');
 
-    const progressHtml = (activeTab === 'yapim' && pct !== null) ? `
-      <div class="card-progress">
-        <div class="card-progress-head">
-          <span class="card-progress-lbl">Fiziki İlerleme</span>
-          <span class="card-progress-pct">%${pct}</span>
-        </div>
-        <div class="card-progress-bar">
-          <div class="card-progress-fill" style="width:${pct}%;background:${renk}"></div>
-        </div>
-      </div>` : '';
-
     let bottomHtml;
-    if(activeTab === 'isletme'){
-      const dateStr = fmtTRDate(p.ACILIS);
-      bottomHtml = `<div class="card-bottom"><div>
-        <div class="card-field-lbl">Açılış Tarihi</div>
-        <div class="card-field-val">${esc(dateStr||'—')}</div>
-      </div></div>`;
-    } else if(activeTab === 'yapim' || activeTab === 'proje'){
+    if(activeTab === 'yapim'){
+      // Solda ilerleme (varsa), sağda tahmini açılış — tek iki sütunlu satır
+      const dateStr = fmtTRDate(p.PR_ACILIS);
+      const dateVal = esc(dateStr || p.PR_ACILIS || '—');
+      const progCol = (pct !== null) ? `
+        <div class="card-prog-col">
+          <div class="card-field-lbl">Fiziki İlerleme</div>
+          <div class="card-prog-row">
+            <div class="card-progress-bar">
+              <div class="card-progress-fill" style="width:${pct}%;background:${renk}"></div>
+            </div>
+            <span class="card-progress-pct">%${pct}</span>
+          </div>
+        </div>` : '';
+      bottomHtml = `<div class="card-bottom card-bottom-split">
+        ${progCol}
+        <div class="card-date-col">
+          <div class="card-field-lbl">Tahmini Açılış</div>
+          <div class="card-field-val">${dateVal}</div>
+        </div>
+      </div>`;
+    } else if(activeTab === 'proje'){
       const dateStr = fmtTRDate(p.PR_ACILIS);
       bottomHtml = `<div class="card-bottom"><div>
         <div class="card-field-lbl">Tahmini Açılış</div>
         <div class="card-field-val">${esc(dateStr || p.PR_ACILIS || '—')}</div>
+      </div></div>`;
+    } else if(activeTab === 'isletme'){
+      const dateStr = fmtTRDate(p.ACILIS);
+      bottomHtml = `<div class="card-bottom"><div>
+        <div class="card-field-lbl">Açılış Tarihi</div>
+        <div class="card-field-val">${esc(dateStr||'—')}</div>
       </div></div>`;
     } else {
       bottomHtml = '<div class="card-bottom"></div>';
@@ -2252,7 +2332,6 @@ function renderCards(){
           </div>
         </div>
       </div>
-      ${progressHtml}
       ${bottomHtml}
     `;
 
