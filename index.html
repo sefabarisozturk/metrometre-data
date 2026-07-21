@@ -364,6 +364,20 @@ body.detail-open #tab-bar { right: 352px; }
   flex-shrink: 0;
 }
 .map-tool-btn:hover { background: #fff; color: var(--accent); box-shadow: 0 2px 8px rgba(0,0,0,.15); }
+.map-tool-btn.active {
+  background: var(--accent); color: #fff; border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(180,39,31,.3);
+}
+.map-tool-btn.active:hover { background: var(--accent); color: #fff; }
+
+/* Uydu altlığı kaynak künyesi — yalnızca uydu görünümünde görünür */
+#map-credit {
+  position: absolute; left: 8px; bottom: 6px; z-index: 120;
+  font-size: 9px; color: #fff; font-family: var(--font);
+  background: rgba(0,0,0,.42); padding: 2px 7px; border-radius: 5px;
+  pointer-events: none; letter-spacing: .01em;
+}
+#map-credit[hidden] { display: none; }
 
 /* ──── ARAMA PANELİ ──── */
 #search-panel {
@@ -602,10 +616,12 @@ body.detail-open #tab-bar { right: 352px; }
 #share-popover.open { display: block; }
 
 #share-actions {
-  display: flex; gap: 6px;
+  display: flex; gap: 6px; flex-wrap: wrap;
 }
 .share-btn {
-  flex: 1;
+  flex: 1 1 auto;
+  min-width: 128px;
+  white-space: nowrap;
   height: 34px;
   border: 1px solid var(--border-2);
   border-radius: 8px;
@@ -1133,9 +1149,18 @@ body.detail-open #tab-bar { right: 352px; }
       <div id="map-tools">
         <button class="map-tool-btn" id="btn-zoom-in"    title="Yakınlaştır">+</button>
         <button class="map-tool-btn" id="btn-zoom-out"   title="Uzaklaştır">−</button>
+        <button class="map-tool-btn" id="btn-basemap"    type="button" title="Uydu görünümü" aria-pressed="false">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+            <polyline points="2 17 12 22 22 17"></polyline>
+            <polyline points="2 12 12 17 22 12"></polyline>
+          </svg>
+        </button>
         <button class="map-tool-btn" id="btn-fullscreen" title="Tam ekran">⛶</button>
         <button class="map-tool-btn" id="btn-search"     title="Ara">⌕</button>
       </div>
+
+      <div id="map-credit" hidden>© Esri, Maxar, Earthstar Geographics</div>
 
       <div id="search-panel">
         <input id="search-input" type="text" placeholder="Hat kodu veya adı ara…" autocomplete="off">
@@ -1213,6 +1238,14 @@ body.detail-open #tab-bar { right: 352px; }
                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
               </svg>
               <span>Bağlantıyı kopyala</span>
+            </button>
+            <button class="share-btn" id="share-savemap" type="button">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              <span>Haritayı kaydet</span>
             </button>
             <button class="share-btn primary" id="share-twitter" type="button">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -1426,6 +1459,12 @@ const SRC_DURAK_OTHER    = 'durak-other';
 const SRC_HAT_SELECTED   = 'hat-selected';
 const SRC_DURAK_SELECTED = 'durak-selected';
 const SRC_HAT_LABEL      = 'hat-label';   // yapım hattı ikon etiketleri
+const SRC_SATELLITE      = 'satellite-src';   // uydu görüntüsü raster kaynağı
+
+// Harita altlığı (uydu) durumu ve paylaşım için son harita karesi (PNG blob).
+let satelliteOn   = false;
+let latestMapBlob = null;
+let blobBusy      = false;
 
 // ──── Yapım hattı ikon etiketleri yapılandırması ────
 // Her yapım hattının ortasına yakın TEK bir noktaya (anchor JS'te hesaplanır,
@@ -1451,7 +1490,10 @@ function initMap(){
     minZoom: 8,
     maxZoom: 16,
     attributionControl: false,
+    preserveDrawingBuffer: true,   // paylaşım için harita canvas'ının okunabilmesi (toBlob) gerekir
   });
+  // Harita her durulduğunda (idle) son kareyi PNG olarak sakla; paylaşımda gecikmesiz kullanılır.
+  map.on('idle', refreshMapBlob);
   map.on('load', () => {
     mapReady = true;
     initMapLayers();
@@ -1743,6 +1785,22 @@ function initMapLayers(){
 
   // Çift kuruluma karşı koruma; ekleme SIRASI çizim sırasını belirler.
   const add = spec => { if(!map.getLayer(spec.id)) map.addLayer(spec); };
+
+  // ──── Uydu görüntüsü altlığı (Esri World Imagery) ────
+  // Açık Carto altlığının üstüne, taşıt hatlarının/durakların ALTINA yerleştirilir.
+  // Varsayılan gizlidir; "uydu" düğmesiyle görünürlüğü açılıp kapanır.
+  if(!map.getSource(SRC_SATELLITE)){
+    map.addSource(SRC_SATELLITE, {
+      type: 'raster',
+      tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+      tileSize: 256,
+      maxzoom: 19,
+      attribution: 'Uydu görüntüsü © Esri, Maxar, Earthstar Geographics',
+    });
+  }
+  add({ id:'satellite', type:'raster', source:SRC_SATELLITE,
+        paint:{ 'raster-opacity': 0.5 },
+        layout:{ visibility: satelliteOn ? 'visible' : 'none' } });
 
   // ──── Hatlar ────
   add({ id:'other-lines', type:'line', source:SRC_HAT_OTHER,
@@ -2453,9 +2511,15 @@ function closeSharePopover(){
 
 function resetShareButtons(){
   const cp = document.getElementById('share-copy');
-  if(!cp) return;
-  cp.classList.remove('copied');
-  cp.querySelector('span').textContent = 'Bağlantıyı kopyala';
+  if(cp){
+    cp.classList.remove('copied');
+    cp.querySelector('span').textContent = 'Bağlantıyı kopyala';
+  }
+  const sm = document.getElementById('share-savemap');
+  if(sm){
+    sm.classList.remove('copied');
+    sm.querySelector('span').textContent = 'Haritayı kaydet';
+  }
 }
 
 document.getElementById('detail-share').addEventListener('click', e => {
@@ -2502,6 +2566,42 @@ document.getElementById('share-twitter').addEventListener('click', () => {
     + '?text=' + encodeURIComponent(data.text)
     + '&url='  + encodeURIComponent(data.url);
   window.open(intent, '_blank', 'noopener,noreferrer');
+});
+
+// Haritayı kaydet: o anki harita görünümünü (seçili hat ortalanmış) PNG olarak indirir.
+document.getElementById('share-savemap').addEventListener('click', async () => {
+  const btn = document.getElementById('share-savemap');
+  const lbl = btn.querySelector('span');
+  const orig = lbl.textContent;
+
+  // idle olayında saklanan son kare; yoksa anlık yakalamayı dene.
+  let blob = latestMapBlob;
+  if(!blob && map){
+    try { blob = await new Promise(res => map.getCanvas().toBlob(res, 'image/png')); } catch(e){ blob = null; }
+  }
+  if(!blob){
+    lbl.textContent = 'Görsel alınamadı';
+    setTimeout(() => { lbl.textContent = orig; }, 1800);
+    return;
+  }
+
+  // Dosya adını hat koduna göre üret
+  const p    = selectedFeature?.properties || {};
+  const safe = String(p.KOD || 'harita').trim().replace(/[^\w.-]+/g, '_') || 'harita';
+  const fname = `metrometre-${safe}.png`;
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fname;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+
+  btn.classList.add('copied');
+  lbl.textContent = 'Kaydedildi ✓';
+  setTimeout(() => { btn.classList.remove('copied'); lbl.textContent = orig; }, 1800);
 });
 
 // Popover dışına tıklayınca kapat
@@ -2817,6 +2917,36 @@ document.getElementById('btn-fullscreen').addEventListener('click', () => {
     document.exitFullscreen?.();
   }
 });
+
+// ──── Altlık geçişi: açık harita ↔ uydu görüntüsü ────
+function setBasemap(sat){
+  satelliteOn = !!sat;
+  if(map && map.getLayer('satellite')){
+    map.setLayoutProperty('satellite', 'visibility', satelliteOn ? 'visible' : 'none');
+  }
+  const b = document.getElementById('btn-basemap');
+  if(b){
+    b.classList.toggle('active', satelliteOn);
+    b.setAttribute('aria-pressed', satelliteOn ? 'true' : 'false');
+    b.title = satelliteOn ? 'Harita görünümü' : 'Uydu görünümü';
+  }
+  const credit = document.getElementById('map-credit');
+  if(credit) credit.hidden = !satelliteOn;
+}
+document.getElementById('btn-basemap').addEventListener('click', () => setBasemap(!satelliteOn));
+
+// Harita karesini PNG blob olarak sakla ("Haritayı kaydet" bu kareyi indirir). idle
+// olayında çağrılır; böylece kaydet düğmesine basıldığında görsel gecikmesiz hazır olur.
+function refreshMapBlob(){
+  if(!map || blobBusy) return;
+  blobBusy = true;
+  try {
+    map.getCanvas().toBlob(b => { if(b) latestMapBlob = b; blobBusy = false; }, 'image/png');
+  } catch(e){
+    // Canvas okunamadı (ör. CORS): önceki blob korunur.
+    blobBusy = false;
+  }
+}
 
 // ═════════════════════════════════════════════════════
 //  ARAMA
