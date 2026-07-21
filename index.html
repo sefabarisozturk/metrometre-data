@@ -525,6 +525,33 @@ body.detail-open #tab-bar { right: 352px; }
   font-size: 28px; font-weight: 700; color: var(--text); letter-spacing: -0.02em;
 }
 
+/* ──── DETAY AYLIK İLERLEME (mini trend grafiği) ──── */
+#detail-trend-wrap { display: flex; flex-direction: column; align-items: stretch; gap: 10px; }
+.detail-trend-box  { position: relative; width: 100%; }
+#detail-trend-svg  { width: 100%; height: 150px; display: block; overflow: visible; }
+#detail-trend-svg .trend-grid   { stroke: var(--border); stroke-width: 1; }
+#detail-trend-svg .trend-grid.zero { stroke: var(--border-2); }
+#detail-trend-svg .trend-axis   { fill: var(--text-dim); font-size: 9px; font-family: var(--font); }
+#detail-trend-svg .trend-area   { stroke: none; }
+#detail-trend-svg .trend-line   { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+#detail-trend-svg .trend-dot    { stroke: #fff; stroke-width: 1.5; }
+#detail-trend-svg .trend-dot-last { stroke: #fff; stroke-width: 2; }
+#detail-trend-svg .trend-val    { font-family: var(--font); font-weight: 700; font-size: 11px; }
+#detail-trend-svg #detail-trend-guide { stroke: var(--text-dim); stroke-width: 1; stroke-dasharray: 4 3; opacity: .5; pointer-events: none; }
+#detail-trend-svg #detail-trend-hot   { pointer-events: none; }
+#detail-trend-tip {
+  position: absolute; z-index: 3; pointer-events: none;
+  background: var(--surface); color: var(--text);
+  border: 1px solid var(--border-2); border-radius: 8px;
+  padding: 6px 9px; font-size: 11px; line-height: 1.3;
+  box-shadow: 0 4px 14px rgba(0,0,0,.12);
+  white-space: nowrap; opacity: 0; transition: opacity .12s;
+  transform: translate(-50%, -100%);
+}
+#detail-trend-tip.show { opacity: 1; }
+#detail-trend-tip .tip-mon { color: var(--text-dim); font-weight: 600; font-size: 10px; }
+#detail-trend-tip .tip-pct { font-weight: 700; }
+
 #detail-text  {
   font-size: 12px; color: var(--text-muted); line-height: 1.55;
 }
@@ -1159,6 +1186,14 @@ body.detail-open #tab-bar { right: 352px; }
                 <circle id="detail-donut-arc" class="donut-arc" cx="69" cy="69" r="56" fill="none" stroke-width="13" stroke-linecap="round" transform="rotate(-90 69 69)"></circle>
               </svg>
               <div id="detail-donut-center" class="donut-center"></div>
+            </div>
+          </div>
+
+          <div id="detail-trend-wrap" hidden>
+            <span class="detail-section-lbl">Aylık İlerleme</span>
+            <div class="detail-trend-box">
+              <svg id="detail-trend-svg" role="img" aria-label="Aya göre fiziki ilerleme grafiği"></svg>
+              <div id="detail-trend-tip" role="tooltip" aria-hidden="true"></div>
             </div>
           </div>
 
@@ -2073,6 +2108,18 @@ function openDetailPopup(p){
     donutWrap.hidden = true;
   }
 
+  // ──── Aylık ilerleme trendi — hattın tüm aylık kayıtlarını kapsayan mini grafik ────
+  // Yalnızca yapımı süren hatlarda gösterilir; işletmedeki ve proje hatlarında gizlenir.
+  const trendWrap = document.getElementById('detail-trend-wrap');
+  const prog = progressForFeature(p);
+  if(isYapim && prog && prog.series && prog.series.length){
+    trendWrap.hidden = false;
+    // Sheet henüz genişlik almadan çizmemek için bir sonraki karede çiz
+    requestAnimationFrame(() => drawDetailTrend(prog.series, renk));
+  } else {
+    trendWrap.hidden = true;
+  }
+
   // ──── Alt blok: Açılış Tarihi / Tahmini Açılış (kart-bottom ile aynı) ────
   const bottomEl = document.getElementById('detail-bottom');
   const lblEl    = document.getElementById('detail-acilis-lbl');
@@ -2124,6 +2171,125 @@ function drawDetailDonut(pct, color){
   arc.style.transition = '';
   arc.style.strokeDashoffset = (DONUT_C * (1 - clamped / 100)).toFixed(2);
   center.textContent = `%${clamped}`;
+}
+
+// ──── DETAY AYLIK İLERLEME TRENDİ ────
+// Seçili hattın aylık fiziki ilerleme kayıtlarını (tüm aylar) mini alan grafiğiyle çizer.
+// series: [{ ym:'2026-02', pct:96, note }] — ym artan. Donut anlık değeri; bu grafik ise gidişatı gösterir.
+let detailTrendPts   = [];          // [{ym, pct, x, y}] — hover eşlemesi için
+let detailTrendColor = '#B4271F';
+const detailTrendSvg = document.getElementById('detail-trend-svg');
+const detailTrendTip = document.getElementById('detail-trend-tip');
+
+function drawDetailTrend(rawSeries, color){
+  detailTrendColor = color;
+  // Kopya al ve aya göre artan sırala (güvence)
+  const series = rawSeries.slice().sort((a,b) => a.ym.localeCompare(b.ym));
+  const n = series.length;
+
+  const W = 320, H = 150, padL = 26, padR = 42, padT = 16, padB = 26;
+  const ix = W - padL - padR, iy = H - padT - padB;
+  const xAt = i => padL + (n === 1 ? ix/2 : (i/(n-1)) * ix);
+  const yAt = v => padT + iy - (Math.max(0, Math.min(100, v))/100) * iy;   // sabit 0–100 ölçek
+
+  // Y ızgarası (0 / 50 / 100)
+  let grid = '';
+  [0,50,100].forEach(v => {
+    const y = yAt(v).toFixed(1);
+    grid += `<line class="trend-grid${v===0?' zero':''}" x1="${padL}" y1="${y}" x2="${padL+ix}" y2="${y}"></line>`;
+    grid += `<text class="trend-axis" x="${padL-5}" y="${(+y+3).toFixed(1)}" text-anchor="end">${v}</text>`;
+  });
+
+  // Nokta koordinatları
+  const pts = series.map((s,i) => ({ ym:s.ym, pct:s.pct, x:xAt(i), y:yAt(s.pct) }));
+  detailTrendPts = pts;
+
+  // X ay etiketleri — kalabalıksa atlamalı (en çok ~6 etiket), ilk ve son her zaman
+  const step = Math.max(1, Math.ceil(n / 6));
+  let xLabels = '';
+  series.forEach((s,i) => {
+    if(i % step !== 0 && i !== n-1) return;
+    xLabels += `<text class="trend-axis" x="${xAt(i).toFixed(1)}" y="${H-9}" text-anchor="middle">${esc(ymLabel(s.ym))}</text>`;
+  });
+
+  // Alan dolgusu için renk gradyanı
+  const gid = 'detail-trend-grad';
+  const grad = `<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">`
+    + `<stop offset="0%" stop-color="${color}" stop-opacity="0.22"></stop>`
+    + `<stop offset="100%" stop-color="${color}" stop-opacity="0"></stop>`
+    + `</linearGradient></defs>`;
+
+  let area = '', line = '', dots = '';
+  if(n === 1){
+    dots = `<circle class="trend-dot-last" cx="${pts[0].x.toFixed(1)}" cy="${pts[0].y.toFixed(1)}" r="4" fill="${color}"></circle>`;
+  } else {
+    const lineD = pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+    const baseY = yAt(0).toFixed(1);
+    area = `<polygon class="trend-area" points="${pts[0].x.toFixed(1)},${baseY} ${lineD} ${pts[n-1].x.toFixed(1)},${baseY}" fill="url(#${gid})"></polygon>`;
+    line = `<polyline class="trend-line" points="${lineD}" stroke="${color}"></polyline>`;
+    dots = pts.map((p,i) => {
+      const last = i === n-1;
+      return `<circle class="${last?'trend-dot-last':'trend-dot'}" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${last?4:2.6}" fill="${color}"></circle>`;
+    }).join('');
+  }
+
+  // Son değer etiketi (sağda) — grafiğin dışına taşmasın diye dikeyde sınırlanır
+  const lp = pts[n-1];
+  const lblY = Math.max(padT+6, Math.min(padT+iy-2, lp.y));
+  const valLbl = `<text class="trend-val" x="${(lp.x+7).toFixed(1)}" y="${(lblY+4).toFixed(1)}" text-anchor="start" fill="${color}">%${pctText(lp.pct)}</text>`;
+
+  const hover = `<line id="detail-trend-guide" x1="0" x2="0" y1="${padT.toFixed(1)}" y2="${(padT+iy).toFixed(1)}" style="display:none"></line><g id="detail-trend-hot"></g>`;
+
+  detailTrendSvg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  detailTrendSvg.innerHTML = grad + grid + xLabels + area + line + dots + valLbl + hover;
+  hideDetailTrendTip();
+}
+
+function hideDetailTrendTip(){
+  if(detailTrendTip){
+    detailTrendTip.classList.remove('show');
+    detailTrendTip.setAttribute('aria-hidden','true');
+  }
+  const g = document.getElementById('detail-trend-guide');
+  if(g) g.style.display = 'none';
+  const hot = document.getElementById('detail-trend-hot');
+  if(hot) hot.innerHTML = '';
+}
+
+// İmleçle gezinme: en yakın ay noktasının yüzdesini kılavuz + tooltip ile göster
+function detailTrendHover(e){
+  if(!detailTrendPts.length){ hideDetailTrendTip(); return; }
+  const ctm = detailTrendSvg.getScreenCTM();
+  if(!ctm) return;
+  const sp = detailTrendSvg.createSVGPoint();
+  sp.x = e.clientX; sp.y = e.clientY;
+  const loc = sp.matrixTransform(ctm.inverse());   // ekran → viewBox
+
+  let best = null, bd = Infinity;
+  for(const p of detailTrendPts){
+    const d = Math.abs(p.x - loc.x);
+    if(d < bd){ bd = d; best = p; }
+  }
+  if(!best){ hideDetailTrendTip(); return; }
+
+  const guide = document.getElementById('detail-trend-guide');
+  if(guide){ guide.setAttribute('x1', best.x.toFixed(1)); guide.setAttribute('x2', best.x.toFixed(1)); guide.style.display = ''; }
+  const hot = document.getElementById('detail-trend-hot');
+  if(hot) hot.innerHTML = `<circle cx="${best.x.toFixed(1)}" cy="${best.y.toFixed(1)}" r="4.5" fill="#fff" stroke="${detailTrendColor}" stroke-width="2"></circle>`;
+
+  const box = document.querySelector('.detail-trend-box').getBoundingClientRect();
+  const sx = ctm.a * best.x + ctm.e;   // viewBox → ekran x
+  const sy = ctm.d * best.y + ctm.f;   // viewBox → ekran y
+  detailTrendTip.innerHTML = `<span class="tip-mon">${esc(ymLabel(best.ym))}</span> · <span class="tip-pct" style="color:${detailTrendColor}">%${pctText(best.pct)}</span>`;
+  detailTrendTip.style.left = (sx - box.left) + 'px';
+  detailTrendTip.style.top  = (sy - box.top - 10) + 'px';
+  detailTrendTip.classList.add('show');
+  detailTrendTip.setAttribute('aria-hidden','false');
+}
+
+if(detailTrendSvg){
+  detailTrendSvg.addEventListener('pointermove', detailTrendHover);
+  detailTrendSvg.addEventListener('pointerleave', hideDetailTrendTip);
 }
 
 function closeDetailPopup(){
