@@ -417,6 +417,9 @@ body.detail-open #tab-bar { right: 352px; }
 }
 #detail-popup.open { transform: translateX(0); }
 
+/* Tutamaç yalnızca mobil bottom-sheet'te görünür (aşağıda tanımlı) */
+#detail-grabber { display: none; }
+
 /* Panel açıkken harita araçları panelin soluna kayar (üstünü kapatmasın) */
 #map-container.detail-open #map-tools { right: 352px; }
 
@@ -796,6 +799,8 @@ body.detail-open #tab-bar { right: 352px; }
   :root {
     --mob-sticky-h:  104px;
     --mob-toggle-h:  56px;
+    /* Bottom-sheet açılışta yalnızca bu kadar yükseklik gösterir (JS başlık yüksekliğine göre günceller) */
+    --sheet-peek:    118px;
   }
 
   html, body { overflow: hidden; }
@@ -967,20 +972,54 @@ body.detail-open #tab-bar { right: 352px; }
   #search-results { max-height: 220px; }
   .search-result { padding: 10px 14px; font-size: 13px; }
 
-  /* Detay paneli: mobilde alttan açılan sheet (sağ panel yerine) */
+  /* Detay paneli: mobilde sürüklenebilir bottom-sheet.
+     Kart harita konteynerinin tamamı kadar yüksektir; ama açılışta yalnızca
+     "peek" kadarı görünecek şekilde aşağı ötelenir → harita üstte açık kalır.
+     Kullanıcı tutamaçtan yukarı çekince (veya dokununca) tam ekrana genişler. */
   #detail-popup {
-    top: auto; left: 0; right: 0; bottom: 0;
+    top: 0; left: 0; right: 0; bottom: 0;
     width: auto; max-width: 100%;
-    max-height: 74vh;
+    height: 100%; max-height: none;
     border-left: none;
     border-top: 1px solid var(--border);
     border-radius: 16px 16px 0 0;
-    transform: translateY(100%);
-    box-shadow: 0 -4px 20px rgba(0,0,0,.08);
+    transform: translateY(100%);            /* kapalı */
+    box-shadow: 0 -6px 24px rgba(0,0,0,.14);
+    will-change: transform;
+    transition: transform .32s cubic-bezier(.4,0,.2,1);
   }
-  #detail-popup.open { transform: translateY(0); }
+  /* Açık = peek: yalnızca başlık şeridi görünür, harita üstte kalır */
+  #detail-popup.open { transform: translateY(calc(100% - var(--sheet-peek))); }
+  /* Genişletilmiş = tam yükseklik */
+  #detail-popup.open.expanded { transform: translateY(0); }
+
+  /* Sürükleme tutamacı */
+  #detail-grabber {
+    display: block;
+    flex-shrink: 0;
+    height: 22px;
+    position: relative;
+    cursor: grab;
+    touch-action: none;   /* dikey sürüklemede tarayıcı kaydırmasını engelle */
+  }
+  #detail-grabber::before {
+    content: '';
+    position: absolute;
+    top: 9px; left: 50%; transform: translateX(-50%);
+    width: 38px; height: 4px; border-radius: 2px;
+    background: var(--border-2);
+  }
+  /* Başlık şeridi de sürükleme alanı; buradaki dikey hareket kaydırma yapmasın */
+  #detail-head { touch-action: none; }
+  #detail-head { padding-top: 4px; }        /* tutamaç zaten üstte boşluk bırakıyor */
   /* Mobilde araçlar sağ üstte kalır; sheet alttan geldiği için kaydırma yok */
   #map-container.detail-open #map-tools { right: 12px; }
+  /* Sheet tam ekrana genişleyince harita araçları haritayı zaten kapatan kartın
+     üstünde asılı kalmasın; peek durumunda ise görünür kalırlar. */
+  #map-container:has(#detail-popup.expanded) #map-tools {
+    opacity: 0; pointer-events: none;
+    transition: opacity .2s;
+  }
   #detail-scroll { padding-bottom: calc(18px + 56px + env(safe-area-inset-bottom, 0px)); }
   #detail-icon { width: 40px; height: 40px; }
   #detail-kurum { width: 17px; height: 17px; }
@@ -1077,6 +1116,7 @@ body.detail-open #tab-bar { right: 352px; }
       </div>
 
       <div id="detail-popup">
+        <div id="detail-grabber" aria-hidden="true"></div>
         <div id="detail-head">
           <div id="detail-icon-wrap">
             <div id="detail-icon">
@@ -1935,7 +1975,7 @@ function zoomToHat(feature){
   if(!bbox) return;
   // Mobilde alttan açılan sheet için altta, masaüstünde sağdaki panel için sağda yer bırak.
   const padding = isMobile()
-    ? { top:60, bottom:300, left:40, right:40 }
+    ? { top:60, bottom:160, left:40, right:40 }
     : { top:60, bottom:60, left:40, right:360 };
   map.fitBounds(bbox, {
     padding,
@@ -2053,9 +2093,16 @@ function openDetailPopup(p){
   // Yeni hat seçildiğinde önceki paylaş popover'ı kapanmalı.
   closeSharePopover();
 
-  document.getElementById('detail-popup').classList.add('open');
+  const dpEl = document.getElementById('detail-popup');
+  // Her yeni hat seçiminde sheet peek durumunda açılsın; önceki sürükleme izlerini temizle
+  dpEl.classList.remove('expanded');
+  dpEl.style.transition = '';
+  dpEl.style.transform  = '';
+  dpEl.classList.add('open');
   document.getElementById('map-container').classList.add('detail-open');
   document.body.classList.add('detail-open');
+  // Peek yüksekliğini başlık ölçüsüne göre güncelle (bir sonraki kare)
+  if(typeof measureDetailSheet === 'function') requestAnimationFrame(measureDetailSheet);
 }
 
 // Fiziki ilerleme donut'ını çizer. Her açılışta boştan doldurarak animasyon uygular.
@@ -2091,6 +2138,108 @@ document.getElementById('detail-close').addEventListener('click', () => {
   renderMap();
   writeHash();
 });
+
+// ═════════════════════════════════════════════════════
+//  MOBİL DETAY SHEET — sürüklenebilir peek / tam ekran
+//  Kart, harita konteyneri kadar yüksektir; açılışta yalnızca başlık şeridi
+//  (peek) görünür, harita üstte açık kalır. Tutamaç/başlıktan yukarı sürükleyince
+//  tam ekrana genişler, aşağı sürükleyince peek'e döner ya da kapanır.
+// ═════════════════════════════════════════════════════
+const _sheetMq = window.matchMedia('(max-width: 768px)');
+
+// Peek yüksekliğini başlık ölçüsüne göre ayarlar (CSS --sheet-peek).
+function measureDetailSheet(){
+  if(!_sheetMq.matches) return;
+  const sheet = document.getElementById('detail-popup');
+  const grab  = document.getElementById('detail-grabber');
+  const head  = document.getElementById('detail-head');
+  if(!sheet || !head) return;
+  const peek = Math.round((grab?.offsetHeight || 0) + head.offsetHeight + 8);
+  sheet.style.setProperty('--sheet-peek', peek + 'px');
+}
+
+(function initDetailSheetDrag(){
+  const sheet = document.getElementById('detail-popup');
+  const grab  = document.getElementById('detail-grabber');
+  const head  = document.getElementById('detail-head');
+  if(!sheet || !grab || !head) return;
+
+  let H = 0, peekPx = 0, startY = 0, startT = 0;
+  let dragging = false, moved = false, pid = null;
+
+  const peekFromVar = () => {
+    const v = parseFloat(getComputedStyle(sheet).getPropertyValue('--sheet-peek'));
+    return isNaN(v) ? 118 : v;
+  };
+
+  function down(e){
+    if(!_sheetMq.matches) return;
+    if(e.target.closest('button')) return;   // paylaş/kapat butonları sürükleme başlatmaz
+    measureDetailSheet();
+    H = sheet.offsetHeight || 0;
+    peekPx = peekFromVar();
+    dragging = true; moved = false; pid = e.pointerId;
+    startY = e.clientY;
+    // Mevcut konumun px karşılığı: tam=0, peek=H-peekPx
+    startT = sheet.classList.contains('expanded') ? 0 : (H - peekPx);
+    sheet.style.transition = 'none';
+    try { (e.currentTarget).setPointerCapture(pid); } catch(_){}
+  }
+
+  function pmove(e){
+    if(!dragging || e.pointerId !== pid) return;
+    const dy = e.clientY - startY;
+    if(Math.abs(dy) > 3) moved = true;
+    let t = Math.max(0, Math.min(H, startT + dy));
+    sheet.style.transform = `translateY(${t}px)`;
+    if(moved) e.preventDefault();
+  }
+
+  function up(e){
+    if(!dragging || e.pointerId !== pid) return;
+    dragging = false;
+    const dy = e.clientY - startY;
+    const t  = Math.max(0, Math.min(H, startT + dy));
+    const peekT = H - peekPx;
+
+    // Inline stilleri temizle → sınıf temelli konum + CSS geçişi devreye girsin
+    sheet.style.transition = '';
+    sheet.style.transform  = '';
+
+    if(!moved){
+      // Sürükleme yok, sadece dokunma → aç/topla
+      sheet.classList.toggle('expanded');
+      return;
+    }
+    if(t < peekT * 0.5){
+      sheet.classList.add('expanded');        // tam ekran
+    } else if(t < peekT + peekPx * 0.6){
+      sheet.classList.remove('expanded');      // peek
+    } else {
+      // Yeterince aşağı çekildi → kapat
+      closeDetailPopup();
+      selectedFeature = null;
+      syncCardSelectionUI();
+      fitGlobalBounds();
+      renderMap();
+      writeHash();
+    }
+  }
+
+  grab.addEventListener('pointerdown', down);
+  head.addEventListener('pointerdown', down);
+  grab.addEventListener('pointermove', pmove);
+  head.addEventListener('pointermove', pmove);
+  grab.addEventListener('pointerup', up);
+  head.addEventListener('pointerup', up);
+  grab.addEventListener('pointercancel', up);
+  head.addEventListener('pointercancel', up);
+
+  // Ekran döndürme / yeniden boyutlanmada peek ölçüsünü tazele
+  window.addEventListener('resize', () => {
+    if(sheet.classList.contains('open')) measureDetailSheet();
+  });
+})();
 
 // ═════════════════════════════════════════════════════
 //  PAYLAŞ POPOVER
