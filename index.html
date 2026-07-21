@@ -1444,6 +1444,9 @@ async function loadData(){
     const [hj, dj] = await Promise.all([rH.json(), rD.json()]);
     allHatlar   = hj.features || [];
     allDuraklar = dj.features || [];
+    // Google Sheets öznitelik overlay'i (A yolu): kartlar/detay çizilmeden önce
+    // ilerleme/açıklama/açılış değerlerini GeoJSON'un üstüne yaz. Hata olursa sessiz atlanır.
+    await applySheetOverlay();
     // Bounds yalnızca hatlardan hesaplanır; duraklar zaten hat extent'inin içinde.
     computeGlobalBounds();
     onDataReady();
@@ -3158,7 +3161,118 @@ async function loadProgress(){
   syncProgressUI();
 }
 
-// Bir GeoJSON feature için ilerleme kaydını bulur (önce OBJECTID, sonra KOD ile).
+// ═════════════════════════════════════════════════════
+//  GOOGLE SHEETS ÖZNİTELİK OVERLAY'İ  (canlı — "A yolu")
+//  Yayımlanan CSV'yi çeker; OBJECTID (yoksa KOD) ile eşleştirip
+//  ilerleme / açıklama / açılış değerlerini GeoJSON feature'larının
+//  ÜSTÜNE yazar. Geometri hiç değişmez. Link/erişim/CORS hatasında
+//  sessizce atlanır → GeoJSON'daki mevcut değerler korunur.
+//  Başlık adları esnek tanınır; hem "hat başına tek satır" hem de
+//  aylık (uzun/geniş) format desteklenir (en güncel ay alınır).
+// ═════════════════════════════════════════════════════
+const SHEET_OVERLAY_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQWAERSk5JmraMKUiq68pMK_WSQ9sooPpD3bHjpxXdd0ibU5KDdtwun4iUCgZOSnzmIfwej0KAXm3uf/pub?output=csv';
+
+// Başlık eşleştirme kümeleri (küçük harf + TR harf + boşluk/altçizgi sadeleştirilmiş)
+const SHEET_COLS = {
+  oid:    ['objectid','object_id','oid'],
+  kod:    ['kod','hatkodu'],
+  pct:    ['ilerleme','fizikiilerleme','yuzde','oran','pct'],
+  detay:  ['aciklama','detay','aciklamametni','not','metin','pr_detay'],
+  acilis: ['acilis','tahminiacilis','acilistarihi','pr_acilis'],
+  period: ['yilay','yil_ay','donem','ay'],
+};
+
+// Başlık/anahtar normalizasyonu: TR harfleri sadeleştir, boşluk/altçizgi at
+function sheetNorm(h){
+  return String(h||'').trim().toLowerCase()
+    .replace(/ı/g,'i').replace(/ş/g,'s').replace(/ğ/g,'g')
+    .replace(/ü/g,'u').replace(/ö/g,'o').replace(/ç/g,'c')
+    .replace(/[\s_]+/g,'');
+}
+function sheetFindCol(headNorm, names){
+  for(const n of names){ const i = headNorm.indexOf(n); if(i >= 0) return i; }
+  return -1;
+}
+
+async function applySheetOverlay(){
+  if(!SHEET_OVERLAY_URL) return;
+  let rows;
+  try {
+    const sep = SHEET_OVERLAY_URL.includes('?') ? '&' : '?';
+    const ctrl = new AbortController();
+    const to = setTimeout(() => ctrl.abort(), 6000);   // yavaş/erişilemez sheet ana yüklemeyi kilitlemesin
+    const res = await fetch(`${SHEET_OVERLAY_URL}${sep}_ts=${Date.now()}`, { signal: ctrl.signal });
+    clearTimeout(to);
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    rows = parseCSV(await res.text()).filter(r => r.some(c => c.trim() !== ''));
+  } catch(e){
+    console.warn('applySheetOverlay: sheet okunamadı; GeoJSON değerleri kullanılacak.', e);
+    return;
+  }
+  if(rows.length < 2) return;
+
+  const headNorm = rows[0].map(sheetNorm);
+  const iOid    = sheetFindCol(headNorm, SHEET_COLS.oid);
+  const iKod    = sheetFindCol(headNorm, SHEET_COLS.kod);
+  const iPct    = sheetFindCol(headNorm, SHEET_COLS.pct);
+  const iDetay  = sheetFindCol(headNorm, SHEET_COLS.detay);
+  const iAcilis = sheetFindCol(headNorm, SHEET_COLS.acilis);
+  const iPeriod = sheetFindCol(headNorm, SHEET_COLS.period);
+  // Geniş format: başlığı ay olan sütunlar ("Şubat 2026" / "2026-02" …)
+  const monthCols = rows[0].map((h,i) => ({ i, ym: headerToYM(h) })).filter(o => o.ym);
+
+  if(iOid < 0 && iKod < 0){
+    console.warn('applySheetOverlay: OBJECTID/KOD sütunu bulunamadı — overlay atlandı.');
+    return;
+  }
+
+  // Anahtar başına: HER alanı, o alanın dolu olduğu EN GÜNCEL satırdan al.
+  // Böylece CSV satır sırası ne olursa olsun (ve açıklama/açılış yalnızca bazı
+  // aylarda dolu olsa bile) doğru "güncel" değer elde edilir.
+  const byKey = new Map();   // key -> { PR_ILERLEME?, PR_DETAY?, PR_ACILIS?, _ord:{} }
+  const rowOrd = (r) => String(r).padStart(7, '0');   // satır indekslerini de doğru sırala
+
+  for(let r = 1; r < rows.length; r++){
+    const c = rows[r];
+    const key = (iOid >= 0 ? (c[iOid]||'') : (c[iKod]||'')).trim();
+    if(!key) continue;
+
+    let order = rowOrd(r);
+    let pct   = iPct >= 0 ? parsePct(c[iPct]) : null;
+    if(iPeriod >= 0){
+      const ym = headerToYM((c[iPeriod]||'').trim());
+      if(ym) order = ym;                       // 'YYYY-MM' → sözlük sırası = kronolojik
+    } else if(monthCols.length){
+      for(let k = monthCols.length - 1; k >= 0; k--){   // en sağdaki dolu ay = güncel
+        const v = parsePct(c[monthCols[k].i]);
+        if(v != null){ pct = v; order = monthCols[k].ym; break; }
+      }
+    }
+
+    const detay  = iDetay  >= 0 ? (c[iDetay] ||'').trim() : '';
+    const acilis = iAcilis >= 0 ? (c[iAcilis]||'').trim() : '';
+
+    let rec = byKey.get(key);
+    if(!rec){ rec = { _ord: {} }; byKey.set(key, rec); }
+    if(pct    != null && (rec._ord.pct    == null || order >= rec._ord.pct))   { rec.PR_ILERLEME = pct;    rec._ord.pct    = order; }
+    if(detay  !== ''  && (rec._ord.detay  == null || order >= rec._ord.detay)) { rec.PR_DETAY    = detay;  rec._ord.detay  = order; }
+    if(acilis !== ''  && (rec._ord.acilis == null || order >= rec._ord.acilis)){ rec.PR_ACILIS   = acilis; rec._ord.acilis = order; }
+  }
+
+  // Feature'lara uygula (yalnızca öznitelik; geometri korunur)
+  let matched = 0;
+  allHatlar.forEach(f => {
+    const p = f.properties || (f.properties = {});
+    const k = iOid >= 0 ? String(p.OBJECTID ?? '').trim() : String(p.KOD ?? '').trim();
+    const rec = k && byKey.get(k);
+    if(rec){
+      const { _ord, ...vals } = rec;           // yardımcı sıra bilgisini dışarıda bırak
+      Object.assign(p, vals);
+      matched++;
+    }
+  });
+  console.info(`applySheetOverlay: ${byKey.size} kayıt okundu, ${matched} hat güncellendi.`);
+}
 function progressForFeature(p){
   if(!p) return null;
   const oid = String(p.OBJECTID ?? '');
