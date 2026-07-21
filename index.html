@@ -2011,13 +2011,15 @@ function onCardSelect(feature){
 function zoomToHat(feature){
   const bbox = featureBbox(feature);
   if(!bbox) return;
-  // Mobilde alttan açılan sheet için altta, masaüstünde sağdaki panel için sağda yer bırak.
+  // Üstte yüzen sekme çubuğu (İşletmede / Yapımı süren / Proje) haritanın üstüne biner;
+  // hattın üst kısmı sekmelerin altında kalmasın diye üstte fazladan boşluk bırakılır.
+  // Mobilde sekme çubuğu haritanın üstünde ayrı şeritte durur, alttan açılan sheet için altta yer bırakılır.
   const padding = isMobile()
-    ? { top:60, bottom:160, left:40, right:40 }
-    : { top:60, bottom:60, left:40, right:360 };
+    ? { top:70, bottom:160, left:40, right:40 }
+    : { top:92, bottom:60, left:40, right:360 };
   map.fitBounds(bbox, {
     padding,
-    maxZoom: 14,
+    maxZoom: 13,
     duration: 600,
   });
 }
