@@ -3468,8 +3468,8 @@ async function loadProgress(){
 //  Başlık adları esnek tanınır; hem "hat başına tek satır" hem de
 //  aylık (uzun/geniş) format desteklenir (en güncel ay alınır).
 // ═════════════════════════════════════════════════════
-const SHEET_OVERLAY_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQWAERSk5JmraMKUiq68pMK_WSQ9sooPpD3bHjpxXdd0ibU5KDdtwun4iUCgZOSnzmIfwej0KAXm3uf/pub?output=csv';
-
+const SHEET_OVERLAY_URL = `${BASE}/overlay.csv`;
+     
 // Başlık eşleştirme kümeleri (küçük harf + TR harf + boşluk/altçizgi sadeleştirilmiş)
 const SHEET_COLS = {
   oid:    ['objectid','object_id','oid'],
