@@ -24,7 +24,7 @@ OBJECTID,Kurum,Kod,Hat,YilAy,Ilerleme,Durum,TahminiAcilis,Aciklama
 38,İBB Avrupa,T7,Feshane-Bayrampaşa Tramvay Hattı,2026-05,"29,15%",İnşa aşamasında,2028-06,"1,7 kilometresi yer altında bulunan hatta 4 farklı şaftta 400 kişilik bir ekiple çalışmalar tüm hızıyla sürüyor. Meydan İstasyonu'ndaki kazı çalışmalarının başarıyla tamamlandığı hatta, tünel kazı imalatlarına ise kesintisiz şekilde devam ediliyor."
 38,İBB Avrupa,T7,Feshane-Bayrampaşa Tramvay Hattı,2026-06,"52,45%",İnşa aşamasında,2028-06,"Meydan İstasyonu'ndaki kazı çalışmalarının başarıyla tamamlandığı hatta, tünel kazı imalatlarına ise kesintisiz şekilde devam ediliyor. Hattın yüzeyden geçen Demirkapı-Feshane kesiminde altyapı deplase çalışmalarına başlandı."
 38,İBB Avrupa,T7,Feshane-Bayrampaşa Tramvay Hattı,2026-07,"37,65%",İnşa aşamasında,2028-06,
-38,İBB Avrupa,T7,Feshane-Bayrampaşa Tramvay Hattı,2026-08,(bekleniyor),İnşa aşamasında,2028-06,
+38,İBB Avrupa,T7,Feshane-Bayrampaşa Tramvay Hattı,2026-08,"37,65%",İnşa aşamasında,2028-06,
 69,İBB Avrupa,M7,Mahmutbey-Hastane,2026-02,"51,90%",İnşa aşamasında,2027-12,
 69,İBB Avrupa,M7,Mahmutbey-Hastane,2026-03,"52,30%",İnşa aşamasında,2027-12,
 69,İBB Avrupa,M7,Mahmutbey-Hastane,2026-04,"52,70%",İnşa aşamasında,2027-12,
@@ -38,7 +38,7 @@ OBJECTID,Kurum,Kod,Hat,YilAy,Ilerleme,Durum,TahminiAcilis,Aciklama
 1,İBB Avrupa,M1B,Kirazlı-Halkalı Üniversite,2026-05,"23,37%",İnşa aşamasında,2029-12,"Barbaros ve Malazgirt istasyonlarında NATM kazıları tamamlandı, beton kaplama çalışmalarnda ise sona gelindi. Fatih İstasyonu'nda ise hat tünel kazısını gerçekleştirecek TMB'lerin çalışmaya başlaması için hazırlıklar devam ediyor."
 1,İBB Avrupa,M1B,Kirazlı-Halkalı Üniversite,2026-06,"23,47%",İnşa aşamasında,2029-12,"Barbaros ve Malazgirt istasyonlarında NATM kazıları tamamlandı, beton kaplama çalışmalarnda ise sona gelindi. Fatih İstasyonu'nda ise hat tünel kazısını gerçekleştirecek TMB'lerin çalışmaya başlaması için hazırlıklar devam ediyor."
 1,İBB Avrupa,M1B,Kirazlı-Halkalı Üniversite,2026-07,"24,00%",İnşa aşamasında,2029-12,"Barbaros ve Malazgirt istasyonlarında NATM kazıları tamamlandı, beton kaplama çalışmalarnda ise sona gelindi. Fatih İstasyonu'nda ise hat tünel kazısını gerçekleştirecek TMB'lerin çalışmaya başlaması için hazırlıklar devam ediyor."
-1,İBB Avrupa,M1B,Kirazlı-Halkalı Üniversite,2026-08,(bekleniyor),İnşa aşamasında,2029-12,"Halkalı Üniversite istasyonunda uzun bir aradan sonra ekskavatör ve mobil vinçle çalışmalar yeniden başlamış olup şaft kazısının sürdüğü değerlendirilmektedir. Fatih istasyonuna iş makinesi sevk edilmiş, ancak ay içinde sahada belirgin bir çalışma gözlenmemiştir. TBM kazılarının başlangıcına ilişkin resmi bir açıklama bulunmamaktadır."
+1,İBB Avrupa,M1B,Kirazlı-Halkalı Üniversite,2026-08,"25,00%",İnşa aşamasında,2029-12,"Halkalı Üniversite istasyonunda uzun bir aradan sonra ekskavatör ve mobil vinçle çalışmalar yeniden başlamış olup şaft kazısının sürdüğü değerlendirilmektedir. Fatih istasyonuna iş makinesi sevk edilmiş, ancak ay içinde sahada belirgin bir çalışma gözlenmemiştir. TBM kazılarının başlangıcına ilişkin resmi bir açıklama bulunmamaktadır."
 3,İBB Avrupa,M7,Yıldız-Kabataş,2026-02,"67,87%",Beklemede,-,
 3,İBB Avrupa,M7,Yıldız-Kabataş,2026-03,"67,82%",Beklemede,-,
 3,İBB Avrupa,M7,Yıldız-Kabataş,2026-04,"67,85%",Beklemede,-,
