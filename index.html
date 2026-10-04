@@ -24,6 +24,10 @@
 <meta name="twitter:title"       content="metrometre | raylı sistem projeleri takip paneli">
 <meta name="twitter:description" content="İstanbul'daki raylı sistem projelerinin fiziki ilerlemesi ve tahmini açılış tarihleri.">
 <meta name="twitter:image"       content="https://metrometre.com/og-image.png">
+<!-- /hat/<id> adreslerinde bu etiketler functions/hat/[[path]].js tarafından hatta göre yeniden yazılır -->
+
+<!-- ──── RSS (functions/feed.xml.js) ──── -->
+<link rel="alternate" type="application/rss+xml" title="metrometre — aylık ilerleme güncellemeleri" href="/feed.xml">
 
 <!-- ──── PWA ──── -->
 <link rel="manifest" href="/manifest.json">
@@ -894,6 +898,21 @@ a.src-badge:hover { border-color: currentColor; }
 }
 #cmp-note { font-size: 11px; color: var(--text-dim); margin-top: 10px; line-height: 1.6; }
 
+/* Aylık özet kutusu (karşılaştırma modalı) */
+#cmp-summary {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px 12px; margin: 2px 0 12px;
+}
+#cmp-summary[hidden] { display: none; }
+#cmp-summary-text {
+  flex: 1 1 300px; min-width: 0;
+  font-size: 12px; line-height: 1.55; color: var(--text-muted); white-space: pre-line;
+}
+#cmp-summary-text b { color: var(--text); }
+#cmp-summary-actions { display: flex; gap: 6px; flex-shrink: 0; }
+#cmp-summary-actions .share-btn { min-width: 0; flex: 0 0 auto; }
+
 /* ──── MOBİL TOGGLE (varsayılan: gizli) ──── */
 #mobile-toggle {
   display: none;
@@ -1305,6 +1324,15 @@ a.src-badge:hover { border-color: currentColor; }
               </svg>
               <span>Bağlantıyı kopyala</span>
             </button>
+            <!-- Yalnızca kartı üretilmiş (yapımı süren) hatlarda görünür -->
+            <button class="share-btn" id="share-card" type="button" hidden>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="5" width="18" height="14" rx="2"/>
+                <circle cx="9" cy="11" r="2"/>
+                <path d="M21 17l-5-5-8 7"/>
+              </svg>
+              <span>Paylaşım kartı</span>
+            </button>
             <button class="share-btn" id="share-savemap" type="button">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -1312,6 +1340,21 @@ a.src-badge:hover { border-color: currentColor; }
                 <line x1="12" y1="15" x2="12" y2="3"/>
               </svg>
               <span>Haritayı kaydet</span>
+            </button>
+            <button class="share-btn" id="share-whatsapp" type="button">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.64.07-.3-.15-1.25-.46-2.39-1.47-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.08c.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.63.71.23 1.36.2 1.87.12.57-.09 1.75-.72 2-1.41.25-.69.25-1.29.17-1.41-.07-.12-.27-.2-.57-.35zM12.04 21.5h-.01a9.4 9.4 0 0 1-4.8-1.31l-.34-.2-3.57.94.95-3.48-.22-.36a9.42 9.42 0 0 1-1.44-5.02c0-5.2 4.24-9.44 9.45-9.44 2.52 0 4.89.99 6.67 2.77a9.37 9.37 0 0 1 2.76 6.68c0 5.21-4.24 9.44-9.45 9.44zM20.08 3.9A11.3 11.3 0 0 0 12.04.57C5.77.57.67 5.67.67 11.94c0 2 .52 3.96 1.52 5.68L.57 23.43l5.96-1.56a11.36 11.36 0 0 0 5.5 1.4h.01c6.27 0 11.37-5.1 11.37-11.37 0-3.04-1.18-5.89-3.33-8.04z"/>
+              </svg>
+              <span>WhatsApp</span>
+            </button>
+            <!-- Web Share API olan cihazlarda (çoğunlukla mobil) görünür -->
+            <button class="share-btn" id="share-native" type="button" hidden>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/>
+                <polyline points="16 6 12 2 8 6"/>
+                <line x1="12" y1="2" x2="12" y2="15"/>
+              </svg>
+              <span>Diğer uygulamalar</span>
             </button>
             <button class="share-btn primary" id="share-twitter" type="button">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -1352,6 +1395,8 @@ a.src-badge:hover { border-color: currentColor; }
       <div id="src-legend" class="src-legend"></div>
       <div class="modal-section-title">Açık veri</div>
       <p>Paneldeki hat ve istasyon geometrileri ile aylık ilerleme tablosu <a href="https://github.com/sefabarisozturk/metrometre-data" target="_blank" rel="noopener">GitHub'da herkese açık</a> olarak yayımlanmaktadır; her değişiklik sürüm geçmişinde izlenebilmektedir.</p>
+      <div class="modal-section-title">Takip et</div>
+      <p>Aylık veriler yayımlandığında haberdar olmak için <a href="/feed.xml" target="_blank" rel="noopener">RSS beslemesini</a> Feedly, Inoreader gibi bir okuyucuya ekleyebilir ya da <a href="https://x.com/sefabarisozturk" target="_blank" rel="noopener">X hesabını</a> takip edebilirsiniz.</p>
       <div class="modal-section-title">Güncelleme sıklığı</div>
       <p>Panel aylık olarak güncellenmektedir. Açılış, test başlangıcı veya takvim değişikliği gibi önemli gelişmeler tespit edildiğinde ara güncelleme yapılmaktadır.<span id="modal-asof"></span></p>
       <div class="modal-section-title">Sınırlılıklar</div>
@@ -1374,6 +1419,17 @@ a.src-badge:hover { border-color: currentColor; }
     <button class="modal-close" id="cmp-close" type="button" aria-label="Pencereyi kapat">✕</button>
     <div id="cmp-empty" hidden>Henüz aylık ilerleme verisi yüklenmedi.</div>
     <div id="cmp-content">
+      <!-- Son veri ayının paylaşılabilir özeti (en çok ilerleyen hatlar) -->
+      <div id="cmp-summary" hidden>
+        <div id="cmp-summary-text"></div>
+        <div id="cmp-summary-actions">
+          <button class="share-btn" id="cmp-summary-copy" type="button"><span>Özeti kopyala</span></button>
+          <button class="share-btn primary" id="cmp-summary-x" type="button">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            <span>X'te paylaş</span>
+          </button>
+        </div>
+      </div>
       <div id="cmp-chart-wrap">
         <svg id="cmp-chart-svg" role="img" aria-label="Aylık ilerleme karşılaştırma grafiği"></svg>
         <div id="cmp-tooltip"></div>
@@ -1715,6 +1771,7 @@ function onDataReady(){
   normalizeFeatureColors(allHatlar);
   normalizeFeatureColors(allDuraklar);
   document.querySelectorAll('.card-skel').forEach(el => el.remove());
+  applyPathRoute();
   applyHashState();
   updateMetrics();
   renderSortBar();
@@ -2736,8 +2793,28 @@ function buildShareData(p){
     }
   }
 
-  // URL: tarayıcının o anki adresi — writeHash her seçimde çalıştığı için hash günceldir.
-  return { text, url: window.location.href };
+  // URL: hat başına kalıcı yol (/hat/<id>-<slug>). Bu adreste sunucu (Cloudflare
+  // Function) önizleme etiketlerini hatta göre yazar → X/WhatsApp'ta hat kartı çıkar.
+  return { text, url: lineShareUrl(p) };
+}
+
+// "M12 Göztepe-Ümraniye Metro Hattı" → "m12-goztepe-umraniye-metro-hatti"
+function slugify(s){
+  return trFold(s).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
+}
+// Paylaşılabilir hat adresi. OBJECTID sunucu ve uygulama için yeterlidir;
+// slug yalnızca insanlar için okunabilirlik katar.
+function lineShareUrl(p){
+  const id = String(p?.OBJECTID ?? '').trim();
+  if(!id) return window.location.href;
+  const slug = slugify([p.KOD, p.AD].filter(Boolean).join(' '));
+  return `${location.origin}/hat/${encodeURIComponent(id)}${slug ? '-' + slug : ''}`;
+}
+
+// Paylaşım kartı yalnızca fiziki ilerlemesi olan yapım hatları için üretilir
+function hasShareCard(p){
+  const durum = String(p?.PR_DURUM ?? '');
+  return TAB_FILTERS.yapim.includes(durum) && p.PR_ILERLEME != null && p.PR_ILERLEME !== '';
 }
 
 function openSharePopover(){
@@ -2745,6 +2822,12 @@ function openSharePopover(){
   if(!p) return;
 
   resetShareButtons();
+  const withCard = hasShareCard(p);
+  document.getElementById('share-card').hidden   = !withCard;
+  document.getElementById('share-native').hidden = !navigator.share;
+  // Kart görseli popover açılırken önden indirilir: paylaşım menüsü, tıklamadan
+  // hemen sonra açılmazsa tarayıcı (özellikle iOS) izni düşürür.
+  cardBlobPromise = withCard ? fetchShareCard(p) : null;
   document.getElementById('share-popover').classList.add('open');
 }
 
@@ -2764,7 +2847,85 @@ function resetShareButtons(){
     sm.classList.remove('copied');
     sm.querySelector('span').textContent = 'Haritayı kaydet';
   }
+  const sc = document.getElementById('share-card');
+  if(sc){
+    sc.classList.remove('copied');
+    sc.disabled = false;
+    sc.querySelector('span').textContent = 'Paylaşım kartı';
+  }
 }
+
+// Bir blob'u (görsel) cihazın paylaşım menüsüyle paylaşır; desteklenmiyorsa indirir.
+// Dönüş: 'shared' | 'downloaded' | 'cancelled'
+async function shareOrDownload(blob, fname, text, url){
+  const file = new File([blob], fname, { type: blob.type || 'image/png' });
+  if(navigator.canShare && navigator.canShare({ files: [file] })){
+    try {
+      // Bazı uygulamalar (WhatsApp, Instagram) görselle birlikte metni de alır
+      await navigator.share({ files: [file], title: text, text: `${text}\n${url}` });
+      return 'shared';
+    } catch(err){
+      if(err && err.name === 'AbortError') return 'cancelled';
+      // Paylaşım başarısızsa indirmeye düş
+    }
+  }
+  const href = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = href; a.download = fname;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(href), 4000);
+  return 'downloaded';
+}
+
+let cardBlobPromise = null;
+function fetchShareCard(p){
+  return fetch(`${BASE}/og/${encodeURIComponent(p.OBJECTID)}.png?_ts=${Date.now()}`)
+    .then(r => r.ok ? r.blob() : null)
+    .catch(() => null);
+}
+
+// Paylaşım kartı: metrometre-data/og/<OBJECTID>.png (GitHub Actions üretir).
+// Mobilde paylaşım menüsü açılır (WhatsApp, Instagram hikâyesi…); masaüstünde indirilir.
+document.getElementById('share-card').addEventListener('click', async () => {
+  const p = selectedFeature?.properties;
+  if(!p) return;
+  const btn = document.getElementById('share-card');
+  const lbl = btn.querySelector('span');
+  btn.disabled = true;
+  lbl.textContent = 'Hazırlanıyor…';
+  try {
+    const blob = await (cardBlobPromise || fetchShareCard(p));
+    if(!blob) throw new Error('kart yok');
+    const safe = String(p.KOD || 'hat').trim().replace(/[^\w.-]+/g, '_') || 'hat';
+    const data = buildShareData(p);
+    const r = await shareOrDownload(blob, `metrometre-${safe}-kart.png`, data.text, data.url);
+    if(r !== 'cancelled'){
+      btn.classList.add('copied');
+      lbl.textContent = r === 'shared' ? 'Paylaşıldı ✓' : 'İndirildi ✓';
+    } else {
+      lbl.textContent = 'Paylaşım kartı';
+    }
+  } catch(err){
+    console.warn('Paylaşım kartı alınamadı:', err);
+    lbl.textContent = 'Kart henüz hazır değil';
+  }
+  btn.disabled = false;
+  setTimeout(resetShareButtons, 1800);
+});
+
+document.getElementById('share-whatsapp').addEventListener('click', () => {
+  if(!selectedFeature) return;
+  const data = buildShareData(selectedFeature.properties);
+  window.open('https://wa.me/?text=' + encodeURIComponent(`${data.text}\n${data.url}`), '_blank', 'noopener,noreferrer');
+});
+
+// Cihazın kendi paylaşım menüsü (Telegram, Mesajlar, e-posta…)
+document.getElementById('share-native').addEventListener('click', async () => {
+  if(!selectedFeature || !navigator.share) return;
+  const data = buildShareData(selectedFeature.properties);
+  try { await navigator.share({ title: data.text, text: data.text, url: data.url }); }
+  catch(_){ /* kullanıcı vazgeçti */ }
+});
 
 document.getElementById('detail-share').addEventListener('click', e => {
   e.stopPropagation();
@@ -3122,6 +3283,34 @@ function writeHash(){
   if(objId != null && objId !== '') parts.push('hat=' + objId);
   const hash = '#' + parts.join('&');
   if(location.hash !== hash) history.replaceState(null, '', hash);
+  syncDocumentTitle();
+}
+
+// Sekme başlığı seçili hattı gösterir (yer imleri / tarayıcı geçmişi için)
+const BASE_TITLE = document.title;
+function syncDocumentTitle(){
+  const p = selectedFeature?.properties;
+  document.title = p ? `${[p.KOD, p.AD].filter(Boolean).join(' ')} | metrometre` : BASE_TITLE;
+}
+
+// Paylaşılan /hat/<id>[-slug] adresiyle gelindiyse: hattın sekmesini bulup
+// adresi uygulamanın hash biçimine çevirir (#tab=…&hat=<id>). Yol kökte "/"
+// olarak bırakılır; böylece sonraki seçimlerde adres tutarlı kalır.
+// (Bu yolda sayfayı Cloudflare Function sunar; Function yoksa Pages'in SPA
+//  davranışı index.html'i döndürür — her iki durumda da burası çalışır.)
+function applyPathRoute(){
+  const m = /^\/hat\/(\d+)/.exec(location.pathname);
+  if(!m) return;
+  const id = m[1];
+  const f  = allHatlar.find(x => String(x.properties?.OBJECTID) === id);
+  let hash = location.hash;
+  if(f){
+    const d   = String(f.properties?.PR_DURUM ?? '');
+    const tab = TAB_FILTERS.isletme.includes(d) ? 'isletme'
+              : TAB_FILTERS.proje.includes(d)   ? 'proje' : 'yapim';
+    hash = `#tab=${tab}&sort=${activeSortKey[tab]}&hat=${id}`;
+  }
+  history.replaceState(null, '', '/' + (hash || ''));
 }
 
 // Hash'ten sekme + sıralama durumunu state'e uygular (render ETMEZ).
@@ -3147,6 +3336,9 @@ function selectHatFromHash(){
     .find(f => String(f.properties?.OBJECTID) === objId);
   if(!feature) return;
   onCardSelect(feature);
+  // Paylaşılan bağlantıyla mobilde gelen kişi listeye değil, doğrudan hattın
+  // açık olduğu haritaya düşsün (detay kartı harita panelinde açılır).
+  if(isMobile()) applyMobileView('map');
   const card = document.querySelector(`.card[data-objectid="${objId}"]`);
   if(card) card.scrollIntoView({ block:'nearest' });
 }
@@ -4043,6 +4235,8 @@ function renderCompareChart(){
   const hoverLayer = `<line id="cmp-guide" x1="0" x2="0" y1="${padT.toFixed(1)}" y2="${(padT+iy).toFixed(1)}" style="display:none"></line><g id="cmp-hover-dots"></g>`;
   svg.innerHTML = grid + xLabels + lines + hoverLayer;
 
+  renderMonthlySummary();
+
   // Not satırı: tahmini noktalar varsa açıklama eklenir
   document.getElementById('cmp-note').textContent =
     'Yüzde değerleri her ayın sonundaki fiziki ilerlemeyi gösterir. Bir hattı gizlemek/göstermek için etiketine tıklayın.'
@@ -4079,6 +4273,56 @@ function toggleCmpKey(key){
   else cmpHidden.add(key);
   renderCompareChart();
 }
+
+// ──── AYLIK ÖZET (paylaşılabilir) ────
+// Son veri ayında bir önceki aya göre en çok ilerleyen hatlar. X sınırına
+// (280 karakter, bağlantı 23 sayılır) sığacak kadar hat alınır.
+const shortLineName = s => String(s || '').replace(/\s+(Metro|Tramvay|Füniküler|Teleferik)\s+Hattı$/i, '').trim();
+function buildMonthlySummary(){
+  const ym = latestDataYM();
+  if(!ym) return null;
+  const movers = [];
+  for(const rec of progressByOid.values()){
+    const ser = rec.series;
+    const n = ser.length;
+    if(n < 2 || ser[n-1].ym !== ym) continue;
+    const delta = ser[n-1].pct - ser[n-2].pct;
+    if(delta > 0.004) movers.push({ name: shortLineName([rec.kod, rec.hat].filter(Boolean).join(' ')), pct: ser[n-1].pct, delta });
+  }
+  if(!movers.length) return null;
+  movers.sort((a, b) => b.delta - a.delta);
+  const head = `${ymLong(ym)} itibarıyla İstanbul'daki raylı sistem projelerinde en çok ilerleyenler:`;
+  const line = m => `▲ ${m.name} %${pctText(Math.round(m.pct*100)/100)} (+${pctText(Math.round(m.delta*10)/10)} puan)`;
+  let picked = movers.slice(0, 3);
+  const fit = arr => `${head}\n\n${arr.map(line).join('\n')}\n\nTüm hatlar:`;
+  while(picked.length > 1 && fit(picked).length > 250) picked = picked.slice(0, -1);
+  return { text: fit(picked), url: location.origin + '/', picked, head };
+}
+function renderMonthlySummary(){
+  const box = document.getElementById('cmp-summary');
+  const s = buildMonthlySummary();
+  box.hidden = !s;
+  if(!s) return;
+  document.getElementById('cmp-summary-text').innerHTML =
+    `<b>${esc(s.head)}</b>\n` + s.picked.map(m =>
+      `▲ ${esc(m.name)} %${esc(pctText(Math.round(m.pct*100)/100))} <span style="color:#065F46;font-weight:600">(+${esc(pctText(Math.round(m.delta*10)/10))} puan)</span>`).join('\n');
+}
+document.getElementById('cmp-summary-copy').addEventListener('click', async () => {
+  const s = buildMonthlySummary();
+  if(!s) return;
+  const lbl = document.querySelector('#cmp-summary-copy span');
+  try {
+    await navigator.clipboard.writeText(`${s.text} ${s.url}`);
+    lbl.textContent = 'Kopyalandı ✓';
+  } catch(_){ lbl.textContent = 'Kopyalanamadı'; }
+  setTimeout(() => { lbl.textContent = 'Özeti kopyala'; }, 1800);
+});
+document.getElementById('cmp-summary-x').addEventListener('click', () => {
+  const s = buildMonthlySummary();
+  if(!s) return;
+  window.open('https://x.com/intent/post?text=' + encodeURIComponent(s.text) + '&url=' + encodeURIComponent(s.url),
+              '_blank', 'noopener,noreferrer');
+});
 
 function openCompare(){
   cmpLastFocused = document.activeElement;
