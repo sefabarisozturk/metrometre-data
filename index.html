@@ -4,6 +4,26 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>metrometre | raylı sistem projeleri takip paneli</title>
+<meta name="description" content="İstanbul'da yapımı süren metro, tramvay ve banliyö hatlarının fiziki ilerlemesini, tahmini açılış tarihlerini ve aylık gidişatını bağımsız olarak izleyen panel.">
+<link rel="canonical" href="https://metrometre.com/">
+
+<!-- ──── SOSYAL MEDYA ÖNİZLEMESİ (Open Graph + X kartı) ──── -->
+<!-- Tarayıcı dışı botlar JS çalıştırmadığı için bu etiketler statik ve genel tutulur. -->
+<meta property="og:type"         content="website">
+<meta property="og:site_name"    content="metrometre">
+<meta property="og:locale"       content="tr_TR">
+<meta property="og:url"          content="https://metrometre.com/">
+<meta property="og:title"        content="metrometre | raylı sistem projeleri takip paneli">
+<meta property="og:description"  content="İstanbul'daki raylı sistem projelerinin fiziki ilerlemesi ve tahmini açılış tarihleri, aylık olarak güncellenen bağımsız bir panelde.">
+<meta property="og:image"        content="https://metrometre.com/og-image.png">
+<meta property="og:image:width"  content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt"    content="metrometre — İstanbul raylı sistem projeleri takip paneli">
+<meta name="twitter:card"        content="summary_large_image">
+<meta name="twitter:site"        content="@sefabarisozturk">
+<meta name="twitter:title"       content="metrometre | raylı sistem projeleri takip paneli">
+<meta name="twitter:description" content="İstanbul'daki raylı sistem projelerinin fiziki ilerlemesi ve tahmini açılış tarihleri.">
+<meta name="twitter:image"       content="https://metrometre.com/og-image.png">
 
 <!-- ──── PWA ──── -->
 <link rel="manifest" href="/manifest.json">
@@ -202,6 +222,14 @@ html, body {
 #cards-list::-webkit-scrollbar { width: 4px; }
 #cards-list::-webkit-scrollbar-track { background: transparent; }
 #cards-list::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 2px; }
+
+/* Liste üstü veri dönemi notu (yalnızca yapım sekmesinde) */
+.list-note {
+  flex-shrink: 0;
+  font-size: 10.5px; font-weight: 500; color: var(--text-dim);
+  line-height: 1.4; padding: 0 2px 2px;
+}
+.list-note strong { color: var(--text-muted); font-weight: 700; }
 
 /* Yükleme iskeleti */
 .card-skel { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
@@ -538,6 +566,9 @@ body.detail-open #tab-bar { right: 352px; }
   display: flex; align-items: center; justify-content: center;
   font-size: 28px; font-weight: 700; color: var(--text); letter-spacing: -0.02em;
 }
+/* Donut altındaki "… itibarıyla" veri dönemi notu */
+.detail-asof { font-size: 10.5px; font-weight: 500; color: var(--text-dim); }
+.detail-asof:empty { display: none; }
 
 /* ──── DETAY AYLIK İLERLEME (mini trend grafiği) ──── */
 #detail-trend-wrap { display: flex; flex-direction: column; align-items: stretch; gap: 10px; }
@@ -1212,6 +1243,7 @@ body.detail-open #tab-bar { right: 352px; }
               </svg>
               <div id="detail-donut-center" class="donut-center"></div>
             </div>
+            <span id="detail-asof" class="detail-asof"></span>
           </div>
 
           <div id="detail-trend-wrap" hidden>
@@ -1283,7 +1315,7 @@ body.detail-open #tab-bar { right: 352px; }
       <div class="modal-section-title">Veri kaynakları</div>
       <p>İlerleme yüzdeleri ve tahmini açılış tarihleri, kurumların kamuoyuyla paylaştığı en güncel resmî açıklamalar esas alınarak derlenmektedir. Resmî açıklamaların yanı sıra İBB Çözüm Merkezi'ne ve CİMER'e yapılan bilgi edinme başvurularından elde edilen veriler de kullanılmaktadır. Veriler; X, YouTube ve çeşitli sosyal medya platformlarındaki bağımsız saha paylaşımlarıyla çapraz kontrol edilmektedir.</p>
       <div class="modal-section-title">Güncelleme sıklığı</div>
-      <p>Panel aylık olarak güncellenmektedir. Açılış, test başlangıcı veya takvim değişikliği gibi önemli gelişmeler tespit edildiğinde ara güncelleme yapılmaktadır.</p>
+      <p>Panel aylık olarak güncellenmektedir. Açılış, test başlangıcı veya takvim değişikliği gibi önemli gelişmeler tespit edildiğinde ara güncelleme yapılmaktadır.<span id="modal-asof"></span></p>
       <div class="modal-section-title">Sınırlılıklar</div>
       <p>Fiziksel ilerleme yüzdeleri, kurumların kamuoyuyla paylaştığı bilgileri yansıtmaktadır. Yerinde bağımsız denetim yapılmamaktadır. Tahmini açılış tarihleri resmî açıklamalara dayalıdır ve değişime tabidir.</p>
     </div>
@@ -1346,8 +1378,10 @@ const BASEMAP   = 'https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/s
 // Not: Başlık adları büyük/küçük harf ve birkaç eşanlama toleranslıdır
 // (Kod/Hat Kodu, YilAy/Yıl_Ay/Ay/Tarih, Ilerleme/Yüzde, Aciklama/Açıklama/Not).
 // Eski GENİŞ format (ay sütunları "Şubat 2026" gibi) da hâlâ desteklenir.
-// Farklı bir kaynak isterseniz PROGRESS_URL'i değiştirin (boş = özellik kapalı).
-const PROGRESS_URL = `${BASE}/overlay.csv`;
+// Aynı dosya hem öznitelik overlay'i (applySheetOverlay) hem aylık seri
+// (parseProgressCSV) için kullanılır; TEK kez indirilip iki ayrıştırıcıya verilir.
+// Boş bırakılırsa iki özellik de kapanır, panel GeoJSON değerleriyle çalışır.
+const OVERLAY_URL = `${BASE}/overlay.csv`;
      
 // PR_DURUM kodlarının sekmelere dağılımı
 const TAB_FILTERS = {
@@ -1375,14 +1409,14 @@ const SORT_CONFIG = {
     { key:'istasyon', label:'İstasyon',       fn:(a,b) => numDesc(a.p.ISTASYON, b.p.ISTASYON) },
   ],
   yapim: [
-    { key:'acilis',   label:'Tahmini açılış', fn:(a,b) => numAsc(a.p.PR_ACILIS_SIRALAMA, b.p.PR_ACILIS_SIRALAMA) },
+    { key:'acilis',   label:'Tahmini açılış', fn:(a,b) => acilisCompare(a.p, b.p) },
     { key:'ilerleme', label:'İlerleme',        fn:(a,b) => numDesc(a.p.PR_ILERLEME, b.p.PR_ILERLEME) },
     { key:'mesafe',   label:'Uzunluk',         fn:(a,b) => numDesc(a.p.MESAFE, b.p.MESAFE) },
     { key:'istasyon', label:'İstasyon',        fn:(a,b) => numDesc(a.p.ISTASYON, b.p.ISTASYON) },
   ],
   proje: [
     { key:'mesafe',   label:'Uzunluk',         fn:(a,b) => numDesc(a.p.MESAFE, b.p.MESAFE) },
-    { key:'acilis',   label:'Tahmini açılış',  fn:(a,b) => numAsc(a.p.PR_ACILIS_SIRALAMA, b.p.PR_ACILIS_SIRALAMA) },
+    { key:'acilis',   label:'Tahmini açılış',  fn:(a,b) => acilisCompare(a.p, b.p) },
     { key:'istasyon', label:'İstasyon',        fn:(a,b) => numDesc(a.p.ISTASYON, b.p.ISTASYON) },
   ],
 };
@@ -1395,16 +1429,73 @@ function dateSortDesc(a,b){
   return pd(b) - pd(a);
 }
 
+// ──── Tahmini açılış sıralama anahtarı ────
+// Sıralama, overlay'den gelen GÜNCEL PR_ACILIS metninden türetilir; böylece
+// Sheets'te tarih kaydığında sıra da kendiliğinden güncellenir.
+// Dönüş: yıl*12 + ay (ayın sonu varsayılır). Okunamayan / "-" → Infinity (en sona).
+// Örnekler: "2026-10" | "2026-10-15" | "15.10.2026" | "10.2026" | "Nisan 2027"
+//           "2027 ilk çeyrek" | "2028 ilk yarı" | "2026 son çeyrek" | "2029" | "2030 sonrası"
+const TR_AY_NO = {ocak:1,subat:2,mart:3,nisan:4,mayis:5,haziran:6,
+                  temmuz:7,agustos:8,eylul:9,ekim:10,kasim:11,aralik:12};
+function acilisKey(raw){
+  if(raw == null) return Infinity;
+  const s = trFold(raw).replace(/\s+/g,' ').trim();
+  if(!s || s === '-' || s === 'belirsiz') return Infinity;
+  let m;
+  if((m = s.match(/^(\d{4})-(\d{1,2})(?:-(\d{1,2}))?$/)))  return +m[1]*12 + +m[2] - 1 + (m[3] ? +m[3]/32 : 0.99);
+  if((m = s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/)))     return +m[3]*12 + +m[2] - 1 + +m[1]/32;
+  if((m = s.match(/^(\d{1,2})\.(\d{4})$/)))                return +m[2]*12 + +m[1] - 1 + 0.99;
+  const y = s.match(/(\d{4})/);
+  if(!y) return Infinity;
+  const yr = +y[1];
+  if(/sonras/.test(s)) return yr*12 + 12.5;          // "2030 sonrası" → o yılın tüm tarihlerinden sonra
+  const ay = Object.keys(TR_AY_NO).find(k => s.includes(k));
+  if(ay) return yr*12 + TR_AY_NO[ay] - 1 + 0.99;
+  let mo = 12;                                       // yalnızca yıl → yıl sonu
+  if(/ilk ceyrek|1\. ceyrek|birinci ceyrek/.test(s))        mo = 3;
+  else if(/ikinci ceyrek|2\. ceyrek/.test(s))               mo = 6;
+  else if(/ucuncu ceyrek|3\. ceyrek/.test(s))               mo = 9;
+  else if(/ilk yari|ilk yarisi|birinci yari|basi|basinda/.test(s)) mo = 6;
+  return yr*12 + mo - 1 + 0.99;
+}
+// Eşitlikte eski elle sıra alanı (PR_ACILIS_SIRALAMA), o da yoksa ilerleme belirler.
+function acilisCompare(a, b){
+  const d = acilisKey(a.PR_ACILIS) - acilisKey(b.PR_ACILIS);
+  if(d && !isNaN(d)) return d;
+  const s = numAsc(a.PR_ACILIS_SIRALAMA, b.PR_ACILIS_SIRALAMA);
+  if(s && !isNaN(s)) return s;
+  return numDesc(a.PR_ILERLEME, b.PR_ILERLEME);
+}
+
+// ──── Türkçe katlama (arama / karşılaştırma) ────
+// "İkitelli", "ikitelli", "IKITELLI", "Kabatas" → hepsi aynı anahtara iner.
+// toLowerCase() "İ"yi "i̇" (noktalı birleşik i) yaptığından tr yereli kullanılır,
+// ardından aksanlar (ş, ç, ğ, ö, ü) ve ı → i sadeleştirilir.
+function trFold(s){
+  return String(s ?? '')
+    .toLocaleLowerCase('tr-TR')
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/ı/g, 'i');
+}
+
 // ──── Türkçe tarih biçimlendirici ────
 // Esnek biçim desteği veri kaynağında tek tip garanti edilemediği için gerekli.
-// Girdi örnekleri: "1.1.2026" | "01.2026" | "2026" | "2026-01-01"
+// Girdi örnekleri: "1.1.2026" | "01.2026" | "2026" | "2026-01-01" | "2026-01" (overlay biçimi)
+// "-" → "Belirsiz" (tarih verilmemiş / askıda projeler).
 const TR_MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran',
                    'Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
 function fmtTRDate(raw){
   if(!raw) return null;
   const s = String(raw).trim();
+  if(!s) return null;
+  if(/^[-–—]+$/.test(s)) return 'Belirsiz';
   const m0 = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if(m0) return `${parseInt(m0[3],10)} ${TR_MONTHS[parseInt(m0[2],10)-1]} ${m0[1]}`;
+  const mYm = s.match(/^(\d{4})-(\d{1,2})$/);
+  if(mYm){
+    const mo = parseInt(mYm[2],10);
+    if(mo >= 1 && mo <= 12) return `${TR_MONTHS[mo-1]} ${mYm[1]}`;
+  }
   const m1 = s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
   if(m1) return `${parseInt(m1[1],10)} ${TR_MONTHS[parseInt(m1[2],10)-1]} ${m1[3]}`;
   const m2 = s.match(/^(\d{1,2})\.(\d{4})$/);
@@ -1516,19 +1607,26 @@ async function loadData(){
   showLoading(true);
   hideError();
   try {
-    const [rH, rD] = await Promise.all([fetch(URL_HAT()), fetch(URL_DURAK())]);
+    // GeoJSON'lar ve overlay CSV paralel indirilir. CSV ikincildir: hata/zaman
+    // aşımında null döner ve panel GeoJSON değerleriyle çalışmaya devam eder.
+    const [rH, rD, overlayText] = await Promise.all([
+      fetch(URL_HAT()), fetch(URL_DURAK()), fetchOverlayText(),
+    ]);
     if(!rH.ok || !rD.ok) throw new Error('HTTP error');
     const [hj, dj] = await Promise.all([rH.json(), rD.json()]);
     allHatlar   = hj.features || [];
     allDuraklar = dj.features || [];
-    // Google Sheets öznitelik overlay'i (A yolu): kartlar/detay çizilmeden önce
-    // ilerleme/açıklama/açılış değerlerini GeoJSON'un üstüne yaz. Hata olursa sessiz atlanır.
-    await applySheetOverlay();
+    // Aynı CSV metni iki kez kullanılır (tek indirme):
+    //  1) öznitelik overlay'i: ilerleme/açıklama/açılış değerlerini GeoJSON'un üstüne yazar,
+    //  2) aylık seri: trend grafiği + karşılaştırma modalı + veri dönemi bilgisi.
+    // İkisi de kartlar/detay çizilmeden ÖNCE çalışır; böylece hash'li bir linkle
+    // gelindiğinde detay panelindeki aylık grafik de ilk açılışta görünür.
+    applySheetOverlay(overlayText);
+    applyProgressText(overlayText);
     // Bounds yalnızca hatlardan hesaplanır; duraklar zaten hat extent'inin içinde.
     computeGlobalBounds();
     onDataReady();
-    // Aylık ilerleme verisi ikincil; hata ana akışı bozmamalı.
-    loadProgress();
+    syncProgressUI();
   } catch(e) {
     console.error('loadData error:', e);
     showError();
@@ -2161,17 +2259,20 @@ function openDetailPopup(p){
   const donutWrap = document.getElementById('detail-donut-wrap');
   const pct = (p.PR_ILERLEME != null && p.PR_ILERLEME !== '')
     ? Math.round(parseFloat(p.PR_ILERLEME)) : null;
+  const prog = progressForFeature(p);
   if(isYapim && pct !== null && !isNaN(pct)){
     donutWrap.hidden = false;
     drawDetailDonut(pct, renk);
   } else {
     donutWrap.hidden = true;
   }
+  // Donut altına bu hattın son veri dönemi: ör. M14'te son değer Haziran'daysa
+  // "Haziran 2026 itibarıyla" yazar — panelin geri kalanından eski olduğu görülür.
+  document.getElementById('detail-asof').textContent = lineAsofText(prog);
 
   // ──── Aylık ilerleme trendi — hattın tüm aylık kayıtlarını kapsayan mini grafik ────
   // Yalnızca yapımı süren hatlarda gösterilir; işletmedeki ve proje hatlarında gizlenir.
   const trendWrap = document.getElementById('detail-trend-wrap');
-  const prog = progressForFeature(p);
   if(isYapim && prog && prog.series && prog.series.length){
     trendWrap.hidden = false;
     // Sheet henüz genişlik almadan çizmemek için bir sonraki karede çiz
@@ -2213,6 +2314,15 @@ function openDetailPopup(p){
   document.body.classList.add('detail-open');
   // Peek yüksekliğini başlık ölçüsüne göre güncelle (bir sonraki kare)
   if(typeof measureDetailSheet === 'function') requestAnimationFrame(measureDetailSheet);
+}
+
+// Hattın aylık serisindeki son dönem → "Ağustos 2026 itibarıyla"; seri yoksa boş.
+function lineAsofYM(prog){
+  return (prog && prog.series && prog.series.length) ? prog.series[prog.series.length-1].ym : null;
+}
+function lineAsofText(prog){
+  const ym = lineAsofYM(prog);
+  return ym ? `${ymLong(ym)} itibarıyla` : '';
 }
 
 // Fiziki ilerleme donut'ını çizer. Her açılışta boştan doldurarak animasyon uygular.
@@ -2489,7 +2599,11 @@ function buildShareData(p){
 
   if(isYapim && p.PR_ILERLEME != null && p.PR_ILERLEME !== ''){
     const pct = Math.round(parseFloat(p.PR_ILERLEME));
-    if(!isNaN(pct)) text += ` | Fiziki ilerleme: %${pct}`;
+    if(!isNaN(pct)){
+      text += ` | Fiziki ilerleme: %${pct}`;
+      const ym = lineAsofYM(progressForFeature(p));
+      if(ym) text += ` (${ymLong(ym)})`;
+    }
   }
 
   // URL: tarayıcının o anki adresi — writeHash her seçimde çalıştığı için hash günceldir.
@@ -2626,10 +2740,22 @@ document.addEventListener('keydown', e => {
 // ═════════════════════════════════════════════════════
 //  METRİKLER
 // ═════════════════════════════════════════════════════
+// Metrik kuralları (tüm sekmelerde aynı):
+//  • Devre dışı (PR_DURUM 0) hat ve duraklar sayılmaz — kartları listede kalır
+//    ama işletmedeki ağın uzunluğunu/istasyonunu şişirmez.
+//  • İstasyonlar ada göre bir kez sayılır: aktarma istasyonu (ör. Yenikapı)
+//    her hat için ayrı nokta olsa da tek istasyondur.
+//  • Hat sayısı: işletmede benzersiz hat kodu (bir hat birden çok açılış
+//    etabından oluşur); yapım/proje sekmelerinde listedeki proje sayısı
+//    (ör. M7'nin iki ayrı uzatması iki proje).
 function updateMetrics(){
-  const hatlar     = getHatlarForTab(activeTab);
+  const isActive   = f => String(f.properties?.PR_DURUM) !== '0';
+  const hatlar     = getHatlarForTab(activeTab).filter(isActive);
   const uniqueHatSayisi = new Set(hatlar.map(f => f.properties?.KOD)).size;
-  const durakCount = getDuraklarForTab(activeTab).length;
+  const durakCount = new Set(
+    getDuraklarForTab(activeTab).filter(isActive)
+      .map(f => trFold(f.properties?.AD).trim()).filter(Boolean)
+  ).size;
   const mesafeSum  = hatlar.reduce((s,f) => s + (parseFloat(f.properties?.MESAFE)||0), 0);
   const mesafeFmt  = mesafeSum > 0 ? Math.round(mesafeSum) + ' km' : '—';
 
@@ -2699,6 +2825,15 @@ function renderCards(){
   if(wrapped.length === 0){
     list.innerHTML = '<div style="padding:20px 10px;color:var(--text-dim);font-size:12px;font-weight:500">Bu kategoride hat bulunamadı.</div>';
     return;
+  }
+
+  // Yapım sekmesinde verinin hangi döneme ait olduğu liste üstünde belirtilir
+  const asof = latestDataYM();
+  if(activeTab === 'yapim' && asof){
+    const note = document.createElement('div');
+    note.className = 'list-note';
+    note.innerHTML = `Fiziki ilerleme verileri <strong>${esc(ymLong(asof))}</strong> itibarıyladır.`;
+    list.appendChild(note);
   }
 
   wrapped.forEach(({ f, p }) => {
@@ -2972,10 +3107,11 @@ document.addEventListener('click', e => {
 searchInput.addEventListener('input', () => renderSearchResults(searchInput.value));
 
 function renderSearchResults(query){
-  const q = query.trim().toLowerCase();
+  // Türkçe katlama: "ikitelli" → "İkitelli", "kabatas" → "Kabataş" bulunur
+  const q = trFold(query).trim();
   const results = allHatlar.filter(f => {
     const p = f.properties || {};
-    return (p.KOD||'').toLowerCase().includes(q) || (p.AD||'').toLowerCase().includes(q);
+    return trFold(p.KOD).includes(q) || trFold(p.AD).includes(q);
   }).slice(0,10);
 
   searchResults.innerHTML = '';
@@ -3436,40 +3572,63 @@ function parseProgressCSV(textContent){
   return progressByOid.size > 0;
 }
 
-// Veriyi canlı CSV linkinden (PROGRESS_URL) çeker ve parse eder.
-// Link boş, ulaşılamaz veya biçimi hatalıysa grafik özellikleri sessizce
-// kapanır (buton gizlenir); panel geri kalanı normal çalışmaya devam eder.
-async function loadProgress(){
-  if(!PROGRESS_URL){
-    progressByOid = new Map();
-    progressMonths = [];
-    syncProgressUI();
-    return;
-  }
+// overlay.csv'yi TEK kez indirir; metni döner. Link boş, erişilemez ya da
+// 6 sn içinde yanıt yoksa null döner → overlay ve aylık grafikler sessizce
+// kapanır, panelin geri kalanı GeoJSON değerleriyle normal çalışır.
+async function fetchOverlayText(){
+  if(!OVERLAY_URL) return null;
+  const ctrl = new AbortController();
+  const to = setTimeout(() => ctrl.abort(), 6000);   // yavaş kaynak ana yüklemeyi kilitlemesin
   try {
-    const sep = PROGRESS_URL.includes('?') ? '&' : '?';
-    const res = await fetch(`${PROGRESS_URL}${sep}_ts=${Date.now()}`);
+    const sep = OVERLAY_URL.includes('?') ? '&' : '?';
+    const res = await fetch(`${OVERLAY_URL}${sep}_ts=${Date.now()}`, { signal: ctrl.signal });
     if(!res.ok) throw new Error('HTTP ' + res.status);
-    parseProgressCSV(await res.text());
+    return await res.text();
   } catch(e){
-    console.warn('loadProgress: ilerleme verisi yüklenemedi.', e);
-    progressByOid = new Map();
+    console.warn('fetchOverlayText: overlay.csv okunamadı; GeoJSON değerleri kullanılacak.', e);
+    return null;
+  } finally {
+    clearTimeout(to);
+  }
+}
+
+// İndirilmiş CSV metninden aylık seriyi kurar (progressByOid / progressMonths).
+// Metin yoksa ya da biçimi tanınmazsa seriler boşaltılır; grafik butonu gizlenir.
+function applyProgressText(text){
+  progressByOid  = new Map();
+  progressMonths = [];
+  if(!text) return;
+  try {
+    parseProgressCSV(text);
+  } catch(e){
+    console.warn('applyProgressText: aylık ilerleme verisi ayrıştırılamadı.', e);
+    progressByOid  = new Map();
     progressMonths = [];
   }
-  syncProgressUI();
+}
+
+// Paneldeki en güncel veri dönemi ('YYYY-MM'); aylık veri yoksa null.
+function latestDataYM(){
+  return progressMonths.length ? progressMonths[progressMonths.length - 1] : null;
+}
+
+// 'YYYY-MM' → "Ağustos 2026"
+function ymLong(ym){
+  if(!ym) return '';
+  const [y, mo] = ym.split('-');
+  return `${TR_MONTHS[parseInt(mo,10)-1]} ${y}`;
 }
 
 // ═════════════════════════════════════════════════════
-//  GOOGLE SHEETS ÖZNİTELİK OVERLAY'İ  (canlı — "A yolu")
-//  Yayımlanan CSV'yi çeker; OBJECTID (yoksa KOD) ile eşleştirip
+//  ÖZNİTELİK OVERLAY'İ  (overlay.csv — Sheets'ten Actions ile senkron)
+//  İndirilmiş CSV metnini OBJECTID (yoksa KOD) ile eşleştirip
 //  ilerleme / açıklama / açılış değerlerini GeoJSON feature'larının
-//  ÜSTÜNE yazar. Geometri hiç değişmez. Link/erişim/CORS hatasında
+//  ÜSTÜNE yazar. Geometri hiç değişmez. Metin yoksa (erişim hatası)
 //  sessizce atlanır → GeoJSON'daki mevcut değerler korunur.
 //  Başlık adları esnek tanınır; hem "hat başına tek satır" hem de
 //  aylık (uzun/geniş) format desteklenir (en güncel ay alınır).
 // ═════════════════════════════════════════════════════
-const SHEET_OVERLAY_URL = `${BASE}/overlay.csv`;
-     
+
 // Başlık eşleştirme kümeleri (küçük harf + TR harf + boşluk/altçizgi sadeleştirilmiş)
 const SHEET_COLS = {
   oid:    ['objectid','object_id','oid'],
@@ -3492,21 +3651,9 @@ function sheetFindCol(headNorm, names){
   return -1;
 }
 
-async function applySheetOverlay(){
-  if(!SHEET_OVERLAY_URL) return;
-  let rows;
-  try {
-    const sep = SHEET_OVERLAY_URL.includes('?') ? '&' : '?';
-    const ctrl = new AbortController();
-    const to = setTimeout(() => ctrl.abort(), 6000);   // yavaş/erişilemez sheet ana yüklemeyi kilitlemesin
-    const res = await fetch(`${SHEET_OVERLAY_URL}${sep}_ts=${Date.now()}`, { signal: ctrl.signal });
-    clearTimeout(to);
-    if(!res.ok) throw new Error('HTTP ' + res.status);
-    rows = parseCSV(await res.text()).filter(r => r.some(c => c.trim() !== ''));
-  } catch(e){
-    console.warn('applySheetOverlay: sheet okunamadı; GeoJSON değerleri kullanılacak.', e);
-    return;
-  }
+function applySheetOverlay(text){
+  if(!text) return;
+  const rows = parseCSV(text).filter(r => r.some(c => c.trim() !== ''));
   if(rows.length < 2) return;
 
   const headNorm = rows[0].map(sheetNorm);
@@ -3589,6 +3736,10 @@ function syncProgressUI(){
   // Buton görünürlüğü: veri yoksa karşılaştırma butonu gizli
   const cbtn = document.getElementById('chart-btn');
   if(cbtn) cbtn.style.display = progressByOid.size > 0 ? '' : 'none';
+  // Bilgi modalındaki veri dönemi cümlesi
+  const masof = document.getElementById('modal-asof');
+  const ym = latestDataYM();
+  if(masof) masof.textContent = ym ? ` Paneldeki en güncel fiziki ilerleme verisi ${ymLong(ym)} dönemine aittir.` : '';
   // Karşılaştırma modalı açıksa yeniden çiz
   if(document.getElementById('cmp-backdrop').classList.contains('show')) renderCompareChart();
 }
