@@ -2489,10 +2489,11 @@ function lineSourcePoint(prog){
 function sourceBadgeHtml(pt){
   const si = sourceInfo(pt?.src);
   if(!si) return '';
-  const inner = `<span class="src-dot"></span>${esc(si.label)}${pt.link ? '<span class="src-ext" aria-hidden="true">↗</span>' : ''}`;
+  // Rozette tabloya yazılan metin aynen görünür (ör. "CİMER", "İBB Çözüm Merkezi");
+  // tür (Bilgi edinme yanıtı, Resmî açıklama…) yalnızca rengi ve ipucunu belirler.
+  const inner = `<span class="src-dot"></span>${esc(si.raw)}${pt.link ? '<span class="src-ext" aria-hidden="true">↗</span>' : ''}`;
   // Tabloda daha özgül bir metin yazılmışsa (ör. "İBB basın bülteni") ipucunda o da görünür
-  const rawNote = (si.raw && trFold(si.raw) !== trFold(si.label)) ? `${si.raw} — ` : '';
-  const title = esc(rawNote + (si.desc ? `${si.label}: ${si.desc}` : si.label));
+  const title = esc(si.desc ? `${si.label}: ${si.desc}` : si.label);
   return pt.link
     ? `<a class="src-badge src-${si.key}" href="${esc(pt.link)}" target="_blank" rel="noopener" title="${title}">${inner}</a>`
     : `<span class="src-badge src-${si.key}" title="${title}">${inner}</span>`;
@@ -2637,7 +2638,7 @@ function detailTrendHover(e){
   const sy = ctm.d * best.y + ctm.f;   // viewBox → ekran y
   const bsi = sourceInfo(best.src);
   detailTrendTip.innerHTML = `<span class="tip-mon">${esc(ymLabel(best.ym))}</span> · <span class="tip-pct" style="color:${detailTrendColor}">%${pctText(best.pct)}</span>`
-    + (bsi ? `<span class="tip-src">${esc(bsi.label)}</span>` : '');
+    + (bsi ? `<span class="tip-src">${esc(bsi.raw)}</span>` : '');
   detailTrendTip.style.left = (sx - box.left) + 'px';
   detailTrendTip.style.top  = (sy - box.top - 10) + 'px';
   detailTrendTip.classList.add('show');

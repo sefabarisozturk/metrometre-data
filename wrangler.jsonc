@@ -1,0 +1,20 @@
+// metrometre — Cloudflare Workers yapılandırması
+// Site "Workers + statik dosyalar" olarak yayınlanıyor. Bu dosya:
+//  • reponun kökünü statik site olarak sunar (eskisi gibi),
+//  • tanınmayan sayfa yollarında index.html döner (SPA davranışı) — /hat/6 gibi
+//    paylaşım bağlantıları 404 vermez,
+//  • yalnızca /hat/* ve /feed.xml isteklerinde worker/index.js'i çalıştırır.
+// "name", Cloudflare panelindeki Worker adıyla aynı olmalıdır.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "metrometre-data",
+  "main": "worker/index.js",
+  "compatibility_date": "2026-07-21",
+  "observability": { "enabled": true },
+  "assets": {
+    "directory": ".",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/hat", "/hat/*", "/feed.xml"]
+  }
+}
