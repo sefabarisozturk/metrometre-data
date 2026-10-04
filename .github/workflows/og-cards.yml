@@ -1,0 +1,51 @@
+name: Paylaşım kartları
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - overlay.csv
+      - RAYLI_SISTEM_HAT_LN.geojson
+      - scripts/og_cards.py
+      - .github/workflows/og-cards.yml
+  schedule:
+    - cron: "17 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: og-cards
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Playwright + Chromium
+        run: |
+          pip install playwright==1.56.0
+          python -m playwright install --with-deps chromium
+      - name: Inter fontu
+        run: npm install --no-save --silent @fontsource/inter
+      - name: Kartları üret
+        env:
+          FONT_DIR: ${{ github.workspace }}/node_modules/@fontsource/inter/files
+        run: python scripts/og_cards.py
+      - name: Değişiklik varsa commit at
+        run: |
+          git add og/
+          if git diff --cached --quiet; then
+            echo "Kartlarda değişiklik yok."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Paylaşım kartlarını güncelle"
+          git push
