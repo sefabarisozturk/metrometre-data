@@ -1,0 +1,707 @@
+{
+ "lines": {
+  "1": {
+   "acilis": "Aralık 2029",
+   "ad": "Kirazlı-Halkalı Üniversite",
+   "card": "ab9fea2a2f",
+   "durum": "3",
+   "kod": "M1B",
+   "pct": 25.0,
+   "ym": "2026-08"
+  },
+  "10": {
+   "acilis": "29 Aralık 1990",
+   "ad": "Taksim-Tünel Nostaljik Tramvay Hattı",
+   "durum": "1",
+   "kod": "T2"
+  },
+  "104": {
+   "acilis": "14 Haziran 2013",
+   "ad": "Esenler-Kirazlı",
+   "durum": "1",
+   "kod": "M1B"
+  },
+  "105": {
+   "acilis": "3 Eylül 1989",
+   "ad": "Aksaray-Kocatepe",
+   "durum": "1",
+   "kod": "M1"
+  },
+  "106": {
+   "acilis": "3 Aralık 1989",
+   "ad": "Kocatepe-Otogar",
+   "durum": "1",
+   "kod": "M1"
+  },
+  "107": {
+   "acilis": "9 Kasım 2014",
+   "ad": "Aksaray-Yenikapı",
+   "durum": "1",
+   "kod": "M1"
+  },
+  "108": {
+   "acilis": "3 Aralık 1989",
+   "ad": "Otogar-Esenler",
+   "durum": "1",
+   "kod": "M1B"
+  },
+  "109": {
+   "acilis": "31 Ocak 1994",
+   "ad": "Otogar-Zeytinburnu",
+   "durum": "1",
+   "kod": "M1A"
+  },
+  "11": {
+   "acilis": "1 Kasım 2003",
+   "ad": "Kadıköy-Moda Nostaljik Tramvay Hattı",
+   "durum": "1",
+   "kod": "T3"
+  },
+  "110": {
+   "acilis": "7 Mart 1994",
+   "ad": "Zeytinburnu-Bakırköy İncirli",
+   "durum": "1",
+   "kod": "M1A"
+  },
+  "111": {
+   "acilis": "26 Temmuz 1995",
+   "ad": "Bakırköy İncirli-Ataköy Şirinevler",
+   "durum": "1",
+   "kod": "M1A"
+  },
+  "112": {
+   "acilis": "25 Ağustos 1995",
+   "ad": "Ataköy Şirinevler-Yenibosna",
+   "durum": "1",
+   "kod": "M1A"
+  },
+  "113": {
+   "acilis": "30 Ocak 2005",
+   "ad": "Eminönü-Fındıklı MSÜ",
+   "durum": "1",
+   "kod": "T1"
+  },
+  "114": {
+   "acilis": "13 Haziran 1992",
+   "ad": "Aksaray-Beyazıt Kapalıçarşı",
+   "durum": "1",
+   "kod": "T1"
+  },
+  "115": {
+   "acilis": "10 Temmuz 1992",
+   "ad": "Beyazıt Kapalıçarşı-Sirkeci",
+   "durum": "1",
+   "kod": "T1"
+  },
+  "116": {
+   "acilis": "29 Aralık 1992",
+   "ad": "Aksaray-Topkapı",
+   "durum": "1",
+   "kod": "T1"
+  },
+  "117": {
+   "acilis": "10 Mart 1994",
+   "ad": "Topkapı-Zeytinburnu",
+   "durum": "1",
+   "kod": "T1"
+  },
+  "118": {
+   "acilis": "20 Nisan 1996",
+   "ad": "Sirkeci-Eminönü",
+   "durum": "1",
+   "kod": "T1"
+  },
+  "119": {
+   "acilis": "29 Haziran 2006",
+   "ad": "Fındıklı MSÜ-Kabataş",
+   "durum": "1",
+   "kod": "T1"
+  },
+  "120": {
+   "acilis": "16 Mart 2014",
+   "ad": "Şişhane-Yenikapı",
+   "durum": "1",
+   "kod": "M2"
+  },
+  "121": {
+   "acilis": "16 Eylül 2000",
+   "ad": "Taksim-Levent",
+   "durum": "1",
+   "kod": "M2"
+  },
+  "122": {
+   "acilis": "31 Ekim 2000",
+   "ad": "Levent-4. Levent",
+   "durum": "1",
+   "kod": "M2"
+  },
+  "123": {
+   "acilis": "9 Temmuz 2011",
+   "ad": "Darüşşafaka-Hacıosman",
+   "durum": "1",
+   "kod": "M2"
+  },
+  "124": {
+   "acilis": "30 Ocak 2009",
+   "ad": "Taksim-Şişhane",
+   "durum": "1",
+   "kod": "M2"
+  },
+  "125": {
+   "acilis": "2 Eylül 2010",
+   "ad": "Atatürk Oto Sanayi-Darüşşafaka",
+   "durum": "1",
+   "kod": "M2"
+  },
+  "126": {
+   "acilis": "18 Mart 2009",
+   "ad": "Şehitlik-Topkapı",
+   "durum": "1",
+   "kod": "T4"
+  },
+  "13": {
+   "acilis": "1 Ocak 2021",
+   "ad": "Cibali-Alibeyköy Cep Otogarı",
+   "durum": "1",
+   "kod": "T5"
+  },
+  "130": {
+   "acilis": "12 Mart 2019",
+   "ad": "Kazlıçeşme-Halkalı",
+   "durum": "1",
+   "kod": "B1"
+  },
+  "131": {
+   "acilis": "29 Ekim 2013",
+   "ad": "Kazlıçeşme-Ayrılık Çeşmesi",
+   "durum": "1",
+   "kod": "B1"
+  },
+  "133": {
+   "acilis": "29 Ocak 2024",
+   "ad": "Bahçeşehir-Ispartakule",
+   "durum": "1",
+   "kod": "B2"
+  },
+  "134": {
+   "acilis": "2 Ekim 2022",
+   "ad": "Fevzi Çakmak Hastane-Sabiha Gökçen Havalimanı",
+   "durum": "1",
+   "kod": "M4-M10"
+  },
+  "135": {
+   "acilis": "2 Ekim 2022",
+   "ad": "Tavşantepe-Fevzi Çakmak Hastane",
+   "durum": "1",
+   "kod": "M4"
+  },
+  "136": {
+   "acilis": "10 Ekim 2016",
+   "ad": "Kartal-Tavşantepe",
+   "durum": "1",
+   "kod": "M4"
+  },
+  "137": {
+   "acilis": "29 Ocak 2024",
+   "ad": "Kağıthane-Gayrettepe",
+   "durum": "1",
+   "kod": "M11"
+  },
+  "138": {
+   "acilis": "19 Mart 2024",
+   "ad": "Kargo Terminali-Arnavutköy Hastane",
+   "durum": "1",
+   "kod": "M11"
+  },
+  "139": {
+   "acilis": "10 Mart 2024",
+   "ad": "Bakırköy Sahil-Kirazlı",
+   "durum": "1",
+   "kod": "M3"
+  },
+  "14": {
+   "acilis": "17 Ocak 1875",
+   "ad": "Karaköy-Beyoğlu Tarihi Tünel Hattı",
+   "durum": "1",
+   "kod": "F2"
+  },
+  "140": {
+   "acilis": "8 Nisan 2023",
+   "ad": "Başakşehir Metrokent-Kayaşehir Merkez",
+   "durum": "1",
+   "kod": "M3"
+  },
+  "141": {
+   "acilis": "22 Kasım 2013",
+   "ad": "İkitelli Sanayi-Olimpiyat",
+   "durum": "1",
+   "kod": "M9"
+  },
+  "142": {
+   "acilis": "29 Mayıs 2021",
+   "ad": "İkitelli-Bahariye",
+   "durum": "1",
+   "kod": "M9"
+  },
+  "143": {
+   "acilis": "15 Aralık 2017",
+   "ad": "Üsküdar-Yamanevler",
+   "durum": "1",
+   "kod": "M5"
+  },
+  "144": {
+   "acilis": "16 Mart 2024",
+   "ad": "Çekmeköy-Samandıra Merkez",
+   "durum": "1",
+   "kod": "M5"
+  },
+  "145": {
+   "acilis": "2 Ocak 2023",
+   "ad": "Mecidiyeköy-Yıldız",
+   "durum": "1",
+   "kod": "M7"
+  },
+  "146": {
+   "acilis": "30 Ağustos 2023",
+   "ad": "Cibali-Eminönü",
+   "durum": "1",
+   "kod": "T5"
+  },
+  "15": {
+   "acilis": "15 Eylül 2007",
+   "ad": "Şehitlik-Mescid-i Selam",
+   "durum": "1",
+   "kod": "T4"
+  },
+  "152": {
+   "acilis": "4 Aralık 1955",
+   "ad": "Sirkeci Banliyösü",
+   "durum": "0",
+   "kod": "B"
+  },
+  "153": {
+   "acilis": "29 Mayıs 1969",
+   "ad": "Haydarpaşa Banliyösü",
+   "durum": "0",
+   "kod": "B"
+  },
+  "154": {
+   "acilis": "4 Aralık 1955",
+   "ad": "Sirkeci Banliyösü",
+   "durum": "0",
+   "kod": "B"
+  },
+  "155": {
+   "acilis": "29 Mayıs 1969",
+   "ad": "Haydarpaşa Banliyösü",
+   "durum": "0",
+   "kod": "B"
+  },
+  "16": {
+   "acilis": "29 Haziran 2006",
+   "ad": "Taksim-Kabataş Füniküler Hattı",
+   "durum": "1",
+   "kod": "F1"
+  },
+  "160": {
+   "acilis": "2030 sonrası",
+   "ad": "Kavacık-Çengelköy-Altunizade Metro Hatto",
+   "durum": "8",
+   "kod": "M"
+  },
+  "17": {
+   "acilis": "29 Ekim 2017",
+   "ad": "Seyrantepe-Vadistanbul Füniküler Hattı",
+   "durum": "1",
+   "kod": "F3"
+  },
+  "178": {
+   "acilis": "2030 sonrası",
+   "ad": "Altunizade-Yavuztürk-Ümraniye Spor Köyü Metro Hattı",
+   "durum": "5",
+   "kod": "M14"
+  },
+  "18": {
+   "acilis": "28 Ekim 2022",
+   "ad": "Boğaziçi Ü/Hisarüstü-Aşiyan Füniküler Hattı",
+   "durum": "1",
+   "kod": "F4"
+  },
+  "182": {
+   "acilis": "2030 sonrası",
+   "ad": "Ümraniye-Kavacık-Beykoz Metro Hattı",
+   "durum": "8",
+   "kod": "M"
+  },
+  "19": {
+   "acilis": "14 Haziran 2013",
+   "ad": "Kirazlı-Başakşehir Metrokent",
+   "durum": "1",
+   "kod": "M3"
+  },
+  "2": {
+   "acilis": "2030 sonrası",
+   "ad": "Hastane-Esenyurt Meydan Uzatması",
+   "durum": "5",
+   "kod": "M7"
+  },
+  "21": {
+   "acilis": "1 Kasım 2005",
+   "ad": "Eyüp-Piyer Loti Teleferik Hattı",
+   "durum": "1",
+   "kod": "TF2"
+  },
+  "22": {
+   "acilis": "11 Nisan 1993",
+   "ad": "Maçka-Taşkışla Teleferik Hattı",
+   "durum": "1",
+   "kod": "TF1"
+  },
+  "23": {
+   "acilis": "11 Kasım 2010",
+   "ad": "Sanayi Mahallesi-Seyrantepe",
+   "durum": "1",
+   "kod": "M2"
+  },
+  "24": {
+   "acilis": "19 Nisan 2015",
+   "ad": "Levent-Boğaziçi Üniversitesi Hisarüstü",
+   "durum": "1",
+   "kod": "M6"
+  },
+  "25": {
+   "acilis": "30 Ocak 2009",
+   "ad": "4. Levent-Atatürk Oto Sanayi",
+   "durum": "1",
+   "kod": "M2"
+  },
+  "27": {
+   "acilis": "6 Ocak 2023",
+   "ad": "Bostancı-Parseller",
+   "durum": "1",
+   "kod": "M8"
+  },
+  "28": {
+   "acilis": "20 Aralık 2002",
+   "ad": "Yenibosna-Atatürk Havalimanı",
+   "durum": "1",
+   "kod": "M1A"
+  },
+  "29": {
+   "acilis": "2030 sonrası",
+   "ad": "Hızray (Beylikdüzü-SGH Hızlı Metro Hattı)",
+   "durum": "6",
+   "kod": "M34"
+  },
+  "3": {
+   "acilis": "Belirsiz",
+   "ad": "Yıldız-Kabataş",
+   "card": "5a249295aa",
+   "durum": "4",
+   "kod": "M7",
+   "pct": 68.5,
+   "ym": "2026-08"
+  },
+  "30": {
+   "acilis": "2030 sonrası",
+   "ad": "Esenyurt Meydan-Saadetdere Uzatması",
+   "durum": "5",
+   "kod": "M7"
+  },
+  "31": {
+   "acilis": "2030 sonrası",
+   "ad": "Sultanbeyli-Kurtköy Uzatması",
+   "durum": "5",
+   "kod": "M5"
+  },
+  "34": {
+   "acilis": "2030 sonrası",
+   "ad": "Üsküdar-Harem Tramvay Hattı",
+   "durum": "8",
+   "kod": "T"
+  },
+  "35": {
+   "acilis": "2030 sonrası",
+   "ad": "Hacıosman-Sarıyer Uzatması",
+   "durum": "7",
+   "kod": "M2"
+  },
+  "36": {
+   "acilis": "2030 sonrası",
+   "ad": "Sefaköy-TÜYAP Metro Hattı",
+   "durum": "5",
+   "kod": "M20"
+  },
+  "37": {
+   "acilis": "2030 sonrası",
+   "ad": "Vezneciler-Fenertepe Metro Hattı",
+   "durum": "5",
+   "kod": "M"
+  },
+  "38": {
+   "acilis": "Haziran 2028",
+   "ad": "Feshane-Bayrampaşa Tramvay Hattı",
+   "card": "45a15d2dc1",
+   "durum": "3",
+   "kod": "T7",
+   "pct": 37.65,
+   "ym": "2026-08"
+  },
+  "39": {
+   "acilis": "2030 sonrası",
+   "ad": "Esenler-Davutpaşa Tramvay Hattı",
+   "durum": "5",
+   "kod": "T"
+  },
+  "4": {
+   "acilis": "28 Ekim 2020",
+   "ad": "Mecidiyeköy-Mahmutbey",
+   "durum": "1",
+   "kod": "M7"
+  },
+  "40": {
+   "acilis": "2030 sonrası",
+   "ad": "İTÜ-İstinye Füniküler Hattı",
+   "durum": "5",
+   "kod": "F"
+  },
+  "41": {
+   "acilis": "2030 sonrası",
+   "ad": "Yıldız-Ortaköy Füniküler Hattı",
+   "durum": "8",
+   "kod": "F"
+  },
+  "42": {
+   "acilis": "2030 sonrası",
+   "ad": "Ambarlı-Hadımköy Metro Hattı",
+   "durum": "8",
+   "kod": "M"
+  },
+  "43": {
+   "acilis": "2030 sonrası",
+   "ad": "İTÜ-Kağıthane Metro Hattı",
+   "durum": "6",
+   "kod": "M"
+  },
+  "44": {
+   "acilis": "2030 sonrası",
+   "ad": "Seyrantepe-Alibeyköy Metro Hattı",
+   "durum": "5",
+   "kod": "M"
+  },
+  "45": {
+   "acilis": "18 Mart 2024",
+   "ad": "Bahariye-Ataköy",
+   "durum": "1",
+   "kod": "M9"
+  },
+  "46": {
+   "acilis": "2030 sonrası",
+   "ad": "Metrokent-Yeni Otogar-Habipler Metro Hattı",
+   "durum": "8",
+   "kod": "M"
+  },
+  "48": {
+   "acilis": "14 Eylül 2006",
+   "ad": "Zeytinburnu-Bağcılar",
+   "durum": "1",
+   "kod": "T1"
+  },
+  "49": {
+   "acilis": "Mart 2027",
+   "ad": "Pendik Merkez-Fevzi Çakmak",
+   "card": "59ee57cf9a",
+   "durum": "3",
+   "kod": "M10",
+   "pct": 89.2,
+   "ym": "2026-08"
+  },
+  "5": {
+   "acilis": "26 Şubat 2024",
+   "ad": "Sirkeci-Kazlıçeşme",
+   "durum": "1",
+   "kod": "T6"
+  },
+  "50": {
+   "acilis": "2030 sonrası",
+   "ad": "Emek-Söğütlüçeşme Uzatması",
+   "durum": "6",
+   "kod": "M13"
+  },
+  "51": {
+   "acilis": "2030 sonrası",
+   "ad": "Mescid-i Selam-Pirinççi Uzatması",
+   "durum": "5",
+   "kod": "T4"
+  },
+  "53": {
+   "acilis": "2030 sonrası",
+   "ad": "Üsküdar-Kadıköy-Maltepe Tramvay Hattı",
+   "durum": "5",
+   "kod": "T"
+  },
+  "54": {
+   "acilis": "2030 sonrası",
+   "ad": "Kartal Sahil-Uğur Mumcu Metro Hattı",
+   "durum": "8",
+   "kod": "M"
+  },
+  "55": {
+   "acilis": "2030 sonrası",
+   "ad": "Maltepe Sahil-Samandıra Metro Hattı",
+   "durum": "8",
+   "kod": "M"
+  },
+  "56": {
+   "acilis": "2030 sonrası",
+   "ad": "Yenikapı-İncirli Uzatması",
+   "durum": "8",
+   "kod": "M2"
+  },
+  "57": {
+   "acilis": "2030 sonrası",
+   "ad": "SGH-Gebze Metro Hattı",
+   "durum": "7",
+   "kod": "M"
+  },
+  "58": {
+   "acilis": "12 Mart 2019",
+   "ad": "Ayrılık Çeşmesi-Gebze",
+   "durum": "1",
+   "kod": "B1"
+  },
+  "59": {
+   "acilis": "22 Ocak 2023",
+   "ad": "Kağıthane-Kargo Terminali",
+   "durum": "1",
+   "kod": "M11"
+  },
+  "6": {
+   "acilis": "Ekim 2026",
+   "ad": "Göztepe-Ümraniye Metro Hattı",
+   "card": "fe9058f807",
+   "durum": "3",
+   "kod": "M12",
+   "pct": 95.0,
+   "ym": "2026-08"
+  },
+  "60": {
+   "acilis": "20 Haziran 2026",
+   "ad": "Arnavutköy-Halkalı",
+   "durum": "1",
+   "kod": "M11"
+  },
+  "61": {
+   "acilis": "Ekim 2026",
+   "ad": "Darıca Sahil-Gebze OSB Metro Hattı",
+   "card": "cab6d9c0e7",
+   "durum": "3",
+   "kod": "M1 (Kocaeli)",
+   "pct": 94.0,
+   "ym": "2026-06"
+  },
+  "62": {
+   "acilis": "2030 sonrası",
+   "ad": "İncirli-Gayrettepe-Söğütlüçeşme Metro Hattı",
+   "durum": "8",
+   "kod": "M"
+  },
+  "63": {
+   "acilis": "2030 sonrası",
+   "ad": "Taksim-Okmeydanı Metro Hattı",
+   "durum": "8",
+   "kod": "M"
+  },
+  "64": {
+   "acilis": "Aralık 2027",
+   "ad": "Altunizade-Bosna Bulvarı Metro Hattı",
+   "card": "41027782ec",
+   "durum": "3",
+   "kod": "M14",
+   "pct": 74.0,
+   "ym": "2026-06"
+  },
+  "66": {
+   "acilis": "Belirsiz",
+   "ad": "Yenidoğan-Emek Metro Hattı",
+   "card": "2560423905",
+   "durum": "4",
+   "kod": "M13",
+   "pct": 8.25,
+   "ym": "2026-08"
+  },
+  "67": {
+   "acilis": "22 Mayıs 2026",
+   "ad": "Samandıra Merkez-Sultanbeyli",
+   "durum": "1",
+   "kod": "M5"
+  },
+  "68": {
+   "acilis": "2030 sonrası",
+   "ad": "Avcılar Merkez-Avcılar Sahil Füniküler Hattı",
+   "durum": "8",
+   "kod": "F"
+  },
+  "69": {
+   "acilis": "Aralık 2027",
+   "ad": "Mahmutbey-Hastane",
+   "card": "9cab75bea0",
+   "durum": "3",
+   "kod": "M7",
+   "pct": 56.0,
+   "ym": "2026-08"
+  },
+  "7": {
+   "acilis": "21 Ekim 2018",
+   "ad": "Yamanevler-Çekmeköy",
+   "durum": "1",
+   "kod": "M5"
+  },
+  "70": {
+   "acilis": "Mart 2027",
+   "ad": "Tavşantepe-Kaynarca Merkez",
+   "card": "6ea6dbb97d",
+   "durum": "3",
+   "kod": "M4",
+   "pct": 89.2,
+   "ym": "2026-08"
+  },
+  "71": {
+   "acilis": "2030 sonrası",
+   "ad": "Halkalı Üniversite-Halkalı Uzatması",
+   "durum": "5",
+   "kod": "M1B"
+  },
+  "74": {
+   "acilis": "23 Mayıs 2022",
+   "ad": "Halkalı-Bahçeşehir",
+   "durum": "1",
+   "kod": "B2"
+  },
+  "83": {
+   "acilis": "2030 sonrası",
+   "ad": "Kaynarca Merkez-İçmeler Uzatması",
+   "durum": "5",
+   "kod": "M4"
+  },
+  "91": {
+   "acilis": "2030 sonrası",
+   "ad": "SGH-Kurtköy Uzatması",
+   "durum": "5",
+   "kod": "M4-M10"
+  },
+  "92": {
+   "acilis": "17 Ağustos 2012",
+   "ad": "Kadıköy-Kartal",
+   "durum": "1",
+   "kod": "M4"
+  },
+  "93": {
+   "acilis": "2030 sonrası",
+   "ad": "İncirli-Sefaköy Uzatması",
+   "durum": "5",
+   "kod": "M2"
+  }
+ },
+ "veri_donemi": "2026-08"
+}
