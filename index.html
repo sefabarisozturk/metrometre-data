@@ -567,8 +567,40 @@ body.detail-open #tab-bar { right: 352px; }
   font-size: 28px; font-weight: 700; color: var(--text); letter-spacing: -0.02em;
 }
 /* Donut altındaki "… itibarıyla" veri dönemi notu */
-.detail-asof { font-size: 10.5px; font-weight: 500; color: var(--text-dim); }
+.detail-asof { font-size: 10.5px; font-weight: 500; color: var(--text-dim); text-align: center; }
 .detail-asof:empty { display: none; }
+/* Son veri ayından sonra resmî veri gelmemişse (overlay'de "(bekleniyor)") */
+.detail-asof .asof-pending { color: #92400E; font-weight: 600; }
+
+/* ──── KAYNAK ROZETİ ──── */
+.detail-source { display: flex; align-items: center; gap: 6px; margin-top: -2px; }
+.detail-source:empty { display: none; }
+.detail-source-lbl { font-size: 10px; font-weight: 600; color: var(--text-dim); }
+.src-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 10.5px; font-weight: 600; line-height: 1;
+  padding: 4px 8px; border-radius: 99px;
+  text-decoration: none; border: 1px solid transparent;
+  white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis;
+}
+a.src-badge:hover { border-color: currentColor; }
+.src-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+.src-ext { font-size: 10px; opacity: .8; }
+.src-bilgi  { background: #ECFDF5; color: #065F46; }
+.src-resmi  { background: #EFF6FF; color: #1E40AF; }
+.src-saha   { background: #FFFBEB; color: #92400E; }
+.src-tahmin { background: #F5F5F5; color: #525252; }
+.src-diger  { background: #F5F3FF; color: #5B21B6; }
+/* Trend grafiği altı: tahmini (ara değer) noktaların açıklaması */
+.detail-trend-note { font-size: 10px; color: var(--text-dim); line-height: 1.45; display: flex; align-items: center; gap: 6px; }
+.detail-trend-note:empty { display: none; }
+.detail-trend-note .hollow { width: 8px; height: 8px; border-radius: 50%; border: 1.6px solid currentColor; flex-shrink: 0; }
+/* Trend ipucunda kaynak türü */
+#detail-trend-tip .tip-src { display: block; margin-top: 2px; font-size: 10px; color: var(--text-dim); font-weight: 500; }
+/* Bilgi modalı: kaynak türleri listesi */
+.src-legend { display: flex; flex-direction: column; gap: 7px; margin-top: 8px; }
+.src-legend-row { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; line-height: 1.5; }
+.src-legend-row .src-badge { flex-shrink: 0; margin-top: 1px; }
 
 /* ──── DETAY AYLIK İLERLEME (mini trend grafiği) ──── */
 #detail-trend-wrap { display: flex; flex-direction: column; align-items: stretch; gap: 10px; }
@@ -1244,6 +1276,7 @@ body.detail-open #tab-bar { right: 352px; }
               <div id="detail-donut-center" class="donut-center"></div>
             </div>
             <span id="detail-asof" class="detail-asof"></span>
+            <div id="detail-source" class="detail-source"></div>
           </div>
 
           <div id="detail-trend-wrap" hidden>
@@ -1252,6 +1285,7 @@ body.detail-open #tab-bar { right: 352px; }
               <svg id="detail-trend-svg" role="img" aria-label="Aya göre fiziki ilerleme grafiği"></svg>
               <div id="detail-trend-tip" role="tooltip" aria-hidden="true"></div>
             </div>
+            <div id="detail-trend-note" class="detail-trend-note"></div>
           </div>
 
           <div id="detail-bottom" hidden>
@@ -1314,10 +1348,14 @@ body.detail-open #tab-bar { right: 352px; }
       <p><strong>metrometre</strong>, İstanbul'da inşası süren raylı sistem projelerinin fiziksel ilerleme durumunu kamuya açık ve bağımsız bir şekilde izleyen bir paneldir. Herhangi bir kurum veya şirketle bağlantılı değildir; bağımsız bir sivil girişim olarak yönetilmektedir.</p>
       <div class="modal-section-title">Veri kaynakları</div>
       <p>İlerleme yüzdeleri ve tahmini açılış tarihleri, kurumların kamuoyuyla paylaştığı en güncel resmî açıklamalar esas alınarak derlenmektedir. Resmî açıklamaların yanı sıra İBB Çözüm Merkezi'ne ve CİMER'e yapılan bilgi edinme başvurularından elde edilen veriler de kullanılmaktadır. Veriler; X, YouTube ve çeşitli sosyal medya platformlarındaki bağımsız saha paylaşımlarıyla çapraz kontrol edilmektedir.</p>
+      <p style="margin-top:8px">Her hattın detay panelinde, güncel ilerleme değerinin dayanağı aşağıdaki rozetlerden biriyle belirtilmektedir. Kaynağın bağlantısı varsa rozete tıklanarak açılabilmektedir.</p>
+      <div id="src-legend" class="src-legend"></div>
+      <div class="modal-section-title">Açık veri</div>
+      <p>Paneldeki hat ve istasyon geometrileri ile aylık ilerleme tablosu <a href="https://github.com/sefabarisozturk/metrometre-data" target="_blank" rel="noopener">GitHub'da herkese açık</a> olarak yayımlanmaktadır; her değişiklik sürüm geçmişinde izlenebilmektedir.</p>
       <div class="modal-section-title">Güncelleme sıklığı</div>
       <p>Panel aylık olarak güncellenmektedir. Açılış, test başlangıcı veya takvim değişikliği gibi önemli gelişmeler tespit edildiğinde ara güncelleme yapılmaktadır.<span id="modal-asof"></span></p>
       <div class="modal-section-title">Sınırlılıklar</div>
-      <p>Fiziksel ilerleme yüzdeleri, kurumların kamuoyuyla paylaştığı bilgileri yansıtmaktadır. Yerinde bağımsız denetim yapılmamaktadır. Tahmini açılış tarihleri resmî açıklamalara dayalıdır ve değişime tabidir.</p>
+      <p>Fiziksel ilerleme yüzdeleri, kurumların kamuoyuyla paylaştığı bilgileri yansıtmaktadır. Yerinde bağımsız denetim yapılmamaktadır. Tahmini açılış tarihleri resmî açıklamalara dayalıdır ve değişime tabidir. Resmî verinin açıklanmadığı aylar ya boş bırakılmakta ya da komşu aylardan hesaplanan ara değerle doldurularak "Tahmin" olarak işaretlenmektedir.</p>
     </div>
     <hr class="modal-divider">
     <div class="modal-footer">
@@ -2268,7 +2306,20 @@ function openDetailPopup(p){
   }
   // Donut altına bu hattın son veri dönemi: ör. M14'te son değer Haziran'daysa
   // "Haziran 2026 itibarıyla" yazar — panelin geri kalanından eski olduğu görülür.
-  document.getElementById('detail-asof').textContent = lineAsofText(prog);
+  // Son veri ayından sonraki aylar overlay'de "(bekleniyor)" işaretliyse açıkça belirtilir.
+  const asofEl = document.getElementById('detail-asof');
+  const asofTxt = lineAsofText(prog);
+  const pend = prog?.pending || [];
+  asofEl.innerHTML = asofTxt
+    ? esc(asofTxt) + (pend.length
+        ? ` · <span class="asof-pending" title="${esc(pend.map(ymLong).join(', '))} için resmî veri henüz açıklanmadı">${esc(pendingText(pend))}</span>`
+        : '')
+    : '';
+  // Güncel değerin dayanağı (kaynak rozeti)
+  const srcEl = document.getElementById('detail-source');
+  const srcPt = (isYapim && pct !== null) ? lineSourcePoint(prog) : null;
+  const badge = srcPt ? sourceBadgeHtml(srcPt) : '';
+  srcEl.innerHTML = badge ? `<span class="detail-source-lbl">Kaynak</span>${badge}` : '';
 
   // ──── Aylık ilerleme trendi — hattın tüm aylık kayıtlarını kapsayan mini grafik ────
   // Yalnızca yapımı süren hatlarda gösterilir; işletmedeki ve proje hatlarında gizlenir.
@@ -2325,6 +2376,71 @@ function lineAsofText(prog){
   return ym ? `${ymLong(ym)} itibarıyla` : '';
 }
 
+// Bekleyen aylar → "Temmuz verisi bekleniyor" / "Temmuz–Ağustos verisi bekleniyor"
+function pendingText(pend){
+  if(!pend.length) return '';
+  const mon = ym => TR_MONTHS[parseInt(ym.split('-')[1],10)-1];
+  const a = pend[0], b = pend[pend.length-1];
+  return (a === b ? mon(a) : `${mon(a)}–${mon(b)}`) + ' verisi bekleniyor';
+}
+
+// ═════════════════════════════════════════════════════
+//  KAYNAK / DAYANAK BİLGİSİ (şeffaflık)
+//  overlay.csv'deki opsiyonel "Kaynak" ve "KaynakLink" sütunlarından gelir.
+//  Kaynak serbest metin yazılabilir; bilinen türler anahtar kelimeyle tanınıp
+//  standart etiket + renk alır. Tanınmayan metin olduğu gibi gösterilir.
+// ═════════════════════════════════════════════════════
+const SOURCE_TYPES = [
+  { key:'bilgi',  label:'Bilgi edinme yanıtı',
+    desc:'CİMER veya İBB Çözüm Merkezi başvurusuna kurumun verdiği yazılı yanıt',
+    match:/bilgi edinme|cimer|cozum merkezi|basvuru/ },
+  { key:'resmi',  label:'Resmî açıklama',
+    desc:'Kurumun web sitesi, basın bülteni, sosyal medya hesabı veya yetkili açıklaması',
+    match:/resmi|kurum|ibb|bakanlik|uab|basin|bulten|aciklama/ },
+  { key:'saha',   label:'Saha gözlemi',
+    desc:'Bağımsız saha paylaşımları (X, YouTube, forumlar) üzerinden yapılan değerlendirme',
+    match:/saha|gozlem|sosyal|youtube|wowturkey|forum/ },
+  { key:'tahmin', label:'Tahmin',
+    desc:'Resmî veri olmayan ay için metrometre tarafından komşu aylardan hesaplanan ara değer',
+    match:/tahmin|interpol|ara deger|hesap/ },
+];
+function sourceInfo(raw){
+  const s = String(raw || '').trim();
+  if(!s) return null;
+  const f = trFold(s);
+  const t = SOURCE_TYPES.find(t => t.match.test(f));
+  return t ? { ...t, raw: s } : { key:'diger', label:s, desc:'', raw:s };
+}
+// Yalnızca http(s) bağlantılarına izin ver (javascript: vb. enjeksiyonu engeller)
+function safeHttpUrl(u){
+  if(!u) return '';
+  try { const x = new URL(u); return (x.protocol === 'https:' || x.protocol === 'http:') ? x.href : ''; }
+  catch(_){ return ''; }
+}
+// Hattın GÜNCEL değerinin dayanağı. Son ayda kaynak boşsa ve değer önceki
+// aylardan aynen taşınmışsa (ör. M4: 3 ay boyunca %89,2), o değerin ilk
+// girildiği aydaki kaynak kullanılır — değer aynı olduğu için dayanağı da aynıdır.
+function lineSourcePoint(prog){
+  const ser = prog?.series;
+  if(!ser || !ser.length) return null;
+  const lastPct = ser[ser.length-1].pct;
+  for(let i = ser.length-1; i >= 0 && ser[i].pct === lastPct; i--){
+    if(ser[i].src) return ser[i];
+  }
+  return null;
+}
+function sourceBadgeHtml(pt){
+  const si = sourceInfo(pt?.src);
+  if(!si) return '';
+  const inner = `<span class="src-dot"></span>${esc(si.label)}${pt.link ? '<span class="src-ext" aria-hidden="true">↗</span>' : ''}`;
+  // Tabloda daha özgül bir metin yazılmışsa (ör. "İBB basın bülteni") ipucunda o da görünür
+  const rawNote = (si.raw && trFold(si.raw) !== trFold(si.label)) ? `${si.raw} — ` : '';
+  const title = esc(rawNote + (si.desc ? `${si.label}: ${si.desc}` : si.label));
+  return pt.link
+    ? `<a class="src-badge src-${si.key}" href="${esc(pt.link)}" target="_blank" rel="noopener" title="${title}">${inner}</a>`
+    : `<span class="src-badge src-${si.key}" title="${title}">${inner}</span>`;
+}
+
 // Fiziki ilerleme donut'ını çizer. Her açılışta boştan doldurarak animasyon uygular.
 const DONUT_R = 56;
 const DONUT_C = 2 * Math.PI * DONUT_R;
@@ -2371,7 +2487,9 @@ function drawDetailTrend(rawSeries, color){
   });
 
   // Nokta koordinatları
-  const pts = series.map((s,i) => ({ ym:s.ym, pct:s.pct, x:xAt(i), y:yAt(s.pct) }));
+  const pts = series.map((s,i) => ({ ym:s.ym, pct:s.pct, src:s.src || '', x:xAt(i), y:yAt(s.pct) }));
+  // Kaynağı "Tahmin" olan aylar içi boş noktayla çizilir (resmî veri değil, ara değer)
+  const isEst = p => sourceInfo(p.src)?.key === 'tahmin';
   detailTrendPts = pts;
 
   // X ay etiketleri — kalabalıksa atlamalı (en çok ~6 etiket), ilk ve son her zaman
@@ -2390,8 +2508,9 @@ function drawDetailTrend(rawSeries, color){
     + `</linearGradient></defs>`;
 
   let area = '', line = '', dots = '';
+  const dotFill = p => isEst(p) ? `fill="#fff" stroke="${color}" style="stroke-width:1.6"` : `fill="${color}"`;
   if(n === 1){
-    dots = `<circle class="trend-dot-last" cx="${pts[0].x.toFixed(1)}" cy="${pts[0].y.toFixed(1)}" r="4" fill="${color}"></circle>`;
+    dots = `<circle class="trend-dot-last" cx="${pts[0].x.toFixed(1)}" cy="${pts[0].y.toFixed(1)}" r="4" ${dotFill(pts[0])}></circle>`;
   } else {
     const lineD = pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
     const baseY = yAt(0).toFixed(1);
@@ -2399,8 +2518,17 @@ function drawDetailTrend(rawSeries, color){
     line = `<polyline class="trend-line" points="${lineD}" stroke="${color}"></polyline>`;
     dots = pts.map((p,i) => {
       const last = i === n-1;
-      return `<circle class="${last?'trend-dot-last':'trend-dot'}" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${last?4:2.6}" fill="${color}"></circle>`;
+      const est  = isEst(p);
+      return `<circle class="${est ? '' : (last?'trend-dot-last':'trend-dot')}" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${last?4:(est?3:2.6)}" ${dotFill(p)}></circle>`;
     }).join('');
+  }
+  // Grafik altı not: tahmini aylar varsa açıklanır
+  const noteEl = document.getElementById('detail-trend-note');
+  if(noteEl){
+    const estN = pts.filter(isEst).length;
+    noteEl.innerHTML = estN
+      ? `<span class="hollow" style="color:${color}"></span>İçi boş noktalar resmî veri bulunmayan aylar için hesaplanan ara değerlerdir.`
+      : '';
   }
 
   // Son değer etiketi (sağda) — grafiğin dışına taşmasın diye dikeyde sınırlanır
@@ -2450,7 +2578,9 @@ function detailTrendHover(e){
   const box = document.querySelector('.detail-trend-box').getBoundingClientRect();
   const sx = ctm.a * best.x + ctm.e;   // viewBox → ekran x
   const sy = ctm.d * best.y + ctm.f;   // viewBox → ekran y
-  detailTrendTip.innerHTML = `<span class="tip-mon">${esc(ymLabel(best.ym))}</span> · <span class="tip-pct" style="color:${detailTrendColor}">%${pctText(best.pct)}</span>`;
+  const bsi = sourceInfo(best.src);
+  detailTrendTip.innerHTML = `<span class="tip-mon">${esc(ymLabel(best.ym))}</span> · <span class="tip-pct" style="color:${detailTrendColor}">%${pctText(best.pct)}</span>`
+    + (bsi ? `<span class="tip-src">${esc(bsi.label)}</span>` : '');
   detailTrendTip.style.left = (sx - box.left) + 'px';
   detailTrendTip.style.top  = (sy - box.top - 10) + 'px';
   detailTrendTip.classList.add('show');
@@ -3476,22 +3606,35 @@ function parseProgressCSV(textContent){
   const iYm  = headLow.findIndex(h => ['yilay','yıl_ay','yil_ay','yılay','ay','tarih','donem','dönem'].includes(h));
   const iPct = headLow.findIndex(h => ['ilerleme','yuzde','yüzde','pct','oran'].includes(h));
   const iNot = headLow.findIndex(h => ['aciklama','açıklama','not','metin'].includes(h));
+  // Kaynak sütunları (opsiyonel): o ayki değerin dayanağı + bağlantısı.
+  // Başlıklar TR harf/boşluk duyarsız: "Kaynak", "Kaynak Türü", "KaynakLink", "Kaynak URL"…
+  const headNormP = head.map(sheetNorm);
+  const iSrc  = headNormP.findIndex(h => ['kaynak','kaynakturu','kaynaktipi','dayanak'].includes(h));
+  const iLink = headNormP.findIndex(h => ['kaynaklink','kaynakurl','kaynakbaglanti','link','url','baglanti'].includes(h));
 
   const byOid    = new Map();
   const monthSet = new Set();
   let autoKey = 0;  // OBJECTID yoksa satır bazlı yedek anahtar
 
   // Bir kayda nokta ekleyen ortak yardımcı (her iki format da kullanır)
-  function addPoint(key, meta, ym, pct, note){
+  function ensureRec(key, meta){
     if(!byOid.has(key)){
       byOid.set(key, { oid: meta.oid, kod: meta.kod, hat: meta.hat,
-                       durum: meta.durum, kurum: meta.kurum, series: [] });
+                       durum: meta.durum, kurum: meta.kurum, series: [], pending: [] });
     }
-    const rec = byOid.get(key);
+    return byOid.get(key);
+  }
+  function addPoint(key, meta, ym, pct, note, src, link){
+    const rec = ensureRec(key, meta);
     // Aynı ay tekrarında son değer kazanır
     const exist = rec.series.find(s => s.ym === ym);
-    if(exist){ exist.pct = pct; if(note) exist.note = note; }
-    else rec.series.push({ ym, pct, note: note || '' });
+    if(exist){
+      exist.pct = pct;
+      if(note) exist.note = note;
+      if(src)  exist.src  = src;
+      if(link) exist.link = link;
+    }
+    else rec.series.push({ ym, pct, note: note || '', src: src || '', link: link || '' });
     if(meta.durum) rec.durum = meta.durum;   // en güncel durumu yansıt
     monthSet.add(ym);
   }
@@ -3502,18 +3645,30 @@ function parseProgressCSV(textContent){
       const c = rows[r];
       const ym  = headerToYM((c[iYm] || '').trim());
       const pct = parsePct(c[iPct]);
-      if(!ym || pct === null) continue;
       const kod    = iKod   >= 0 ? (c[iKod]   || '').trim() : '';
       const oidRaw = iOid   >= 0 ? (c[iOid]   || '').trim() : '';
+      if(!ym) continue;
+      if(pct === null){
+        // "(bekleniyor)" gibi parantezli değerler: o ay için veri henüz yok.
+        // Detay panelinde "yeni veri bekleniyor" uyarısı için not edilir.
+        if(/^\(/.test((c[iPct] || '').trim())){
+          const pkey = oidRaw || (kod ? `kod:${kod}` : null);
+          if(pkey) ensureRec(pkey, { oid: oidRaw, kod, hat: iHat >= 0 ? (c[iHat] || '').trim() : kod,
+                                     durum: '', kurum: '' }).pending.push(ym);
+        }
+        continue;
+      }
       const meta = {
         oid: oidRaw, kod,
         hat:   iHat   >= 0 ? (c[iHat]   || '').trim() : kod,
         durum: iDurum >= 0 ? (c[iDurum] || '').trim() : '',
         kurum: iKurum >= 0 ? (c[iKurum] || '').trim() : '',
       };
-      const note = iNot >= 0 ? (c[iNot] || '').trim() : '';
+      const note = iNot  >= 0 ? (c[iNot]  || '').trim() : '';
+      const src  = iSrc  >= 0 ? (c[iSrc]  || '').trim() : '';
+      const link = iLink >= 0 ? safeHttpUrl((c[iLink] || '').trim()) : '';
       const key  = oidRaw || (kod ? `kod:${kod}` : `row#${autoKey++}`);
-      addPoint(key, meta, ym, pct, note);
+      addPoint(key, meta, ym, pct, note, src, link);
     }
   } else {
     // ──── GENİŞ FORMAT (geriye uyumlu) ────
@@ -3563,6 +3718,8 @@ function parseProgressCSV(textContent){
     const last = rec.series[rec.series.length-1];
     rec.son      = last ? last.pct  : null;
     rec.sonMetin = last ? last.note : '';
+    // Yalnızca son veri ayından SONRAKİ bekleyen aylar anlamlıdır
+    rec.pending  = (rec.pending || []).filter(ym => !last || ym > last.ym).sort();
   }
   // Hiç noktası olmayan kayıtları ele
   for(const [k,rec] of byOid){ if(!rec.series.length) byOid.delete(k); }
@@ -3845,6 +4002,7 @@ function renderCompareChart(){
   cmpMonthsX = months.map((m,i) => ({ ym:m, x: xAt(i) }));
 
   let lines = '';
+  let cmpHasEst = false;
   data.forEach(d => {
     const off = cmpHidden.has(d.key);
     const cls = off ? ' dim' : '';
@@ -3854,7 +4012,11 @@ function renderCompareChart(){
     lines += `<polyline class="cmp-line${cls}" points="${pts.join(' ')}" stroke="${d.renk}"></polyline>`;
     visPts.forEach((s,k) => {
       const isLast = k === visPts.length-1;
-      lines += `<circle class="cmp-dot${cls}" cx="${xAt(xIndex.get(s.ym)).toFixed(1)}" cy="${yAt(s.pct).toFixed(1)}" r="${isLast?3.5:2.5}" fill="${d.renk}"></circle>`;
+      // Kaynağı "Tahmin" olan aylar içi boş nokta (detay grafiğiyle aynı dil)
+      const est = sourceInfo(s.src)?.key === 'tahmin';
+      if(est) cmpHasEst = true;
+      const fill = est ? `fill="#fff" stroke="${d.renk}" style="stroke-width:1.5"` : `fill="${d.renk}"`;
+      lines += `<circle class="cmp-dot${cls}" cx="${xAt(xIndex.get(s.ym)).toFixed(1)}" cy="${yAt(s.pct).toFixed(1)}" r="${isLast?3.5:2.5}" ${fill}></circle>`;
     });
     if(!off){
       const lbl = d.kod ? `${d.kod} · ${d.ad}` : d.ad;
@@ -3880,6 +4042,11 @@ function renderCompareChart(){
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   const hoverLayer = `<line id="cmp-guide" x1="0" x2="0" y1="${padT.toFixed(1)}" y2="${(padT+iy).toFixed(1)}" style="display:none"></line><g id="cmp-hover-dots"></g>`;
   svg.innerHTML = grid + xLabels + lines + hoverLayer;
+
+  // Not satırı: tahmini noktalar varsa açıklama eklenir
+  document.getElementById('cmp-note').textContent =
+    'Yüzde değerleri her ayın sonundaki fiziki ilerlemeyi gösterir. Bir hattı gizlemek/göstermek için etiketine tıklayın.'
+    + (cmpHasEst ? ' İçi boş noktalar resmî veri bulunmayan aylar için hesaplanan ara değerlerdir.' : '');
 
   // Legend (tıklanabilir aç/kapa)
   const legend = document.getElementById('cmp-legend');
@@ -4012,6 +4179,15 @@ document.addEventListener('keydown', e => {
 // ═════════════════════════════════════════════════════
 //  BAŞLATMA
 // ═════════════════════════════════════════════════════
+// Bilgi modalındaki kaynak türleri listesi — SOURCE_TYPES tek doğruluk kaynağı
+(function renderSourceLegend(){
+  const el = document.getElementById('src-legend');
+  if(!el) return;
+  el.innerHTML = SOURCE_TYPES.map(t =>
+    `<div class="src-legend-row"><span class="src-badge src-${t.key}"><span class="src-dot"></span>${esc(t.label)}</span><span>${esc(t.desc)}</span></div>`
+  ).join('');
+})();
+
 initMap();
 loadData();
 
