@@ -834,6 +834,29 @@ a.src-badge:hover { border-color: currentColor; }
 #chart-btn .chart-btn-icon { width: 15px; height: 15px; flex-shrink: 0; }
 #chart-btn .chart-btn-text { line-height: 1; }
 #header-actions { display: flex; align-items: center; gap: 10px; }
+/* Bülten bağlantısı: ikincil (çerçeveli) hap; yeni sayı okunmadıysa küçük nokta */
+#bulten-btn {
+  position: relative;
+  display: flex; align-items: center; gap: 7px;
+  height: 32px; padding: 0 13px 0 11px;
+  border: 1px solid var(--border-2); border-radius: 99px;
+  background: transparent; color: var(--text);
+  font-family: var(--font); font-size: 12px; font-weight: 600;
+  letter-spacing: -0.01em; white-space: nowrap; text-decoration: none;
+  transition: border-color .15s, color .15s, background .15s;
+  flex-shrink: 0;
+}
+#bulten-btn[hidden] { display: none; }
+#bulten-btn:hover { border-color: var(--accent); color: var(--accent); background: #FEF2F2; }
+#bulten-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+#bulten-btn .bulten-btn-icon { width: 15px; height: 15px; flex-shrink: 0; }
+#bulten-btn .bulten-btn-text { line-height: 1; }
+#bulten-btn .bulten-btn-dot {
+  position: absolute; top: -2px; right: -2px;
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--accent); border: 2px solid var(--surface);
+}
+#bulten-btn .bulten-btn-dot[hidden] { display: none; }
 
 #modal.modal-wide { width: 820px; }
 #cmp-empty { font-size: 13px; color: var(--text-muted); padding: 30px 0; text-align: center; }
@@ -1085,6 +1108,9 @@ a.src-badge:hover { border-color: currentColor; }
   #chart-btn { height: 40px; width: 40px; padding: 0; justify-content: center; gap: 0; border-radius: 50%; }
   #chart-btn .chart-btn-text { display: none; }
   #chart-btn .chart-btn-icon { width: 18px; height: 18px; }
+  #bulten-btn { height: 40px; width: 40px; padding: 0; justify-content: center; gap: 0; border-radius: 50%; }
+  #bulten-btn .bulten-btn-text { display: none; }
+  #bulten-btn .bulten-btn-icon { width: 18px; height: 18px; }
 
   /* Arama paneli: araçların altında tam genişlikte açılır */
   #search-panel {
@@ -1188,6 +1214,12 @@ a.src-badge:hover { border-color: currentColor; }
     <span id="logo-tagline">raylı sistem projeleri<br>takip paneli</span>
   </a>
   <div id="header-actions">
+    <!-- En son bülten: href/metin bulten/bultenler.json'dan doldurulur; liste okunamazsa gizli kalır -->
+    <a id="bulten-btn" href="/bulten/" hidden aria-label="Aylık bülten" title="Aylık bülten">
+      <svg class="bulten-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h13v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M17 9h3v10a2 2 0 0 1-2 2"/><path d="M8 9h5M8 13h5M8 17h3"/></svg>
+      <span class="bulten-btn-text">Bülten</span>
+      <span class="bulten-btn-dot" hidden aria-hidden="true"></span>
+    </a>
     <button id="chart-btn" type="button" style="display:none" aria-label="Aylık ilerleme karşılaştırması" aria-haspopup="dialog" title="Aylık ilerleme karşılaştırması">
       <svg class="chart-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 17 9 11 13 15 21 6"/><polyline points="15 6 21 6 21 12"/></svg>
       <span class="chart-btn-text">Aylık ilerleme</span>
@@ -1406,7 +1438,8 @@ a.src-badge:hover { border-color: currentColor; }
     <div class="modal-footer">
       <span>© Barış Öztürk · <a href="mailto:sbarisozturk@gmail.com">sbarisozturk@gmail.com</a> ·
         <a href="https://x.com/sefabarisozturk" target="_blank" rel="noopener">X</a> ·
-        <a href="https://www.linkedin.com/in/sefabarisozturk/" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="https://www.linkedin.com/in/sefabarisozturk/" target="_blank" rel="noopener">LinkedIn</a> ·
+        <a href="/bulten/">Bültenler</a>
       </span>
     </div>
   </div>
@@ -1695,6 +1728,42 @@ function initMap(){
 // ═════════════════════════════════════════════════════
 //  VERİ YÜKLEME
 // ═════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════
+//  BÜLTEN BAĞLANTISI — bulten/bultenler.json'daki en yeni sayıyı başlığa koyar.
+//  Harita verisinden bağımsızdır; liste okunamazsa düğme gizli kalır.
+// ═════════════════════════════════════════════════════
+async function initBultenLink(){
+  const btn = document.getElementById('bulten-btn');
+  if(!btn) return;
+  try {
+    const r = await fetch('/bulten/bultenler.json', { cache: 'no-cache' });
+    if(!r.ok) return;
+    const list = (await r.json())?.bultenler;
+    if(!Array.isArray(list)) return;
+    const latest = list
+      .filter(b => /^\d{4}-\d{2}$/.test(String(b?.ay || '')))
+      .sort((a, b) => String(b.ay).localeCompare(String(a.ay)))[0];
+    if(!latest) return;
+    const label = `${TR_MONTHS[parseInt(latest.ay.slice(5), 10) - 1]} bülteni`;
+    btn.href = `/bulten/${latest.ay}`;
+    btn.querySelector('.bulten-btn-text').textContent = label;
+    btn.setAttribute('aria-label', label + (latest.baslik ? `: ${latest.baslik}` : ''));
+    btn.title = latest.baslik ? `${label}: ${latest.baslik}` : label;
+    // Okunmamış sayı göstergesi (yalnızca bu tarayıcıda hatırlanır)
+    const KEY = 'mm-bulten-son-okunan';
+    let seen = null;
+    try { seen = localStorage.getItem(KEY); } catch(_){}
+    const dot = btn.querySelector('.bulten-btn-dot');
+    if(seen !== latest.ay) dot.hidden = false;
+    btn.addEventListener('click', () => {
+      dot.hidden = true;
+      try { localStorage.setItem(KEY, latest.ay); } catch(_){}
+    });
+    btn.hidden = false;
+  } catch(_){ /* sessiz geç */ }
+}
+initBultenLink();
+
 async function loadData(){
   // Her loadData çağrısında ilk fit'i tekrar tetiklenir hâle getir (Retry de bunu kullanır).
   initialFitDone = false;

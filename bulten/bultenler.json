@@ -1,6 +1,16 @@
 {
-  "aciklama": "Yayımlanan bültenler. Yeni sayı eklerken bulten/<YYYY-AA>.html dosyasını ekleyin ve buraya bir satır yazın; RSS beslemesindeki o ayın öğesi bültene bağlanır.",
+  "aciklama": "Yayımlanan bültenler. Yeni sayı: bulten/<YYYY-AA>.html dosyasını ekleyin ve buraya bir satır yazın. 'hatlar', paylaşım kartında vurgulanacak hatların OBJECTID'leridir. Kart (bulten/<YYYY-AA>.png) GitHub Actions ile otomatik üretilir; RSS'teki o ayın öğesi bültene bağlanır.",
   "bultenler": [
-    { "ay": "2026-09", "baslik": "M12 son düzlüğe girdi, güney aksında takvim kaydı" }
+    {
+      "ay": "2026-09",
+      "baslik": "M12 son düzlüğe girdi, güney aksında takvim kaydı",
+      "hatlar": [
+        6,
+        70,
+        49,
+        69,
+        61
+      ]
+    }
   ]
 }
