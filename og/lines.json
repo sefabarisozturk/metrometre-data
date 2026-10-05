@@ -514,9 +514,9 @@
    "kod": "T1"
   },
   "49": {
-   "acilis": "Mart 2027",
+   "acilis": "Haziran 2027",
    "ad": "Pendik Merkez-Fevzi Çakmak",
-   "card": "59ee57cf9a",
+   "card": "43584e73c9",
    "durum": "3",
    "kod": "M10",
    "pct": 89.2,
@@ -630,11 +630,11 @@
   "66": {
    "acilis": "Belirsiz",
    "ad": "Yenidoğan-Emek Metro Hattı",
-   "card": "2560423905",
+   "card": "36ec2589c3",
    "durum": "4",
    "kod": "M13",
    "pct": 8.25,
-   "ym": "2026-08"
+   "ym": "2026-09"
   },
   "67": {
    "acilis": "22 Mayıs 2026",
@@ -664,9 +664,9 @@
    "kod": "M5"
   },
   "70": {
-   "acilis": "Mart 2027",
+   "acilis": "Haziran 2027",
    "ad": "Tavşantepe-Kaynarca Merkez",
-   "card": "6ea6dbb97d",
+   "card": "bed2477f35",
    "durum": "3",
    "kod": "M4",
    "pct": 89.2,
@@ -709,5 +709,5 @@
    "kod": "M2"
   }
  },
- "veri_donemi": "2026-08"
+ "veri_donemi": "2026-09"
 }
