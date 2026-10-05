@@ -11,10 +11,15 @@
 <meta property="og:locale"       content="tr_TR">
 <meta property="og:url"          content="https://metrometre.com/bulten/">
 <meta property="og:title"        content="metrometre bültenleri">
-<meta property="og:description"  content="İstanbul raylı sistem projelerinde her ay öne çıkan gelişmeler.">
+<meta property="og:description"  content="metrometre aylık bültenleri: İstanbul ve çevresinde yapımı süren raylı sistem hatlarında her ay öne çıkan gelişmeler.">
 <meta property="og:image"        content="https://metrometre.com/og-image.png">
+<meta property="og:image:width"  content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt"    content="metrometre — İstanbul raylı sistem projeleri takip paneli">
 <meta name="twitter:card"        content="summary_large_image">
 <meta name="twitter:site"        content="@sefabarisozturk">
+<meta name="twitter:title"       content="metrometre bültenleri">
+<meta name="twitter:description" content="metrometre aylık bültenleri: İstanbul ve çevresinde yapımı süren raylı sistem hatlarında her ay öne çıkan gelişmeler.">
 <meta name="twitter:image"       content="https://metrometre.com/og-image.png">
 <link rel="alternate" type="application/rss+xml" title="metrometre — aylık ilerleme güncellemeleri" href="/feed.xml">
 <meta name="theme-color" content="#B4271F">
@@ -22,55 +27,177 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-/* Bülten arşivi: yeni sayı en üstte. Yeni sayı eklerken <ol> başına bir <li> ekleyin. */
-:root{
-  --bg:#F0F0F0; --surface:#FFFFFF; --border:#E4E4E4;
-  --text:#111111; --muted:#5F5F5F; --accent:#B4271F;
-  --font:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* metrometre (index.html) ile aynı jetonlar */
+:root {
+  --bg:#F0F0F0; --surface:#FFFFFF; --surface-2:#F7F7F7;
+  --border:#E4E4E4; --border-2:#D1D1D1;
+  --text:#111111; --text-muted:#6B6B6B; --text-dim:#757575;
+  --accent:#B4271F; --header-h:52px;
+  --font:'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
-@media (prefers-color-scheme: dark){:root{
-  --bg:#121212; --surface:#1C1C1C; --border:#2E2E2E;
-  --text:#EDEDED; --muted:#A8A8A8; --accent:#E2665C; color-scheme:dark}}
-*{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;line-height:1.6;padding:28px 16px 48px}
-.wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
-a{color:var(--accent);text-underline-offset:2px}
-a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
-.masthead{display:flex;flex-direction:column;gap:12px;border-bottom:2px solid var(--text);padding-bottom:18px}
-.wordmark{font-weight:800;font-size:20px;letter-spacing:-.02em;color:var(--text);text-decoration:none}
-.wordmark span{color:var(--accent)}
-.crumbs{font-size:13px;font-weight:600}
-.crumbs a{text-decoration:none}
-h1{font-size:clamp(28px,6vw,40px);line-height:1.1;letter-spacing:-.03em;margin:0;font-weight:800}
-.lede{color:var(--muted);margin:0;max-width:62ch}
-.issues{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
-.issues a{display:flex;flex-direction:column;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 18px;text-decoration:none;color:var(--text)}
-.issues a:hover{border-color:var(--accent)}
-.issue-date{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
-.issue-title{font-size:17px;font-weight:700;line-height:1.35}
-.foot{font-size:13px;color:var(--muted)}
+html { -webkit-text-size-adjust:100%; }
+body { background:var(--bg); color:var(--text); font-family:var(--font); font-size:13px; line-height:1.5; }
+a { color:var(--accent); text-decoration:none; }
+a:hover { text-decoration:underline; }
+:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+:focus:not(:focus-visible) { outline:none; }
+
+/* ── Üst başlık: sitedekiyle aynı ── */
+#header {
+  position:fixed; top:0; left:0; right:0; height:var(--header-h);
+  background:var(--surface); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 20px; z-index:1000;
+}
+#logo-link { display:flex; align-items:center; gap:12px; text-decoration:none; height:36px; }
+#logo-link:hover { text-decoration:none; }
+#logo-img { height:26px; width:auto; display:block; flex-shrink:0; }
+#logo-fallback { display:none; font-size:17px; font-weight:700; color:var(--text); letter-spacing:-0.03em; }
+#logo-fallback span { font-weight:400; color:var(--text-muted); }
+#logo-tagline {
+  font-size:10px; font-weight:500; color:var(--text-dim); letter-spacing:.02em; line-height:1.35;
+  padding-left:12px; border-left:1px solid var(--border);
+}
+#header-actions { display:flex; align-items:center; gap:10px; }
+.hdr-btn {
+  display:flex; align-items:center; gap:7px; height:32px; padding:0 13px 0 11px;
+  border:1px solid var(--border-2); border-radius:99px; background:transparent; color:var(--text);
+  font-family:var(--font); font-size:12px; font-weight:600; letter-spacing:-0.01em; white-space:nowrap;
+  transition:border-color .15s, color .15s, background .15s, box-shadow .15s; flex-shrink:0;
+}
+.hdr-btn:hover { border-color:var(--accent); color:var(--accent); background:#FEF2F2; text-decoration:none; }
+.hdr-btn.primary { border-color:var(--accent); background:var(--accent); color:#fff; }
+.hdr-btn.primary:hover { background:#9C1F18; color:#fff; box-shadow:0 2px 8px rgba(180,39,31,.28); }
+.hdr-btn svg { width:15px; height:15px; flex-shrink:0; }
+
+/* ── Sayfa ── */
+main { max-width:760px; margin:0 auto; padding:calc(var(--header-h) + 20px) 16px 40px; display:flex; flex-direction:column; gap:20px; }
+.panel { background:var(--surface); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+.sec-lbl { font-size:10px; font-weight:700; color:var(--text-dim); letter-spacing:.05em; text-transform:uppercase; margin:0 2px 8px; }
+.prose { font-size:13.5px; line-height:1.65; color:var(--text-muted); }
+
+/* Sayı başlığı */
+.intro { padding:18px 20px 16px; display:flex; flex-direction:column; gap:8px; }
+.eyebrow { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.tag { font-size:10px; font-weight:600; padding:1px 6px; border-radius:4px; white-space:nowrap; }
+.tag-accent { background:#FEF2F2; color:var(--accent); }
+h1 { font-size:20px; font-weight:700; line-height:1.3; letter-spacing:-0.02em; text-wrap:balance; }
+/* Sitedeki metrik şeridi */
+.metrics { display:grid; grid-template-columns:repeat(3,1fr); border-top:1px solid var(--border); }
+.metric { padding:10px 10px 9px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; min-height:60px; text-align:center; }
+.metric:not(:last-child) { border-right:1px solid var(--border); }
+.metric-val { font-size:15px; font-weight:700; line-height:1.1; font-variant-numeric:tabular-nums; }
+.metric-lbl { font-size:9px; font-weight:600; color:var(--text-dim); letter-spacing:.04em; text-transform:uppercase; line-height:1.3; }
+
+/* Yuvarlak hat ikonu (sitedeki .card-icon) */
+.line-icon {
+  width:var(--s); height:var(--s); border-radius:50%; overflow:hidden; flex-shrink:0;
+  display:inline-flex; align-items:center; justify-content:center;
+  background:#F0F0F0; border:1.5px solid var(--border);
+}
+.line-icon img { width:100%; height:100%; object-fit:cover; display:block; }
+.icon-fb { width:100%; height:100%; display:flex; align-items:center; justify-content:center; border-radius:50%;
+  font-size:11px; font-weight:700; color:#fff; letter-spacing:-0.04em; }
+.icon-fb[hidden] { display:none; }
+
+/* Öne çıkanlar */
+.hl { list-style:none; }
+.hl li { display:flex; gap:12px; padding:14px 16px; }
+.hl li + li { border-top:1px solid var(--border); }
+.hl-icons { display:flex; flex-direction:column; gap:4px; padding-top:1px; }
+.hl-body { min-width:0; display:flex; flex-direction:column; gap:4px; }
+.hl h2 { font-size:13px; font-weight:700; line-height:1.35; }
+
+/* Hat kartları (sitedeki .card) */
+.cards { display:flex; flex-direction:column; gap:10px; }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px 14px 13px 15px;
+  display:flex; flex-direction:column; gap:10px; transition:box-shadow .15s, border-color .15s; }
+.card:hover { box-shadow:0 2px 10px rgba(0,0,0,.08); border-color:var(--border-2); }
+.card-top { display:flex; align-items:flex-start; gap:10px; }
+.card-info { flex:1; min-width:0; }
+.card-name { font-size:13px; font-weight:700; line-height:1.3; margin-bottom:5px; word-break:break-word; }
+.card-name a { color:var(--text); }
+.card-meta { display:flex; flex-wrap:wrap; align-items:center; gap:5px; }
+.card-chip { font-size:10px; color:var(--text-muted); }
+.map-link { font-size:11px; font-weight:600; white-space:nowrap; padding-top:2px; }
+.st-insaat { background:#EFF6FF; color:#1E40AF; }
+.st-bekle  { background:#F5F5F5; color:#525252; }
+.st-test   { background:#FFFBEB; color:#92400E; }
+.card-bottom { display:flex; align-items:flex-start; gap:14px; }
+.prog-col { flex:1; min-width:0; }
+.field-lbl { font-size:9px; font-weight:700; color:var(--text-dim); text-transform:uppercase; letter-spacing:.05em; margin-bottom:4px; }
+.prog-row { display:flex; align-items:center; gap:8px; }
+.bar { flex:1; height:6px; background:var(--border); border-radius:3px; overflow:hidden; }
+.bar i { display:block; height:100%; border-radius:3px; }
+.pct { font-size:13px; font-weight:600; white-space:nowrap; font-variant-numeric:tabular-nums; }
+.pct small { font-size:10px; font-weight:500; color:var(--text-dim); }
+.date-col { flex-shrink:0; text-align:right; }
+.date-val { font-size:13px; font-weight:600; line-height:1.2; display:flex; align-items:center; gap:5px; justify-content:flex-end; flex-wrap:wrap; }
+.date-was { font-size:10px; color:var(--text-dim); margin-top:3px; }
+.card-text { border-top:1px solid var(--border); padding-top:10px; }
+
+/* Yöntem notu (sitedeki .modal-body) */
+.method { padding:14px 16px; display:flex; flex-direction:column; gap:8px; font-size:12px; line-height:1.7; color:var(--text-muted); }
+.method strong { color:var(--text); }
+
+/* Arşiv listesi */
+.issue { display:flex; align-items:center; gap:12px; padding:14px 16px; color:var(--text); }
+.issue + .issue { border-top:1px solid var(--border); }
+.issue:hover { background:var(--surface-2); text-decoration:none; }
+.issue-body { flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
+.issue-title { font-size:13px; font-weight:700; line-height:1.35; }
+.issue-arrow { color:var(--text-dim); font-size:16px; }
+
+@media (max-width:768px) {
+  #header { padding:0 12px; }
+  #logo-tagline { display:none; }
+  .hdr-btn { height:40px; width:40px; padding:0; justify-content:center; gap:0; border-radius:50%; }
+  .hdr-btn span { display:none; }
+  .hdr-btn svg { width:18px; height:18px; }
+  main { padding-top:calc(var(--header-h) + 14px); gap:16px; }
+  .intro { padding:16px; }
+  h1 { font-size:18px; }
+  .metric-val { font-size:13px; }
+  .card-bottom { flex-wrap:wrap; }
+  .prog-col { flex-basis:100%; }
+  .date-col { text-align:left; }
+  .date-val { justify-content:flex-start; }
+}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header class="masthead">
-    <a class="wordmark" href="/">metro<span>metre</span></a>
-    <div class="crumbs"><a href="/">← Haritaya dön</a></div>
+
+<header id="header">
+  <a id="logo-link" href="/" aria-label="metrometre ana sayfa">
+    <img id="logo-img" src="/metrometre_logotype.png" alt="metrometre"
+      onerror="this.style.display='none';document.getElementById('logo-fallback').style.display='block'">
+    <div id="logo-fallback"><span>metro</span>metre</div>
+    <span id="logo-tagline">raylı sistem projeleri<br>takip paneli</span>
+  </a>
+  <nav id="header-actions" aria-label="Sayfa bağlantıları">
+    
+    <a class="hdr-btn primary" href="/" aria-label="Haritaya dön" title="Haritaya dön"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg><span>Haritaya dön</span></a>
+  </nav>
+</header>
+<main>
+<section class="panel"><div class="intro">
+    <div class="eyebrow"><span class="tag tag-accent">Aylık bülten</span></div>
     <h1>Bültenler</h1>
-    <p class="lede">İstanbul ve çevresinde yapımı süren raylı sistem hatlarında her ay öne çıkan gelişmeler.</p>
-  </header>
-
-  <ol class="issues">
-    <li><a href="/bulten/2026-09">
-      <span class="issue-date">Eylül 2026</span>
-      <span class="issue-title">M12 son düzlüğe girdi, güney aksında takvim kaydı</span>
-    </a></li>
-  </ol>
-
-  <p class="foot">Yeni bültenler için <a href="/feed.xml">RSS beslemesi</a>.</p>
-</div>
+    <p class="prose">İstanbul ve çevresinde yapımı süren raylı sistem hatlarında her ay öne çıkan gelişmeler.</p>
+  </div></section>
+<section aria-label="Sayılar">
+  <div class="sec-lbl">Sayılar</div>
+  <div class="panel">
+    <a class="issue" href="/bulten/2026-09">
+      <div class="issue-body"><span class="card-chip">Eylül 2026</span><span class="issue-title">M12 son düzlüğe girdi, güney aksında takvim kaydı</span></div>
+      <span class="issue-arrow" aria-hidden="true">›</span>
+    </a>
+  </div>
+</section>
+<section class="panel method"><p>Yeni bültenler için <a href="/feed.xml">RSS beslemesi</a>.</p></section>
+</main>
 </body>
 </html>
