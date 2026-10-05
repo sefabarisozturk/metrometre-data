@@ -4,7 +4,7 @@
 // Harita karoları, fontlar ve CSV/GeoJSON verisi ÖNBELLEĞE ALINMAZ — her zaman
 // canlı ağdan çekilir. Böylece ilerleme verisi hep güncel kalır.
 
-const CACHE = 'metrometre-shell-v1';
+const CACHE = 'metrometre-shell-v2';
 const SHELL = ['/', '/index.html'];
 
 // Kurulum: uygulama kabuğunu önbelleğe al ve hemen etkinleş.
@@ -35,6 +35,12 @@ self.addEventListener('fetch', event => {
   if (req.method !== 'GET') return;
 
   if (req.mode === 'navigate') {
+    // Yalnızca uygulama sayfaları (/, /index.html, /hat/*) kabuk olarak saklanır.
+    // /bulten/* gibi ayrı sayfalar araya girilmeden ağdan gelir; aksi halde
+    // çevrimdışı kabuk bir bülten sayfasıyla değişirdi.
+    const path = new URL(req.url).pathname;
+    const isApp = path === '/' || path === '/index.html' || path === '/hat' || path.startsWith('/hat/');
+    if (!isApp) return;
     event.respondWith(
       fetch(req)
         .then(res => {

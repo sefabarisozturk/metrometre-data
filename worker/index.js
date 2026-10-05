@@ -9,7 +9,8 @@
 //
 //    /hat/<OBJECTID>[-slug]  → index.html, <head> etiketleri o hatta göre
 //                              yeniden yazılmış olarak (X/WhatsApp önizlemesi)
-//    /feed.xml               → overlay.csv'den üretilen RSS beslemesi
+//    /feed.xml               → overlay.csv'den üretilen RSS beslemesi; o ayın
+//                              bülteni (bulten/<YYYY-AA>.html) varsa öğe ona bağlanır
 //
 //  Veri: metrometre-data reposu (raw.githubusercontent.com). İstenirse
 //  DATA_BASE değişkeniyle başka bir adres verilebilir.
@@ -24,7 +25,7 @@ export default {
     const url = new URL(request.url);
     const dataBase = (env.DATA_BASE || DEFAULT_DATA_BASE).replace(/\/+$/, '');
     try {
-      if(url.pathname === '/feed.xml') return await handleFeed(url, dataBase);
+      if(url.pathname === '/feed.xml') return await handleFeed(url, dataBase, env);
       if(url.pathname === '/hat' || url.pathname.startsWith('/hat/')) return await handleHat(request, env, url, dataBase);
     } catch(err){
       console.warn('worker hatası:', err);
@@ -158,7 +159,7 @@ const pubDate = ym => {
   return new Date(Date.UTC(m === 12 ? y + 1 : y, m === 12 ? 0 : m, 1, 6, 0, 0)).toUTCString();
 };
 
-async function handleFeed(url, dataBase){
+async function handleFeed(url, dataBase, env){
   const origin = url.origin;
   const r = await fetch(`${dataBase}/overlay.csv`, { cf: { cacheTtl: 300, cacheEverything: true } });
   if(!r.ok) return new Response('Besleme şu anda oluşturulamadı.', { status: 503, headers: { 'Retry-After': '600' } });
@@ -187,7 +188,20 @@ async function handleFeed(url, dataBase){
   }
 
   const months = [...new Set([...lines.values()].flatMap(l => [...l.series.keys()]))].sort().reverse().slice(0, MAX_ITEMS);
+  // Hangi aylar için bülten var? Liste: bulten/bultenler.json. Dosya yoksa site
+  // SPA ayarı gereği index.html döner; JSON çözümlenemez ve bülten bağlantısı eklenmez.
+  const bulletins = new Set();
+  if(env?.ASSETS){
+    try {
+      const res = await env.ASSETS.fetch(new Request(`${origin}/bulten/bultenler.json`));
+      if(res.ok){
+        const list = (await res.json())?.bultenler;
+        if(Array.isArray(list)) list.forEach(b => { const ym = toYM(b?.ay); if(ym) bulletins.add(ym); });
+      }
+    } catch(_){}
+  }
   const items = months.map(ym => {
+    const bulletinUrl = bulletins.has(ym) ? `${origin}/bulten/${ym}` : null;
     const entries = [];
     for(const l of lines.values()){
       const cur = l.series.get(ym);
@@ -207,11 +221,12 @@ async function handleFeed(url, dataBase){
     }).join('');
     const top = entries.find(e => e.delta !== null && e.delta > 0.004);
     const title = `${ymLong(ym)} fiziki ilerleme verileri` + (top ? ` — en çok ilerleyen: ${top.l.ad}` : '');
-    const html = `<p>İstanbul raylı sistem projelerinin ${ymLong(ym)} sonu itibarıyla fiziki ilerleme değerleri:</p><ul>${li}</ul>`
+    const html = (bulletinUrl ? `<p><a href="${xml(bulletinUrl)}"><b>${ymLong(ym)} bültenini okuyun</b></a>: ayın öne çıkan gelişmeleri ve hat hat notlar.</p>` : '')
+      + `<p>İstanbul raylı sistem projelerinin ${ymLong(ym)} sonu itibarıyla fiziki ilerleme değerleri:</p><ul>${li}</ul>`
       + `<p><a href="${xml(origin)}">metrometre.com</a> üzerinde haritada inceleyin.</p>`;
     return `<item>
   <title>${xml(title)}</title>
-  <link>${xml(origin)}/</link>
+  <link>${xml(bulletinUrl || origin + '/')}</link>
   <guid isPermaLink="false">metrometre-${ym}</guid>
   <pubDate>${pubDate(ym)}</pubDate>
   <description>${cdata(html)}</description>

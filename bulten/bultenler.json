@@ -1,0 +1,6 @@
+{
+  "aciklama": "Yayımlanan bültenler. Yeni sayı eklerken bulten/<YYYY-AA>.html dosyasını ekleyin ve buraya bir satır yazın; RSS beslemesindeki o ayın öğesi bültene bağlanır.",
+  "bultenler": [
+    { "ay": "2026-09", "baslik": "M12 son düzlüğe girdi, güney aksında takvim kaydı" }
+  ]
+}
