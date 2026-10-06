@@ -4,14 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Eylül 2026 bülteni | metrometre</title>
-<meta name="description" content="Metrometre Eylül 2026 bülteni: M12 Göztepe–Ümraniye son düzlükte, M4 ve M10 etaplarında açılış Haziran 2027&#x27;ye kaydı; yapımı süren raylı sistem hatlarında ayın gelişmeleri.">
+<meta name="description" content="Metrometre Eylül 2026 bülteni: M12 Göztepe–Ümraniye için İBB&#x27;nin hedefi 19 Aralık, Pendik ve Kaynarca etaplarında açılış Haziran 2027&#x27;ye kaydı. Yapımı süren raylı sistem hatlarında ayın gelişmeleri.">
 <link rel="canonical" href="https://metrometre.com/bulten/2026-09">
 <meta property="og:type"         content="article">
 <meta property="og:site_name"    content="metrometre">
 <meta property="og:locale"       content="tr_TR">
 <meta property="og:url"          content="https://metrometre.com/bulten/2026-09">
-<meta property="og:title"        content="Eylül 2026: M12 son düzlüğe girdi, güney aksında takvim kaydı">
-<meta property="og:description"  content="Metrometre Eylül 2026 bülteni: M12 Göztepe–Ümraniye son düzlükte, M4 ve M10 etaplarında açılış Haziran 2027&#x27;ye kaydı; yapımı süren raylı sistem hatlarında ayın gelişmeleri.">
+<meta property="og:title"        content="Eylül 2026: M12 için geri sayım başladı, güney aksı bir çeyrek kaydı">
+<meta property="og:description"  content="Metrometre Eylül 2026 bülteni: M12 Göztepe–Ümraniye için İBB&#x27;nin hedefi 19 Aralık, Pendik ve Kaynarca etaplarında açılış Haziran 2027&#x27;ye kaydı. Yapımı süren raylı sistem hatlarında ayın gelişmeleri.">
 <meta property="og:image"        content="https://metrometre.com/bulten/2026-09.png">
 <meta property="og:image:width"  content="1200">
 <meta property="og:image:height" content="630">
@@ -19,8 +19,8 @@
 <meta property="article:published_time" content="2026-10-05">
 <meta name="twitter:card"        content="summary_large_image">
 <meta name="twitter:site"        content="@sefabarisozturk">
-<meta name="twitter:title"       content="Eylül 2026: M12 son düzlüğe girdi, güney aksında takvim kaydı">
-<meta name="twitter:description" content="Metrometre Eylül 2026 bülteni: M12 Göztepe–Ümraniye son düzlükte, M4 ve M10 etaplarında açılış Haziran 2027&#x27;ye kaydı; yapımı süren raylı sistem hatlarında ayın gelişmeleri.">
+<meta name="twitter:title"       content="Eylül 2026: M12 için geri sayım başladı, güney aksı bir çeyrek kaydı">
+<meta name="twitter:description" content="Metrometre Eylül 2026 bülteni: M12 Göztepe–Ümraniye için İBB&#x27;nin hedefi 19 Aralık, Pendik ve Kaynarca etaplarında açılış Haziran 2027&#x27;ye kaydı. Yapımı süren raylı sistem hatlarında ayın gelişmeleri.">
 <meta name="twitter:image"       content="https://metrometre.com/bulten/2026-09.png">
 <link rel="alternate" type="application/rss+xml" title="metrometre — aylık ilerleme güncellemeleri" href="/feed.xml">
 <meta name="theme-color" content="#B4271F">
@@ -104,6 +104,58 @@ h1 { font-size:20px; font-weight:700; line-height:1.3; letter-spacing:-0.02em; t
   font-size:11px; font-weight:700; color:#fff; letter-spacing:-0.04em; }
 .icon-fb[hidden] { display:none; }
 
+
+/* ── Kanca: başlık + geri sayım ── */
+.hero { display:grid; grid-template-columns:minmax(0,1fr) 220px; }
+.hero-main { padding:22px 22px 20px; display:flex; flex-direction:column; gap:10px; min-width:0; }
+.hero h1 { font-size:26px; line-height:1.18; letter-spacing:-0.03em; }
+.dek { font-size:14px; line-height:1.6; color:var(--text-muted); max-width:60ch; }
+.countdown { border-left:1px solid var(--border); background:var(--surface-2); padding:18px 18px 16px;
+  display:flex; flex-direction:column; justify-content:space-between; gap:10px; color:var(--text); transition:background .15s; }
+.countdown:hover { background:#FEF2F2; text-decoration:none; }
+.cd-head { display:flex; align-items:center; gap:8px; font-size:11px; font-weight:700; line-height:1.25; }
+.cd-num { display:flex; align-items:baseline; gap:6px; }
+.cd-num b { font-size:64px; line-height:.9; font-weight:700; letter-spacing:-0.05em; color:var(--accent); font-variant-numeric:tabular-nums; }
+.cd-num span { font-size:15px; font-weight:600; color:var(--text-muted); }
+.cd-foot { font-size:11.5px; color:var(--text-muted); line-height:1.4; }
+.cd-foot strong { color:var(--text); }
+.countdown.done .cd-num { display:none; }
+
+/* ── Bir bakışta ── */
+.glances { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+.glance { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:13px 14px 14px; display:flex; flex-direction:column; gap:7px; min-width:0; }
+.g-head { display:flex; align-items:center; gap:8px; }
+.g-head h2 { font-size:13px; font-weight:700; flex:1; min-width:0; }
+.g-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.g-icons { display:flex; }
+.g-icons .line-icon + .line-icon { margin-left:-6px; }
+.g-go   .g-dot { background:#059669; }
+.g-late .g-dot { background:var(--accent); }
+.g-step .g-dot { background:#2563EB; }
+.g-stop .g-dot { background:#A3A3A3; }
+.glance .prose { font-size:12.5px; line-height:1.6; }
+
+/* ── Açılış takvimi ── */
+.sec-note { text-transform:none; letter-spacing:0; font-weight:500; }
+.timeline { list-style:none; position:relative; padding:6px 0; }
+.tl-row { display:grid; grid-template-columns:118px minmax(0,1fr); gap:12px; padding:8px 16px; position:relative; }
+.tl-row::before { content:''; position:absolute; left:112px; top:0; bottom:0; width:2px; background:var(--border); }
+.tl-row:first-child::before { top:50%; }
+.tl-row:last-child::before { bottom:50%; }
+.tl-row::after { content:''; position:absolute; left:107px; top:50%; width:12px; height:12px; margin-top:-6px;
+  border-radius:50%; background:var(--surface); border:2px solid var(--border-2); }
+.tl-row.moved::after { border-color:var(--accent); background:var(--accent); }
+.tl-row.none::after { border-style:dashed; }
+.tl-when { font-size:12px; font-weight:700; align-self:center; padding-right:14px; font-variant-numeric:tabular-nums; }
+.tl-row.moved .tl-when { color:var(--accent); }
+.tl-row.none .tl-when { color:var(--text-dim); font-weight:600; }
+.tl-lines { display:flex; flex-wrap:wrap; gap:6px; padding-left:12px; }
+.tl-line { display:inline-flex; align-items:center; gap:7px; padding:4px 10px 4px 4px; border:1px solid var(--border); border-radius:99px;
+  font-size:12px; color:var(--text); background:var(--surface); max-width:100%; }
+.tl-line:hover { border-color:var(--border-2); box-shadow:0 2px 8px rgba(0,0,0,.06); text-decoration:none; }
+.tl-line span { min-width:0; }
+.tl-was { font-size:10px; font-weight:600; color:var(--accent); background:#FEF2F2; padding:1px 6px; border-radius:4px; white-space:nowrap; }
+
 /* Öne çıkanlar */
 .hl { list-style:none; }
 .hl li { display:flex; gap:12px; padding:14px 16px; }
@@ -160,6 +212,22 @@ h1 { font-size:20px; font-weight:700; line-height:1.3; letter-spacing:-0.02em; t
   .hdr-btn svg { width:18px; height:18px; }
   main { padding-top:calc(var(--header-h) + 14px); gap:16px; }
   .intro { padding:16px; }
+  .hero { grid-template-columns:1fr; }
+  .hero-main { padding:16px; }
+  .hero h1 { font-size:21px; }
+  .dek { font-size:13.5px; }
+  .countdown { border-left:none; border-top:1px solid var(--border); flex-direction:row; align-items:center; padding:12px 16px; }
+  .cd-head { flex-direction:column; align-items:flex-start; gap:6px; max-width:110px; }
+  .cd-num b { font-size:44px; }
+  .cd-foot { max-width:96px; text-align:right; }
+  .glances { grid-template-columns:1fr; }
+  .tl-row { grid-template-columns:minmax(0,1fr); padding:7px 12px 7px 38px; gap:6px; }
+  .tl-row::before { left:21px; }
+  .tl-row:first-child::before { top:18px; }
+  .tl-row:last-child::before { bottom:auto; height:18px; }
+  .tl-row::after { left:16px; top:18px; }
+  .tl-when { font-size:11.5px; padding-right:0; align-self:start; line-height:22px; }
+  .tl-lines { padding-left:0; }
   h1 { font-size:18px; }
   .metric-val { font-size:13px; }
   .card-bottom { flex-wrap:wrap; }
@@ -184,45 +252,78 @@ h1 { font-size:20px; font-weight:700; line-height:1.3; letter-spacing:-0.02em; t
   </nav>
 </header>
 <main>
-<section class="panel" aria-labelledby="issue-title">
-  <div class="intro">
-    <div class="eyebrow"><span class="tag tag-accent">Aylık bülten</span><span class="card-chip">Eylül 2026</span></div>
-    <h1 id="issue-title">M12 son düzlüğe girdi, güney aksında takvim kaydı</h1>
-    <p class="prose">İstanbul ve çevresinde yapımı süren raylı sistem hatlarında Eylül ayında öne çıkan gelişmeler.</p>
+<section class="panel hero" aria-labelledby="issue-title">
+  <div class="hero-main">
+    <div class="eyebrow"><span class="tag tag-accent">Aylık bülten</span><span class="card-chip">Eylül 2026 · 5 Ekim 2026'da yayımlandı</span></div>
+    <h1 id="issue-title">M12 için geri sayım başladı, güney aksı bir çeyrek kaydı</h1>
+    <p class="dek">Göztepe–Ümraniye hattında sinyalizasyon testleri tamamlanmış ve İBB hedef tarihi açıklamıştır. Pendik ve Kaynarca etaplarında ise yüklenicinin yeni iş bitim tarihi, beklenen açılışı yaza taşımaktadır.</p>
   </div>
-  <div class="metrics">
-    <div class="metric"><span class="metric-val">Eylül 2026</span><span class="metric-lbl">Veri dönemi</span></div>
-    <div class="metric"><span class="metric-val">10</span><span class="metric-lbl">İzlenen hat</span></div>
-    <div class="metric"><span class="metric-val">5 Ekim 2026</span><span class="metric-lbl">Yayım tarihi</span></div>
+  <a class="countdown" href="/hat/6" aria-label="M12 Göztepe–Ümraniye: İBB hedefi 19 Aralık 2026">
+    <div class="cd-head"><span class="line-icon" style="--s:26px"><img src="https://upload.wikimedia.org/wikipedia/commons/d/d4/Istanbul_M12_Line_Symbol.svg" alt="M12" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="icon-fb" hidden style="background:#C9D200">M12</span></span><span>M12 Göztepe–Ümraniye</span></div>
+    <div class="cd-num"><b id="cd-days">75</b><span>gün</span></div>
+    <div class="cd-foot">İBB'nin açılış hedefi <strong>19 Aralık</strong></div>
+  </a>
+</section>
+<section aria-labelledby="h-gl">
+  <div class="sec-lbl" id="h-gl">Eylül bir bakışta</div>
+  <div class="glances">
+    <div class="glance g-go">
+      <div class="g-head"><span class="g-dot" aria-hidden="true"></span><h2>Geri sayımda</h2><span class="g-icons"><span class="line-icon" style="--s:30px"><img src="https://upload.wikimedia.org/wikipedia/commons/d/d4/Istanbul_M12_Line_Symbol.svg" alt="M12" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="icon-fb" hidden style="background:#C9D200">M12</span></span></span></div>
+      <p class="prose">Sinyalizasyon ve PICO testleri tamamlanmış, ikinci test sürüşü yapılmıştır. Kadıköy ile Ümraniye arasındaki ilk doğrudan raylı bağlantı yıl sonuna yetişebilir; ancak hedef, Ekim beklentisinin iki ay ötesindedir.</p>
+    </div>
+    <div class="glance g-late">
+      <div class="g-head"><span class="g-dot" aria-hidden="true"></span><h2>Takvimi kayan</h2><span class="g-icons"><span class="line-icon" style="--s:30px"><img src="https://upload.wikimedia.org/wikipedia/commons/f/f9/Istanbul_M4_Line_Symbol.svg" alt="M4" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="icon-fb" hidden style="background:#E81F76">M4</span></span><span class="line-icon" style="--s:30px"><img src="https://upload.wikimedia.org/wikipedia/commons/1/1d/Istanbul_M10_Line_Symbol.svg" alt="M10" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="icon-fb" hidden style="background:#4DA93E">M10</span></span></span></div>
+      <p class="prose">Yüklenicinin ilave iş siparişi 31 Mayıs 2027&#x27;de bitecektir. Sahil hattını Sabiha Gökçen&#x27;e bağlayacak aksın açılışı Mart&#x27;tan Haziran 2027&#x27;ye ötelenmiştir.</p>
+    </div>
+    <div class="glance g-step">
+      <div class="g-head"><span class="g-dot" aria-hidden="true"></span><h2>Eşik aşan</h2><span class="g-icons"><span class="line-icon" style="--s:30px"><img src="https://upload.wikimedia.org/wikipedia/commons/6/6d/Istanbul_M7_Line_Symbol.svg" alt="M7" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="icon-fb" hidden style="background:#F29EBF">M7</span></span><span class="line-icon" style="--s:30px"><img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Kocaeli_Metro_logo.svg" alt="M1" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="icon-fb" hidden style="background:#E30512">M1</span></span></span></div>
+      <p class="prose">Mahmutbey–Hastane&#x27;de TBM güzergâhı tamamlamış, iş istasyon yapılarına kaymıştır. Gebze–Darıca&#x27;da test seferleri sürerken açılan kontrollük ihalesi, hatta hâlâ kayda değer iş kaldığını göstermektedir.</p>
+    </div>
+    <div class="glance g-stop">
+      <div class="g-head"><span class="g-dot" aria-hidden="true"></span><h2>Yerinde sayan</h2><span class="g-icons"><span class="line-icon" style="--s:30px"><img src="https://upload.wikimedia.org/wikipedia/commons/6/6d/Istanbul_M7_Line_Symbol.svg" alt="M7" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="icon-fb" hidden style="background:#F29EBF">M7</span></span><span class="line-icon" style="--s:30px"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a1/Istanbul_M13_Line_Symbol.svg" alt="M13" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="icon-fb" hidden style="background:#FF4B58">M13</span></span></span></div>
+      <p class="prose">Yıldız–Kabataş&#x27;ta ihale, Yenidoğan–Emek&#x27;te Kamu Yatırım Programı ve kredi onayı beklenmektedir. İki projede de sahada somut bir hareket gözlenmemektedir.</p>
+    </div>
   </div>
 </section>
-<section aria-labelledby="h-hl">
-  <div class="sec-lbl" id="h-hl">Ayın öne çıkanları</div>
-  <ul class="panel hl">
-    <li>
-      <div class="hl-icons"><span class="line-icon" style="--s:30px"><img src="https://upload.wikimedia.org/wikipedia/commons/d/d4/Istanbul_M12_Line_Symbol.svg" alt="M12" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="icon-fb" hidden style="background:#C9D200">M12</span></span></div>
-      <div class="hl-body"><h2>Göztepe–Ümraniye hattı açılışa en yakın proje konumundadır</h2><p class="prose">Sinyalizasyon montajı ve PICO testleri tamamlanmış, hatta ikinci test sürüşü yapılmıştır. İBB&#x27;nin açıkladığı 19 Aralık hedefi, Kadıköy ile Ümraniye arasındaki ilk doğrudan raylı bağlantının yıl sonuna kadar hizmete girebileceğini göstermektedir; ancak bu tarih daha önceki Ekim beklentisinin ötesine geçmektedir.</p></div>
+<section aria-labelledby="h-tl">
+  <div class="sec-lbl" id="h-tl">Tahmini açılış takvimi <span class="sec-note">· kırmızı: Eylül'de ileri kayan</span></div>
+  <ol class="panel timeline">
+    <li class="tl-row">
+      <div class="tl-when">Ekim 2026</div>
+      <div class="tl-lines"><a class="tl-line" href="/hat/61"><span class="line-icon" style="--s:22px"><img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Kocaeli_Metro_logo.svg" alt="M1" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="icon-fb" hidden style="background:#E30512">M1</span></span><span><b>M1</b> Darıca Sahil–Gebze OSB</span></a></div>
     </li>
-    <li>
-      <div class="hl-icons"><span class="line-icon" style="--s:30px"><img src="https://upload.wikimedia.org/wikipedia/commons/f/f9/Istanbul_M4_Line_Symbol.svg" alt="M4" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="icon-fb" hidden style="background:#E81F76">M4</span></span><span class="line-icon" style="--s:30px"><img src="https://upload.wikimedia.org/wikipedia/commons/1/1d/Istanbul_M10_Line_Symbol.svg" alt="M10" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="icon-fb" hidden style="background:#4DA93E">M10</span></span></div>
-      <div class="hl-body"><h2>Pendik ve Kaynarca etaplarında beklenen açılış bir çeyrek ileri kaymıştır</h2><p class="prose">Ana yüklenicinin verdiği ilave iş siparişinin bitim tarihi 31 Mayıs 2027 olarak duyurulmuştur. Bu nedenle iki etabın tahmini açılışı Mart 2027&#x27;den Haziran 2027&#x27;ye güncellenmiştir. Marmaray, hızlı tren ve Sabiha Gökçen bağlantısını güçlendirmesi beklenen aksın devreye girmesi de buna bağlı olarak gecikmektedir.</p></div>
+    <li class="tl-row moved">
+      <div class="tl-when">Aralık 2026</div>
+      <div class="tl-lines"><a class="tl-line" href="/hat/6"><span class="line-icon" style="--s:22px"><img src="https://upload.wikimedia.org/wikipedia/commons/d/d4/Istanbul_M12_Line_Symbol.svg" alt="M12" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="icon-fb" hidden style="background:#C9D200">M12</span></span><span><b>M12</b> Göztepe–Ümraniye</span><span class="tl-was">Ekim 2026 idi</span></a></div>
     </li>
-    <li>
-      <div class="hl-icons"><span class="line-icon" style="--s:30px"><img src="https://upload.wikimedia.org/wikipedia/commons/6/6d/Istanbul_M7_Line_Symbol.svg" alt="M7" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="icon-fb" hidden style="background:#F29EBF">M7</span></span></div>
-      <div class="hl-body"><h2>Mahmutbey–Hastane etabı tünel aşamasını geride bırakmaktadır</h2><p class="prose">TBM, yaklaşık 4 km&#x27;lik güzergâhı tamamlayarak Mahmutbey tarafındaki şafta ulaşmıştır; çıkış töreninin Kasım ayında yapılması planlanmaktadır. Toplu Konut istasyonunda fore kazık imalatına başlanması, işin ağırlığının istasyon yapılarına kaydığını göstermektedir. İBB&#x27;nin Ağustos&#x27;ta duyurduğu 2028 hedefi geçerliliğini korumaktadır.</p></div>
+    <li class="tl-row moved">
+      <div class="tl-when">Haziran 2027</div>
+      <div class="tl-lines"><a class="tl-line" href="/hat/70"><span class="line-icon" style="--s:22px"><img src="https://upload.wikimedia.org/wikipedia/commons/f/f9/Istanbul_M4_Line_Symbol.svg" alt="M4" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="icon-fb" hidden style="background:#E81F76">M4</span></span><span><b>M4</b> Tavşantepe–Kaynarca Merkez</span><span class="tl-was">Mart 2027 idi</span></a><a class="tl-line" href="/hat/49"><span class="line-icon" style="--s:22px"><img src="https://upload.wikimedia.org/wikipedia/commons/1/1d/Istanbul_M10_Line_Symbol.svg" alt="M10" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="icon-fb" hidden style="background:#4DA93E">M10</span></span><span><b>M10</b> Pendik Merkez–Fevzi Çakmak</span><span class="tl-was">Mart 2027 idi</span></a></div>
     </li>
-    <li>
-      <div class="hl-icons"><span class="line-icon" style="--s:30px"><img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Kocaeli_Metro_logo.svg" alt="M1" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="icon-fb" hidden style="background:#E30512">M1</span></span></div>
-      <div class="hl-body"><h2>Gebze–Darıca metrosunda test seferleri sürerken tamamlama işleri ihaleye çıkmıştır</h2><p class="prose">AYGM Genel Müdürü hattı raylı araçla yerinde incelemiş, hatta tren hareketleri devam etmektedir. Öte yandan tamamlama işleri için 60 ay süreli kontrollük hizmeti ilanına çıkılması, hat üzerinde hâlâ kayda değer iş kaldığına işaret etmektedir.</p></div>
+    <li class="tl-row">
+      <div class="tl-when">Aralık 2027</div>
+      <div class="tl-lines"><a class="tl-line" href="/hat/64"><span class="line-icon" style="--s:22px"><img src="https://upload.wikimedia.org/wikipedia/commons/1/19/Istanbul_M14_Line_Symbol.svg" alt="M14" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="icon-fb" hidden style="background:#B16400">M14</span></span><span><b>M14</b> Altunizade–Bosna Bulvarı</span></a></div>
     </li>
-    <li>
-      <div class="hl-icons"><span class="line-icon" style="--s:30px"><img src="https://upload.wikimedia.org/wikipedia/commons/6/6d/Istanbul_M7_Line_Symbol.svg" alt="M7" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="icon-fb" hidden style="background:#F29EBF">M7</span></span><span class="line-icon" style="--s:30px"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a1/Istanbul_M13_Line_Symbol.svg" alt="M13" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="icon-fb" hidden style="background:#FF4B58">M13</span></span></div>
-      <div class="hl-body"><h2>Duraklayan iki projede somut bir hareket gözlenmemektedir</h2><p class="prose">Yıldız–Kabataş etabında İBB, ihale çalışmalarının sürdüğünü ve tarihlerin EKAP üzerinden duyurulacağını bildirmiştir. Yenidoğan–Emek hattında ise ilerleme, Kamu Yatırım Programı&#x27;na dahil edilme ve kredi onayına bağlı olmaya devam etmektedir.</p></div>
+    <li class="tl-row">
+      <div class="tl-when">2028</div>
+      <div class="tl-lines"><a class="tl-line" href="/hat/69"><span class="line-icon" style="--s:22px"><img src="https://upload.wikimedia.org/wikipedia/commons/6/6d/Istanbul_M7_Line_Symbol.svg" alt="M7" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="icon-fb" hidden style="background:#F29EBF">M7</span></span><span><b>M7</b> Mahmutbey–Hastane</span></a></div>
     </li>
-  </ul>
+    <li class="tl-row">
+      <div class="tl-when">Haziran 2028</div>
+      <div class="tl-lines"><a class="tl-line" href="/hat/38"><span class="line-icon" style="--s:22px"><img src="https://upload.wikimedia.org/wikipedia/commons/0/02/Istanbul_T7_Line_Symbol.svg" alt="T7" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="icon-fb" hidden style="background:#C6D6A9">T7</span></span><span><b>T7</b> Feshane–Bayrampaşa</span></a></div>
+    </li>
+    <li class="tl-row">
+      <div class="tl-when">Aralık 2029</div>
+      <div class="tl-lines"><a class="tl-line" href="/hat/1"><span class="line-icon" style="--s:22px"><img src="https://upload.wikimedia.org/wikipedia/commons/6/62/Istanbul_M1B_Line_Symbol.svg" alt="M1B" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="icon-fb" hidden style="background:#E1251B">M1B</span></span><span><b>M1B</b> Kirazlı–Halkalı Üniversite</span></a></div>
+    </li>
+    <li class="tl-row none">
+      <div class="tl-when">Takvim yok</div>
+      <div class="tl-lines"><a class="tl-line" href="/hat/3"><span class="line-icon" style="--s:22px"><img src="https://upload.wikimedia.org/wikipedia/commons/6/6d/Istanbul_M7_Line_Symbol.svg" alt="M7" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="icon-fb" hidden style="background:#F29EBF">M7</span></span><span><b>M7</b> Yıldız–Kabataş</span></a><a class="tl-line" href="/hat/66"><span class="line-icon" style="--s:22px"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a1/Istanbul_M13_Line_Symbol.svg" alt="M13" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="icon-fb" hidden style="background:#FF4B58">M13</span></span><span><b>M13</b> Yenidoğan–Emek</span></a></div>
+    </li>
+  </ol>
 </section>
 <section aria-labelledby="h-lines">
-  <div class="sec-lbl" id="h-lines">Hat hat Eylül notları · tahmini açılış sırasına göre</div>
+  <div class="sec-lbl" id="h-lines">Hat hat Eylül notları</div>
   <div class="cards">
     <article class="card">
       <div class="card-top">
@@ -440,6 +541,17 @@ h1 { font-size:20px; font-weight:700; line-height:1.3; letter-spacing:-0.02em; t
   <p><strong>Yöntem.</strong> Fiziki ilerleme oranları, CİMER ve İBB Çözüm Merkezi üzerinden yapılan bilgi edinme başvurularına verilen yanıtlara dayanmaktadır; Eylül ayı oranları için yanıtlar beklenmekte olup her hat için son açıklanan oran ve ayı gösterilmektedir. Aylık notlar resmî açıklamalar, kamuya açık duyurular ve saha gözlemlerinden derlenmektedir.</p>
   <p>Hatların güncel durumu ve aylık ilerleme grafikleri için <a href="/">metrometre.com</a>. Yeni bültenler için <a href="/feed.xml">RSS beslemesi</a>.</p>
 </section>
+<script>
+// M12 için İBB hedefine kalan gün (İstanbul saatiyle). Hedef geçince sayaç gizlenir.
+(function(){
+  var el = document.getElementById('cd-days'); if(!el) return;
+  var now = new Date(), tr = new Date(now.getTime() + (now.getTimezoneOffset() + 180) * 60000);
+  var today = Date.UTC(tr.getFullYear(), tr.getMonth(), tr.getDate());
+  var days = Math.round((Date.UTC(2026, 11, 19) - today) / 864e5);
+  if(days > 0) el.textContent = days;
+  else el.closest('.countdown').classList.add('done');
+})();
+</script>
 </main>
 </body>
 </html>
