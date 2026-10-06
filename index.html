@@ -317,6 +317,74 @@ html, body {
 .card-prog-row .card-progress-pct { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; }
 .card-date-col { flex-shrink: 0; }
 
+/* ──── İŞLETME SEKMESİ: hat kartları + açılış kronolojisi ──── */
+/* Liste bölüm başlığı (hat türü / on yıl) */
+.list-hd {
+  flex-shrink: 0;
+  display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+  padding: 8px 2px 0;
+  font-size: 9.5px; font-weight: 700; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: .06em; line-height: 1.2;
+}
+.list-hd:first-child { padding-top: 0; }
+.list-hd-sub { font-weight: 600; letter-spacing: .02em; text-transform: none; font-size: 10px; }
+
+/* Hat kartı: etap kartından daha kısa — yalnız ad, ölçüler ve açılış aralığı */
+.card.card-line { min-height: 0; padding-top: 10px; padding-bottom: 10px; }
+.card-line .card-top { margin-bottom: 0; align-items: center; }
+.card-line .card-name { margin-bottom: 4px; }
+.card-line-years {
+  margin-left: auto; flex-shrink: 0; text-align: right;
+  font-size: 12px; font-weight: 600; color: var(--text); line-height: 1.25;
+  font-variant-numeric: tabular-nums;
+}
+.card-line-years small { display: block; font-size: 10px; font-weight: 500; color: var(--text-dim); }
+
+/* Kronoloji satırı (tek açılış etabı) */
+.card.card-etap {
+  min-height: 0; padding: 8px 10px 8px 13px;
+  flex-direction: row; align-items: center; justify-content: flex-start; gap: 10px;
+}
+.etap-date { width: 46px; flex-shrink: 0; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.etap-date b { display: block; font-size: 13px; font-weight: 700; color: var(--text); }
+.etap-date span { font-size: 10px; font-weight: 500; color: var(--text-dim); white-space: nowrap; }
+.card-etap .card-icon { width: 28px; height: 28px; }
+.card-etap .card-icon-fallback { font-size: 9px; }
+.etap-info { flex: 1; min-width: 0; }
+.etap-name { font-size: 12px; font-weight: 600; color: var(--text); line-height: 1.3; word-break: break-word; }
+.etap-meta { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+.card-etap.is-off .etap-name { color: var(--text-muted); }
+
+/* Hat detayında açılış zaman çizelgesi */
+#detail-timeline-wrap { display: flex; flex-direction: column; gap: 10px; }
+#detail-timeline-wrap[hidden] { display: none; }
+.tl-list { margin: 0 -8px; padding: 0; position: relative; display: flex; flex-direction: column; }
+.tl-item {
+  position: relative; display: block; width: 100%;
+  padding: 6px 8px 8px 22px; margin: 0; box-sizing: border-box;
+  background: none; border: 0; border-radius: 8px; text-align: left;
+  font: inherit; color: inherit; cursor: pointer;
+}
+.tl-item:hover { background: var(--surface-2); }
+.tl-item.active { background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--border-2); }
+.tl-item::before {           /* dikey çizgi */
+  content: ''; position: absolute; left: 12px; top: 0; bottom: 0;
+  width: 2px; background: var(--tl-color, var(--border-2)); opacity: .25;
+}
+.tl-item:first-child::before { top: 12px; }
+.tl-item:last-child::before  { bottom: calc(100% - 12px); }
+.tl-dot {
+  position: absolute; left: 8px; top: 8px;
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--surface); border: 2px solid var(--tl-color, var(--text-dim)); box-sizing: border-box;
+}
+.tl-item.active .tl-dot, .tl-item:first-child .tl-dot { background: var(--tl-color, var(--text-dim)); }
+.tl-date { display: block; font-size: 10px; font-weight: 700; color: var(--text-dim); letter-spacing: .02em; }
+.tl-name { display: block; font-size: 12px; font-weight: 600; color: var(--text); line-height: 1.35; margin-top: 1px; }
+.tl-meta { display: block; font-size: 10.5px; color: var(--text-muted); margin-top: 1px; }
+.tl-hint { font-size: 10px; color: var(--text-dim); line-height: 1.45; }
+.detail-text-lbl { display: block; font-size: 10px; font-weight: 700; color: var(--text-dim); margin-bottom: 4px; }
+
 /* ──── SAĞ PANEL ──── */
 #right-panel { flex: 1; display: flex; flex-direction: column; min-width: 0; position: relative; }
 
@@ -556,6 +624,9 @@ body.detail-open #tab-bar { right: 352px; }
 
 /* ──── DETAY FİZİKİ İLERLEME (donut) ──── */
 #detail-donut-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+/* display:flex, [hidden]'ın varsayılan display:none'ını ezer — gizlenen bölüm
+   boş bir alan olarak görünmesin diye açıkça geri alınır. */
+#detail-donut-wrap[hidden], #detail-trend-wrap[hidden], #detail-bottom[hidden] { display: none; }
 .detail-section-lbl {
   font-size: 9px; font-weight: 700; color: var(--text-dim);
   text-transform: uppercase; letter-spacing: .05em; line-height: 1;
@@ -1339,6 +1410,13 @@ a.src-badge:hover { border-color: currentColor; }
             <div id="detail-trend-note" class="detail-trend-note"></div>
           </div>
 
+          <!-- Yalnızca işletmedeki hatlar: hattın etap etap açılış kronolojisi -->
+          <div id="detail-timeline-wrap" hidden>
+            <span class="detail-section-lbl">Açılış kronolojisi</span>
+            <div class="tl-list" id="detail-timeline"></div>
+            <div class="tl-hint" id="detail-timeline-hint"></div>
+          </div>
+
           <div id="detail-bottom" hidden>
             <div id="detail-acilis-lbl"></div>
             <div id="detail-acilis-val"></div>
@@ -1530,10 +1608,13 @@ const DURUM_CLASS = {
 
 // Her sekmenin sıralama seçenekleri (label ve karşılaştırıcı fn)
 const SORT_CONFIG = {
+  // İşletme sekmesi etap değil HAT listeler (bkz. getIsletmeLines); karşılaştırıcılar
+  // hat nesneleri üzerinde çalışır. "Kronoloji" ise açılış etaplarını on yıllara
+  // bölünmüş bir zaman çizelgesi olarak gösterir (renderIsletmeList).
   isletme: [
-    { key:'acilis',   label:'Açılış tarihi', fn:(a,b) => dateSortDesc(a.p.ACILIS, b.p.ACILIS) },
-    { key:'mesafe',   label:'Uzunluk',        fn:(a,b) => numDesc(a.p.MESAFE, b.p.MESAFE) },
-    { key:'istasyon', label:'İstasyon',       fn:(a,b) => numDesc(a.p.ISTASYON, b.p.ISTASYON) },
+    { key:'hat',       label:'Hat',       fn:(a,b) => lineTypeOrder(a) - lineTypeOrder(b) || lineCodeCompare(a,b) },
+    { key:'uzunluk',   label:'Uzunluk',   fn:(a,b) => b.km - a.km || lineCodeCompare(a,b) },
+    { key:'kronoloji', label:'Kronoloji' },
   ],
   yapim: [
     { key:'acilis',   label:'Tahmini açılış', fn:(a,b) => acilisCompare(a.p, b.p) },
@@ -1547,6 +1628,119 @@ const SORT_CONFIG = {
     { key:'istasyon', label:'İstasyon',        fn:(a,b) => numDesc(a.p.ISTASYON, b.p.ISTASYON) },
   ],
 };
+
+// ═════════════════════════════════════════════════════
+//  İŞLETMEDEKİ HATLAR — etapları hat (güzergâh) altında toplama
+// ═════════════════════════════════════════════════════
+// GeoJSON'daki her feature bir AÇILIŞ ETABIdır (ör. M2 sekiz etaptan oluşur).
+// İşletme sekmesi bunları yolcunun bildiği hatlar altında toplar:
+//  • 'M1' kodlu ortak gövde (Yenikapı–Otogar) hem M1A'ya hem M1B'ye aittir.
+//  • 'M4-M10' kesimi (Fevzi Çakmak–Sabiha Gökçen) M4 olarak işletilir.
+//  • Devre dışı hatlar koda göre değil ada göre gruplanır (iki banliyö de 'B').
+const HAT_GRUP_OZEL = { 'M1':['M1A','M1B'], 'M4-M10':['M4'] };
+
+// Hat güzergâh adları (uç istasyonlar). Etap adlarından güvenilir biçimde
+// türetilemediği için burada tutulur. Listede olmayan hat, tek etaplıysa etap
+// adını, çok etaplıysa "<KOD> hattı" adını alır — yeni hat açılınca buraya eklenmeli.
+const HAT_ADLARI = {
+  M1A:'Yenikapı–Atatürk Havalimanı', M1B:'Yenikapı–Kirazlı', M2:'Yenikapı–Hacıosman',
+  M3:'Bakırköy Sahil–Kayaşehir Merkez', M4:'Kadıköy–Sabiha Gökçen Havalimanı',
+  M5:'Üsküdar–Sultanbeyli', M6:'Levent–Boğaziçi Ü./Hisarüstü', M7:'Yıldız–Mahmutbey',
+  M8:'Bostancı–Parseller', M9:'Ataköy–Olimpiyat', M11:'Gayrettepe–Halkalı',
+  B1:'Halkalı–Gebze', B2:'Halkalı–Ispartakule',
+  T1:'Kabataş–Bağcılar', T2:'Taksim–Tünel', T3:'Kadıköy–Moda', T4:'Topkapı–Mescid-i Selam',
+  T5:'Eminönü–Alibeyköy Cep Otogarı', T6:'Sirkeci–Kazlıçeşme',
+  F1:'Taksim–Kabataş', F2:'Karaköy–Beyoğlu (Tünel)', F3:'Seyrantepe–Vadistanbul',
+  F4:'Boğaziçi Ü./Hisarüstü–Aşiyan', TF1:'Maçka–Taşkışla', TF2:'Eyüp–Piyer Loti',
+};
+// TUR alanı → liste bölümü (Hat görünümünde bu sırayla başlıklanır)
+const HAT_TURLERI = { '2':'Metro', '1':'Banliyö', '3':'Tramvay', '4':'Füniküler', '5':'Teleferik' };
+const HAT_TUR_SIRA = ['2','1','3','4','5'];
+function lineTypeOrder(l){ const i = HAT_TUR_SIRA.indexOf(l.tur); return i < 0 ? 99 : i; }
+function lineCodeCompare(a,b){ return String(a.kod).localeCompare(String(b.kod), 'tr', { numeric:true }); }
+
+// Bir etabın ait olduğu hat anahtar(lar)ı
+function lineKeysOf(p){
+  if(String(p?.PR_DURUM) === '0') return ['DD:' + String(p?.AD || '').trim()];
+  const k = String(p?.KOD || '').trim();
+  return HAT_GRUP_OZEL[k] || [k];
+}
+// Aynı açılışın parçaları (aynı kod + ad + tarih) tek etap sayılır — ör. Sirkeci
+// banliyösü GeoJSON'da iki parça olarak durur.
+function etapId(p){ return [p?.KOD, p?.AD, p?.ACILIS].map(v => String(v ?? '').trim()).join('|'); }
+function etapFeaturesOf(f){
+  if(!f) return [];
+  const id = etapId(f.properties);
+  return getHatlarForTab('isletme').filter(x => etapId(x.properties) === id);
+}
+
+// Etapları birleştirir: [{ key, features, ad, acilis, km, ist, text }] (eskiden yeniye)
+function buildEtaplar(features){
+  const by = new Map();
+  features.forEach(f => {
+    const p = f.properties || {};
+    const id = etapId(p);
+    let e = by.get(id);
+    if(!e){
+      e = { key:id, features:[], kod:p.KOD, ad:String(p.AD || '').trim(), acilis:String(p.ACILIS || ''),
+            km:0, ist:0, off:String(p.PR_DURUM) === '0', text:p.PR_DETAY || p.PR_ACIKLAMA || '', rep:p };
+      by.set(id, e);
+    }
+    e.features.push(f);
+    e.km  += parseFloat(p.MESAFE)   || 0;
+    e.ist += parseFloat(p.ISTASYON) || 0;
+  });
+  return Array.from(by.values()).sort((a,b) => a.acilis.localeCompare(b.acilis) || a.ad.localeCompare(b.ad, 'tr'));
+}
+
+// İşletme sekmesindeki hatlar. Ucuz bir hesap (≈70 etap) olduğu için her çağrıda
+// yeniden kurulur; böylece overlay ya da yeniden yükleme sonrası bayat kalmaz.
+function getIsletmeLines(){
+  const groups = new Map();
+  getHatlarForTab('isletme').forEach(f => {
+    lineKeysOf(f.properties).forEach(k => {
+      if(!groups.has(k)) groups.set(k, []);
+      groups.get(k).push(f);
+    });
+  });
+  const out = [];
+  for(const [key, features] of groups){
+    const off = key.startsWith('DD:');
+    // Görsel kimlik: kodu hat anahtarıyla aynı olan etaptan (M1A için M1A'lı etap)
+    const repF = features.find(f => String(f.properties?.KOD) === key) || features[0];
+    const rep  = repF.properties || {};
+    const etaplar = buildEtaplar(features);
+    const ad = off ? key.slice(3)
+             : (HAT_ADLARI[key] || (etaplar.length === 1 ? etaplar[0].ad : `${key} hattı`));
+    out.push({
+      key, off, ad, rep, features, etaplar,
+      kod: off ? String(rep.KOD || '') : key,
+      tur: String(rep.TUR ?? ''),
+      renk: normHex(rep.RENK_HEX) || '#9B9B9B',
+      km:  etaplar.reduce((s,e) => s + e.km, 0),
+      ist: Math.round(etaplar.reduce((s,e) => s + e.ist, 0)),
+      ilk: etaplar[0]?.acilis || '',
+      son: etaplar[etaplar.length-1]?.acilis || '',
+    });
+  }
+  return out;
+}
+function lineByKey(key){ return key ? (getIsletmeLines().find(l => l.key === key) || null) : null; }
+// İşletme sekmesi hat kartlarıyla mı (Hat / Uzunluk) yoksa etap kronolojisiyle mi gösteriliyor
+function isLineView(){ return activeTab === 'isletme' && activeSortKey.isletme !== 'kronoloji'; }
+function lineTitle(l){ return l.off ? l.ad : `${l.kod} ${l.ad}`; }
+
+// Kısa hatlarda tam sayıya yuvarlamak yanıltır (0,6 km'lik füniküler "1 km" olmasın)
+function fmtKm(km){
+  const v = parseFloat(km) || 0;
+  return (v < 10 ? (Math.round(v*10)/10).toLocaleString('tr-TR') : Math.round(v)) + ' km';
+}
+const TR_AY_KISA = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+// "1990'lar", "2020'ler" — onlar basamağının okunuşuna göre ünlü uyumu
+function decadeLabel(dec){
+  const t = Math.floor(dec / 10) % 10;
+  return `${dec}'${[1,3,4,6,9].includes(t) ? 'lar' : 'ler'}`;
+}
 
 // ──── Sıralama yardımcıları ────
 function numDesc(a,b){ return (parseFloat(b)||0) - (parseFloat(a)||0); }
@@ -1660,12 +1854,15 @@ let progressByOid   = new Map();
 let progressMonths  = [];     // tüm hatları kapsayan benzersiz, sıralı YIL_AY listesi
 let activeTab       = 'yapim';
 let selectedFeature = null;   // o an seçili tek GeoJSON feature
+// İşletme sekmesinde seçili HAT (getIsletmeLines anahtarı: 'M2', 'M1A', 'DD:Sirkeci Banliyösü').
+// selectedFeature ile birlikte doluysa: hat seçili, içindeki o etap odakta.
+let selectedLineKey = null;
 let globalBounds    = null;   // tüm hatların bounding box'ı: [[minLng,minLat],[maxLng,maxLat]]
 let map;
 let mapReady        = false;
 let initialFitDone  = false;  // loadData her çağrıldığında sıfırlanır; Retry sonrası ilk fit'in tekrar çalışmasını sağlar.
 
-const activeSortKey = { isletme:'acilis', yapim:'acilis', proje:'mesafe' };
+const activeSortKey = { isletme:'hat', yapim:'acilis', proje:'mesafe' };
 
 // ═════════════════════════════════════════════════════
 //  HARİTA KAYNAK / KATMAN ID'LERİ
@@ -2212,28 +2409,30 @@ function renderMap(){
     fitGlobalBounds(false);
   }
 
-  const selObjId = selectedFeature?.properties?.OBJECTID ?? null;
-  const selKod   = selectedFeature?.properties?.KOD      ?? null;
-
   const activeHatlar   = getHatlarForTab(activeTab);
   const activeDuraklar = getDuraklarForTab(activeTab);
   const otherHatlar    = getHatlarOther(activeTab);
   const otherDuraklar  = getDuraklarOther(activeTab);
 
-  // Glow için seçili tek feature OBJECTID ile eşleştirilir (KOD aynı olabilir, OBJECTID benzersiz).
-  const selectedHatFeatures = selObjId !== null
-    ? activeHatlar.filter(f => String(f.properties?.OBJECTID) === String(selObjId))
-    : [];
+  // Glow için seçili feature'lar (OBJECTID ile eşleşir; KOD aynı olabilir, OBJECTID benzersiz):
+  //  • etap seçiliyse o etap (işletmede aynı açılışın tüm parçaları),
+  //  • işletmede yalnız hat seçiliyse hattın bütün etapları.
+  const selectedHatFeatures = selectedHatFeaturesFor(activeHatlar);
+  const selOids = new Set(selectedHatFeatures.map(f => String(f.properties?.OBJECTID)));
 
-  // Seçili hattın bbox'ına düşen ve aynı KOD'a sahip durakları glow için topla.
-  const selBbox = selectedFeature ? featureBbox(selectedFeature) : null;
-  const selectedDurakFeatures = (selBbox && selKod)
-    ? duraklarInBbox(activeDuraklar.filter(f => f.properties?.KOD === selKod), selBbox)
-    : [];
+  // Her seçili parçanın bbox'ına düşen ve aynı KOD'a sahip durakları glow için topla.
+  const durakSeen = new Set();
+  const selectedDurakFeatures = [];
+  selectedHatFeatures.forEach(sf => {
+    const kod = sf.properties?.KOD;
+    if(kod == null) return;
+    duraklarInBbox(activeDuraklar.filter(f => f.properties?.KOD === kod), featureBbox(sf))
+      .forEach(d => { if(!durakSeen.has(d)){ durakSeen.add(d); selectedDurakFeatures.push(d); } });
+  });
 
-  // Seçili segment selected katmanlardan çizildiği için active'den çıkarılır (çift çizim önlenir).
-  const activeHatlarDisplay = selObjId !== null
-    ? activeHatlar.filter(f => String(f.properties?.OBJECTID) !== String(selObjId))
+  // Seçili kesim selected katmanlardan çizildiği için active'den çıkarılır (çift çizim önlenir).
+  const activeHatlarDisplay = selOids.size
+    ? activeHatlar.filter(f => !selOids.has(String(f.properties?.OBJECTID)))
     : activeHatlar;
 
   // Sadece kaynak verisi güncellenir; katmanlar initMapLayers() içinde tek seferlik kuruldu.
@@ -2298,25 +2497,65 @@ function fitGlobalBounds(animated){
 // Seçim mantığının tek doğruluk kaynağı.
 function syncCardSelectionUI(){
   const selObjId = selectedFeature?.properties?.OBJECTID;
+  const selEtap  = selectedFeature ? etapId(selectedFeature.properties) : null;
   document.querySelectorAll('.card').forEach(c => {
-    const on = selObjId !== undefined && c.dataset.objectid === String(selObjId);
+    // Hat kartı (işletme) → hat anahtarı; kronoloji satırı → etap; diğerleri → OBJECTID
+    const on = c.dataset.line != null ? c.dataset.line === selectedLineKey
+             : c.dataset.etap != null ? c.dataset.etap === selEtap
+             : selObjId !== undefined && c.dataset.objectid === String(selObjId);
     c.classList.toggle('active', on);
     c.setAttribute('aria-selected', on ? 'true' : 'false');
   });
 }
 
-function onCardSelect(feature){
+// Haritada vurgulanacak feature'lar (renderMap ve yakınlaştırma ortak kullanır)
+function selectedHatFeaturesFor(activeHatlar){
+  if(selectedFeature){
+    if(activeTab === 'isletme') return etapFeaturesOf(selectedFeature);
+    const oid = String(selectedFeature.properties?.OBJECTID);
+    return activeHatlar.filter(f => String(f.properties?.OBJECTID) === oid);
+  }
+  if(activeTab === 'isletme' && selectedLineKey) return lineByKey(selectedLineKey)?.features || [];
+  return [];
+}
+
+// Seçimi tamamen kaldırır (kart ikinci kez tıklanınca, detay kapatılınca)
+function clearSelection(){
+  selectedFeature = null; selectedLineKey = null;
+  syncCardSelectionUI();
+  closeDetailPopup();
+  fitGlobalBounds();
+  renderMap();
+  writeHash();
+}
+
+// Etap seçimi: harita tıklaması, kronoloji satırı, arama ve paylaşılan bağlantı buradan geçer.
+// İşletmenin hat görünümlerinde etap yerine ait olduğu HAT seçilir; opts.focus ile
+// (ör. etap adıyla yapılan arama) hat seçilip o etap ayrıca odaklanır.
+function onCardSelect(feature, opts = {}){
+  if(activeTab === 'isletme'){
+    const keys = lineKeysOf(feature.properties);
+    // Ortak gövde (M1) tıklandığında hâlihazırda seçili olan M1A/M1B korunur
+    const key  = keys.includes(selectedLineKey) ? selectedLineKey : keys[0];
+    if(isLineView()){
+      selectLine(key, opts.focus ? feature : null);
+      return;
+    }
+    // Kronoloji: aynı etaba ikinci tıklama → seçimi kaldır
+    if(selectedFeature && etapId(selectedFeature.properties) === etapId(feature.properties)){
+      clearSelection();
+      return;
+    }
+    selectLine(key, feature);
+    return;
+  }
+
   const objId  = feature.properties?.OBJECTID;
   const prevId = selectedFeature?.properties?.OBJECTID;
 
   // Aynı karta ikinci tıklama → seçimi kaldır
   if(prevId !== undefined && String(prevId) === String(objId)){
-    selectedFeature = null;
-    syncCardSelectionUI();
-    closeDetailPopup();
-    fitGlobalBounds();
-    renderMap();
-    writeHash();
+    clearSelection();
     return;
   }
 
@@ -2328,9 +2567,28 @@ function onCardSelect(feature){
   writeHash();
 }
 
-function zoomToHat(feature){
-  const bbox = featureBbox(feature);
-  if(!bbox) return;
+// İşletmedeki bir hattı seçer; focus verilirse hattın o etabı haritada öne çıkar.
+function selectLine(key, focus = null){
+  const line = lineByKey(key);
+  if(!line) return;
+  selectedLineKey = key;
+  selectedFeature = focus || null;
+  syncCardSelectionUI();
+  renderMap();
+  zoomToFeatures(focus ? etapFeaturesOf(focus) : line.features);
+  openDetailPopup(line.rep);
+  writeHash();
+}
+
+function zoomToHat(feature){ zoomToFeatures([feature]); }
+
+function zoomToFeatures(features){
+  const boxes = (features || []).map(featureBbox).filter(Boolean);
+  if(!boxes.length) return;
+  const bbox = [
+    [Math.min(...boxes.map(b => b[0][0])), Math.min(...boxes.map(b => b[0][1]))],
+    [Math.max(...boxes.map(b => b[1][0])), Math.max(...boxes.map(b => b[1][1]))],
+  ];
   // Üstte yüzen sekme çubuğu (İşletmede / Yapımı süren / Proje) haritanın üstüne biner;
   // hattın üst kısmı sekmelerin altında kalmasın diye üstte fazladan boşluk bırakılır.
   // Mobilde sekme çubuğu haritanın üstünde ayrı şeritte durur, alttan açılan sheet için altta yer bırakılır.
@@ -2348,6 +2606,10 @@ function zoomToHat(feature){
 //  HAT DETAY POPUP
 // ═════════════════════════════════════════════════════
 function openDetailPopup(p){
+  // İşletmede hat seçiliyse panel etabı değil HATTI anlatır: başlık hattın adı,
+  // ölçüler hattın toplamı; alt bölümde açılış kronolojisi.
+  const line = (activeTab === 'isletme' && selectedLineKey) ? lineByKey(selectedLineKey) : null;
+  if(line) p = { ...line.rep, KOD: line.kod, AD: line.ad, MESAFE: line.km, ISTASYON: line.ist };
   const renk  = normHex(p.RENK_HEX) || '#9B9B9B';
   const imgEl = document.getElementById('detail-icon-img');
   const fbEl  = document.getElementById('detail-icon-fallback');
@@ -2408,7 +2670,7 @@ function openDetailPopup(p){
   const chips   = [];
   if(p.MESAFE != null && p.MESAFE !== ''){
     const km = parseFloat(p.MESAFE) || 0;
-    chips.push(`${Math.round(km)} km`);
+    chips.push(line ? fmtKm(km) : `${Math.round(km)} km`);
   }
   if(p.ISTASYON != null && p.ISTASYON !== ''){
     const n = Math.round(parseFloat(p.ISTASYON) || 0);
@@ -2462,7 +2724,9 @@ function openDetailPopup(p){
   const bottomEl = document.getElementById('detail-bottom');
   const lblEl    = document.getElementById('detail-acilis-lbl');
   const valEl    = document.getElementById('detail-acilis-val');
-  if(isIsletme){
+  if(line){
+    bottomEl.hidden = true;            // tarih bilgisi kronolojide
+  } else if(isIsletme){
     const dateStr = fmtTRDate(p.ACILIS);
     lblEl.textContent = 'Açılış Tarihi';
     valEl.textContent = dateStr || '—';
@@ -2476,7 +2740,12 @@ function openDetailPopup(p){
     bottomEl.hidden = true;
   }
 
-  document.getElementById('detail-text').textContent = p.PR_DETAY || p.PR_ACIKLAMA || '';
+  if(line){
+    renderLineTimeline(line);
+  } else {
+    document.getElementById('detail-timeline-wrap').hidden = true;
+    document.getElementById('detail-text').textContent = p.PR_DETAY || p.PR_ACIKLAMA || '';
+  }
 
   // Yeni hat seçildiğinde önceki paylaş popover'ı kapanmalı.
   closeSharePopover();
@@ -2491,6 +2760,41 @@ function openDetailPopup(p){
   document.body.classList.add('detail-open');
   // Peek yüksekliğini başlık ölçüsüne göre güncelle (bir sonraki kare)
   if(typeof measureDetailSheet === 'function') requestAnimationFrame(measureDetailSheet);
+}
+
+// İşletmedeki hattın etap etap açılış kronolojisi (eskiden yeniye).
+// Satır seçilince o etap haritada öne çıkar; aynı satıra tekrar basınca hat geneline dönülür.
+function renderLineTimeline(line){
+  const wrap    = document.getElementById('detail-timeline-wrap');
+  const list    = document.getElementById('detail-timeline');
+  const hint    = document.getElementById('detail-timeline-hint');
+  const focusId = selectedFeature ? etapId(selectedFeature.properties) : null;
+
+  list.innerHTML = '';
+  line.etaplar.forEach((e, i) => {
+    const on  = e.key === focusId;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'tl-item' + (on ? ' active' : '');
+    btn.style.setProperty('--tl-color', line.renk);
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    const meta = [fmtKm(e.km), e.ist ? `${Math.round(e.ist)} istasyon` : null].filter(Boolean).join(' · ');
+    btn.innerHTML = `<span class="tl-dot"></span>
+      <span class="tl-date">${esc(fmtTRDate(e.acilis) || '—')}</span>
+      <span class="tl-name">${esc(e.ad)}</span>
+      <span class="tl-meta">${i > 0 ? '+' : ''}${esc(meta)}</span>`;
+    btn.addEventListener('click', () => selectLine(line.key, on ? null : e.features[0]));
+    list.appendChild(btn);
+  });
+  hint.textContent = line.etaplar.length > 1 ? 'Bir etabı seçince haritada o kesim vurgulanır.' : '';
+  wrap.hidden = false;
+
+  // Açıklama: odaktaki etabın; odak yoksa en son açılan etabın metni (ör. açılış notu)
+  const textE  = line.etaplar.find(e => e.key === focusId) || line.etaplar[line.etaplar.length-1];
+  const textEl = document.getElementById('detail-text');
+  textEl.innerHTML = (textE && textE.text)
+    ? `<span class="detail-text-lbl">${esc(textE.ad)} etabı</span>${esc(textE.text)}`
+    : '';
 }
 
 // Hattın aylık serisindeki son dönem → "Ağustos 2026 itibarıyla"; seri yoksa boş.
@@ -2728,7 +3032,7 @@ function closeDetailPopup(){
 
 document.getElementById('detail-close').addEventListener('click', () => {
   closeDetailPopup();
-  selectedFeature = null;
+  selectedFeature = null; selectedLineKey = null;
   syncCardSelectionUI();
   fitGlobalBounds();
   renderMap();
@@ -2814,7 +3118,7 @@ function measureDetailSheet(){
     } else {
       // Yeterince aşağı çekildi → kapat
       closeDetailPopup();
-      selectedFeature = null;
+      selectedFeature = null; selectedLineKey = null;
       syncCardSelectionUI();
       fitGlobalBounds();
       renderMap();
@@ -2868,6 +3172,18 @@ function buildShareData(p){
   return { text, url: lineShareUrl(p) };
 }
 
+// Paylaşılacak şey: odaktaki etap ya da (işletmede) seçili hattın tamamı.
+// Hat bağlantısı uygulama içi hash'tir; açıldığında aynı hat seçili gelir.
+function currentShareData(){
+  if(selectedFeature) return buildShareData(selectedFeature.properties);
+  const line = activeTab === 'isletme' ? lineByKey(selectedLineKey) : null;
+  if(!line) return null;
+  return {
+    text: lineTitle(line),
+    url: `${location.origin}/#tab=isletme&sort=hat&grup=${encodeURIComponent(line.key)}`,
+  };
+}
+
 // "M12 Göztepe-Ümraniye Metro Hattı" → "m12-goztepe-umraniye-metro-hatti"
 function slugify(s){
   return trFold(s).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
@@ -2889,10 +3205,10 @@ function hasShareCard(p){
 
 function openSharePopover(){
   const p = selectedFeature?.properties;
-  if(!p) return;
+  if(!p && !currentShareData()) return;
 
   resetShareButtons();
-  const withCard = hasShareCard(p);
+  const withCard = !!p && hasShareCard(p);
   document.getElementById('share-card').hidden   = !withCard;
   document.getElementById('share-native').hidden = !navigator.share;
   // Kart görseli popover açılırken önden indirilir: paylaşım menüsü, tıklamadan
@@ -2984,15 +3300,15 @@ document.getElementById('share-card').addEventListener('click', async () => {
 });
 
 document.getElementById('share-whatsapp').addEventListener('click', () => {
-  if(!selectedFeature) return;
-  const data = buildShareData(selectedFeature.properties);
+  const data = currentShareData();
+  if(!data) return;
   window.open('https://wa.me/?text=' + encodeURIComponent(`${data.text}\n${data.url}`), '_blank', 'noopener,noreferrer');
 });
 
 // Cihazın kendi paylaşım menüsü (Telegram, Mesajlar, e-posta…)
 document.getElementById('share-native').addEventListener('click', async () => {
-  if(!selectedFeature || !navigator.share) return;
-  const data = buildShareData(selectedFeature.properties);
+  const data = currentShareData();
+  if(!data || !navigator.share) return;
   try { await navigator.share({ title: data.text, text: data.text, url: data.url }); }
   catch(_){ /* kullanıcı vazgeçti */ }
 });
@@ -3005,8 +3321,8 @@ document.getElementById('detail-share').addEventListener('click', e => {
 });
 
 document.getElementById('share-copy').addEventListener('click', async () => {
-  if(!selectedFeature) return;
-  const data = buildShareData(selectedFeature.properties);
+  const data = currentShareData();
+  if(!data) return;
   const full = `${data.text}\n${data.url}`;
   const btn  = document.getElementById('share-copy');
   const lbl  = btn.querySelector('span');
@@ -3035,8 +3351,8 @@ document.getElementById('share-copy').addEventListener('click', async () => {
 });
 
 document.getElementById('share-twitter').addEventListener('click', () => {
-  if(!selectedFeature) return;
-  const data = buildShareData(selectedFeature.properties);
+  const data = currentShareData();
+  if(!data) return;
   const intent = 'https://x.com/intent/post'
     + '?text=' + encodeURIComponent(data.text)
     + '&url='  + encodeURIComponent(data.url);
@@ -3062,7 +3378,8 @@ document.getElementById('share-savemap').addEventListener('click', async () => {
 
   // Dosya adını hat koduna göre üret
   const p    = selectedFeature?.properties || {};
-  const safe = String(p.KOD || 'harita').trim().replace(/[^\w.-]+/g, '_') || 'harita';
+  const selLine = activeTab === 'isletme' ? lineByKey(selectedLineKey) : null;
+  const safe = String(p.KOD || selLine?.kod || 'harita').trim().replace(/[^\w.-]+/g, '_') || 'harita';
   const fname = `metrometre-${safe}.png`;
 
   const url = URL.createObjectURL(blob);
@@ -3106,13 +3423,12 @@ document.addEventListener('keydown', e => {
 //    ama işletmedeki ağın uzunluğunu/istasyonunu şişirmez.
 //  • İstasyonlar ada göre bir kez sayılır: aktarma istasyonu (ör. Yenikapı)
 //    her hat için ayrı nokta olsa da tek istasyondur.
-//  • Hat sayısı: işletmede benzersiz hat kodu (bir hat birden çok açılış
-//    etabından oluşur); yapım/proje sekmelerinde listedeki proje sayısı
-//    (ör. M7'nin iki ayrı uzatması iki proje).
+//  • Hat sayısı: işletmede hat kartı sayısı (bir hat birden çok açılış
+//    etabından oluşur; bkz. getIsletmeLines); yapım/proje sekmelerinde listedeki
+//    proje sayısı (ör. M7'nin iki ayrı uzatması iki proje).
 function updateMetrics(){
   const isActive   = f => String(f.properties?.PR_DURUM) !== '0';
   const hatlar     = getHatlarForTab(activeTab).filter(isActive);
-  const uniqueHatSayisi = new Set(hatlar.map(f => f.properties?.KOD)).size;
   const durakCount = new Set(
     getDuraklarForTab(activeTab).filter(isActive)
       .map(f => trFold(f.properties?.AD).trim()).filter(Boolean)
@@ -3122,8 +3438,10 @@ function updateMetrics(){
 
   let vals;
   if(activeTab === 'isletme'){
+    // Hat sayısı listedeki hat kartlarıyla aynıdır: ortak gövde 'M1' ayrı hat değil,
+    // M1A ve M1B'nin parçasıdır; 'M4-M10' kesimi M4'tür (bkz. getIsletmeLines).
     vals = [
-      { val:uniqueHatSayisi, lbl:'İşletmedeki hat' },
+      { val:getIsletmeLines().filter(l => !l.off).length, lbl:'İşletmedeki hat' },
       { val:mesafeFmt,     lbl:'Toplam uzunluk'  },
       { val:durakCount,    lbl:'İstasyon sayısı' },
     ];
@@ -3175,8 +3493,170 @@ function renderSortBar(){
 // ═════════════════════════════════════════════════════
 //  KART ÇİZİMİ
 // ═════════════════════════════════════════════════════
+// ──── Liste ortak yardımcıları ────
+function cardIconHtml(p, renk){
+  const ikon = p.IKON_URL
+    ? `<img src="${esc(p.IKON_URL)}" alt="${esc(p.KOD||'')}"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+           style="width:100%;height:100%;object-fit:cover">
+       <div class="card-icon-fallback" style="display:none;background:${renk}">${esc((p.KOD||'?').slice(0,3))}</div>`
+    : `<div class="card-icon-fallback" style="background:${renk};display:flex">${esc((p.KOD||'?').slice(0,3))}</div>`;
+  return `<div class="card-icon" style="border-color:${renk}44">${ikon}</div>`;
+}
+function listHeader(title, sub){
+  const hd = document.createElement('div');
+  hd.className = 'list-hd';
+  hd.setAttribute('role', 'presentation');
+  hd.innerHTML = `<span>${esc(title)}</span>${sub ? `<span class="list-hd-sub">${esc(sub)}</span>` : ''}`;
+  return hd;
+}
+// Kart davranışı: tıklama + Enter/Space seçimi, ok tuşları / Home / End ile gezinme
+function wireCard(card, list, onSelect){
+  card.setAttribute('role', 'option');
+  card.tabIndex = -1;
+  const go = () => { onSelect(); if(isMobile()) applyMobileView('map'); };
+  card.addEventListener('click', go);
+  card.addEventListener('keydown', e => {
+    if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); go(); return; }
+    if(['ArrowDown','ArrowUp','Home','End'].includes(e.key)){
+      e.preventDefault();
+      const cards = Array.from(list.querySelectorAll('.card'));
+      const idx = cards.indexOf(card);
+      const ni = e.key === 'ArrowDown' ? Math.min(idx + 1, cards.length - 1)
+               : e.key === 'ArrowUp'   ? Math.max(idx - 1, 0)
+               : e.key === 'Home'      ? 0 : cards.length - 1;
+      cards[ni]?.focus();
+    }
+  });
+}
+
+// ──── İşletme sekmesi listesi ────
+// Hat / Uzunluk: her hat tek kart (etaplar hattın detayında kronoloji olarak).
+// Kronoloji: açılış etapları on yıllara bölünmüş, yeniden eskiye.
+function renderIsletmeList(list){
+  const key = activeSortKey.isletme;
+
+  if(key === 'kronoloji'){
+    const etaplar = buildEtaplar(getHatlarForTab('isletme')).reverse();
+    let curDec = null;
+    etaplar.forEach(e => {
+      const yr  = parseInt(e.acilis.slice(0,4), 10);
+      const dec = isNaN(yr) ? null : Math.floor(yr / 10) * 10;
+      if(dec !== curDec){
+        curDec = dec;
+        const inDec = etaplar.filter(x => Math.floor(parseInt(x.acilis.slice(0,4),10) / 10) * 10 === dec);
+        const km = inDec.reduce((s,x) => s + x.km, 0);
+        list.appendChild(listHeader(dec == null ? 'Tarihsiz' : decadeLabel(dec),
+          `${inDec.length} açılış · ${fmtKm(km)}`));
+      }
+      const p    = e.rep;
+      const renk = normHex(p.RENK_HEX) || '#9B9B9B';
+      const mo   = parseInt(e.acilis.slice(5,7), 10);
+      const day  = parseInt(e.acilis.slice(8,10), 10);
+      const dayTxt = (mo >= 1 && mo <= 12) ? `${day ? day + ' ' : ''}${TR_AY_KISA[mo-1]}` : '';
+      const meta = [e.off ? 'Devre dışı' : null, fmtKm(e.km),
+                    e.ist ? `${Math.round(e.ist)} istasyon` : null].filter(Boolean).join(' · ');
+
+      const card = document.createElement('div');
+      card.className = 'card card-etap' + (e.off ? ' is-off' : '');
+      card.dataset.etap = e.key;
+      card.dataset.objectid = String(p.OBJECTID ?? '');
+      card.innerHTML = `
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:${renk};border-radius:10px 0 0 10px"></div>
+        <div class="etap-date"><b>${isNaN(yr) ? '—' : yr}</b><span>${esc(dayTxt)}</span></div>
+        <div class="card-icon-wrap">${cardIconHtml(p, renk)}</div>
+        <div class="etap-info">
+          <div class="etap-name">${esc(e.ad || '—')}</div>
+          <div class="etap-meta">${esc(meta)}</div>
+        </div>`;
+      wireCard(card, list, () => onCardSelect(e.features[0]));
+      list.appendChild(card);
+    });
+    return;
+  }
+
+  const lines  = getIsletmeLines();
+  const sortFn = SORT_CONFIG.isletme.find(o => o.key === key)?.fn;
+  const active = lines.filter(l => !l.off).sort(sortFn);
+  const off    = lines.filter(l => l.off).sort((a,b) => a.ilk.localeCompare(b.ilk));
+
+  const addLine = l => {
+    const y1 = l.ilk.slice(0,4), y2 = l.son.slice(0,4);
+    const n  = l.etaplar.length;
+    const kurum = l.rep.PR_KURUM_LOGO
+      ? `<img src="${esc(l.rep.PR_KURUM_LOGO)}" alt="" onerror="this.style.display='none'" style="width:13px;height:13px;object-fit:contain">`
+      : '';
+    const chips = [fmtKm(l.km), l.ist ? `${l.ist} istasyon` : null].filter(Boolean)
+      .map((c,i,arr) => `<span class="card-chip">${esc(c)}</span>${i < arr.length-1 ? '<span class="chip-sep">·</span>' : ''}`)
+      .join('');
+    const tag = l.off ? `<span class="card-tag st-devre">Devre Dışı</span>` : '';
+
+    const card = document.createElement('div');
+    card.className = 'card card-line';
+    card.dataset.line = l.key;
+    card.innerHTML = `
+      <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:${l.renk};border-radius:10px 0 0 10px"></div>
+      <div class="card-top">
+        <div class="card-icon-wrap">
+          ${cardIconHtml({ ...l.rep, KOD:l.kod }, l.renk)}
+          <div class="card-kurum">${kurum}</div>
+        </div>
+        <div class="card-info">
+          <div class="card-name">${esc(l.ad)}</div>
+          <div class="card-meta">${tag}${chips}</div>
+        </div>
+        <div class="card-line-years" title="İlk açılış – son uzatma">
+          ${y1 && y2 && y1 !== y2 ? `${y1}–${y2}` : esc(y1 || '—')}
+          <small>${n > 1 ? `${n} etap` : 'tek etap'}</small>
+        </div>
+      </div>`;
+    wireCard(card, list, () => {
+      // Seçili hatta tekrar basmak: etap odaktaysa hat geneline döner, değilse seçimi kaldırır
+      if(selectedLineKey === l.key){
+        if(selectedFeature) selectLine(l.key);
+        else clearSelection();
+        return;
+      }
+      selectLine(l.key);
+    });
+    list.appendChild(card);
+  };
+
+  if(key === 'hat'){
+    let curTur = null;
+    active.forEach(l => {
+      if(l.tur !== curTur){
+        curTur = l.tur;
+        const n = active.filter(x => x.tur === l.tur).length;
+        list.appendChild(listHeader(HAT_TURLERI[l.tur] || 'Diğer', `${n} hat`));
+      }
+      addLine(l);
+    });
+  } else {
+    active.forEach(addLine);
+  }
+  if(off.length){
+    list.appendChild(listHeader('Devre dışı', `${off.length} hat`));
+    off.forEach(addLine);
+  }
+}
+
 function renderCards(){
   const list   = document.getElementById('cards-list');
+
+  if(activeTab === 'isletme'){
+    list.innerHTML = '';
+    renderIsletmeList(list);
+    if(!list.querySelector('.card')){
+      list.innerHTML = '<div style="padding:20px 10px;color:var(--text-dim);font-size:12px;font-weight:500">Bu kategoride hat bulunamadı.</div>';
+      return;
+    }
+    syncCardSelectionUI();
+    const built = list.querySelectorAll('.card');
+    (list.querySelector('.card[aria-selected="true"]') || built[0]).tabIndex = 0;
+    return;
+  }
+
   const opts   = SORT_CONFIG[activeTab];
   const sortFn = opts.find(o => o.key === activeSortKey[activeTab])?.fn;
   let wrapped  = getHatlarForTab(activeTab).map(f => ({ f, p:f.properties||{} }));
@@ -3349,6 +3829,7 @@ function parseHash(){
 // Mevcut panel durumunu hash'e yazar.
 function writeHash(){
   const parts = ['tab=' + activeTab, 'sort=' + activeSortKey[activeTab]];
+  if(activeTab === 'isletme' && selectedLineKey) parts.push('grup=' + encodeURIComponent(selectedLineKey));
   const objId = selectedFeature?.properties?.OBJECTID;
   if(objId != null && objId !== '') parts.push('hat=' + objId);
   const hash = '#' + parts.join('&');
@@ -3359,8 +3840,10 @@ function writeHash(){
 // Sekme başlığı seçili hattı gösterir (yer imleri / tarayıcı geçmişi için)
 const BASE_TITLE = document.title;
 function syncDocumentTitle(){
+  const line = (activeTab === 'isletme' && !selectedFeature) ? lineByKey(selectedLineKey) : null;
   const p = selectedFeature?.properties;
-  document.title = p ? `${[p.KOD, p.AD].filter(Boolean).join(' ')} | metrometre` : BASE_TITLE;
+  document.title = line ? `${lineTitle(line)} | metrometre`
+                 : p    ? `${[p.KOD, p.AD].filter(Boolean).join(' ')} | metrometre` : BASE_TITLE;
 }
 
 // Paylaşılan /hat/<id>[-slug] adresiyle gelindiyse: hattın sekmesini bulup
@@ -3391,8 +3874,11 @@ function applyHashState(){
     activeTab = h.tab;
     syncTabUI();
   }
-  if(h.sort && SORT_CONFIG[activeTab].some(o => o.key === h.sort)){
-    activeSortKey[activeTab] = h.sort;
+  // İşletme sekmesinin eski sıralama anahtarları (etap listesi dönemi) yeni görünümlere eşlenir
+  const OLD_ISLETME_SORT = { acilis:'kronoloji', mesafe:'uzunluk', istasyon:'uzunluk' };
+  const sort = (activeTab === 'isletme' && OLD_ISLETME_SORT[h.sort]) || h.sort;
+  if(sort && SORT_CONFIG[activeTab].some(o => o.key === sort)){
+    activeSortKey[activeTab] = sort;
   }
 }
 
@@ -3400,6 +3886,19 @@ function applyHashState(){
 // Kartlar DOM'a basıldıktan ve harita hazır olduktan SONRA çağrılmalı.
 function selectHatFromHash(){
   const h = parseHash();
+  if(activeTab === 'isletme' && (h.grup || h.hat)){
+    // Hat (grup) ve/veya etap (hat): hat seçilir, etap varsa onda odaklanılır
+    const f   = h.hat ? getHatlarForTab('isletme').find(x => String(x.properties?.OBJECTID) === String(h.hat)) : null;
+    const key = (h.grup && lineByKey(h.grup)) ? h.grup : (f ? lineKeysOf(f.properties)[0] : null);
+    if(!key) return;
+    selectLine(key, f || null);
+    if(isMobile()) applyMobileView('map');
+    const card = isLineView()
+      ? document.querySelector(`.card[data-line="${CSS.escape(key)}"]`)
+      : (f && document.querySelector(`.card[data-etap="${CSS.escape(etapId(f.properties))}"]`));
+    if(card) card.scrollIntoView({ block:'nearest' });
+    return;
+  }
   if(!h.hat) return;
   const objId   = String(h.hat);
   const feature = getHatlarForTab(activeTab)
@@ -3416,14 +3915,15 @@ function selectHatFromHash(){
 // Kullanıcı URL'yi elle değiştirirse / hash'li bir linke gelirse.
 // (replaceState kendi yazdığımız hash'lerde bu olayı tetiklemez → döngü yok.)
 window.addEventListener('hashchange', () => {
-  selectedFeature = null;
+  selectedFeature = null; selectedLineKey = null;
   closeDetailPopup();
   applyHashState();
   updateMetrics();
   renderSortBar();
   renderCards();
   renderMap();
-  if(parseHash().hat) selectHatFromHash();
+  const hh = parseHash();
+  if(hh.hat || hh.grup) selectHatFromHash();
   else fitGlobalBounds();
 });
 
@@ -3534,11 +4034,20 @@ function renderSearchResults(query){
         updateMetrics();
         renderSortBar();
       }
-      selectedFeature = null;
+      selectedFeature = null; selectedLineKey = null;
       renderCards();
       renderMap();
       // Kart eşleşmesi OBJECTID üzerinden (KOD benzersiz değil)
       setTimeout(() => {
+        if(activeTab === 'isletme'){
+          // Etap adıyla aranmış olabilir: hattını seç, etabı odakla
+          onCardSelect(f, { focus:true });
+          const card = isLineView()
+            ? document.querySelector(`.card[data-line="${CSS.escape(selectedLineKey || '')}"]`)
+            : document.querySelector(`.card[data-etap="${CSS.escape(etapId(p))}"]`);
+          if(card) card.scrollIntoView({ behavior:'smooth', block:'nearest' });
+          return;
+        }
         const objId = String(p.OBJECTID ?? '');
         const card  = document.querySelector(`.card[data-objectid="${objId}"]`);
         if(card){
@@ -3571,7 +4080,7 @@ tabEls.forEach((tab, i) => {
     const t = tab.dataset.tab;
     if(t === activeTab) return;
     activeTab = t;
-    selectedFeature = null;
+    selectedFeature = null; selectedLineKey = null;
     closeDetailPopup();
     syncTabUI();
     updateMetrics();
