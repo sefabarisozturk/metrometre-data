@@ -600,11 +600,11 @@
   "61": {
    "acilis": "Aralık 2026",
    "ad": "Darıca Sahil-Gebze OSB Metro Hattı",
-   "card": "0baf69963c",
+   "card": "859234dd72",
    "durum": "3",
    "kod": "M1 (Kocaeli)",
-   "pct": 94.0,
-   "ym": "2026-06"
+   "pct": 96.0,
+   "ym": "2026-09"
   },
   "62": {
    "acilis": "2030 sonrası",
@@ -621,11 +621,11 @@
   "64": {
    "acilis": "Aralık 2027",
    "ad": "Altunizade-Bosna Bulvarı Metro Hattı",
-   "card": "41027782ec",
+   "card": "6cb03deb34",
    "durum": "3",
    "kod": "M14",
-   "pct": 74.0,
-   "ym": "2026-06"
+   "pct": 76.0,
+   "ym": "2026-09"
   },
   "66": {
    "acilis": "Belirsiz",
