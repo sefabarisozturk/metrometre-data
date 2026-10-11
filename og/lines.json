@@ -346,12 +346,13 @@
    "kod": "M3"
   },
   "193": {
-   "acilis": "2030 sonrası",
+   "acilis": "Aralık 2029",
    "ad": "Gebze Adliye-Birlik OSB Metro Hattı",
+   "card": "bc09a1fdb7",
    "durum": "3",
    "kod": "M3 (Kocaeli)",
-   "pct": null,
-   "ym": null
+   "pct": 1.0,
+   "ym": "2026-09"
   },
   "2": {
    "acilis": "2030 sonrası",
