@@ -3456,7 +3456,7 @@ document.getElementById('detail-share').addEventListener('click', e => {
 document.getElementById('share-copy').addEventListener('click', async () => {
   const data = currentShareData();
   if(!data) return;
-  const full = `${data.text}\n${data.url}`;
+  const full = data.url;
   const btn  = document.getElementById('share-copy');
   const lbl  = btn.querySelector('span');
 
