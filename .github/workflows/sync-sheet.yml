@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  actions: write   # kart iş akışını tetiklemek için
 
 concurrency:
   group: sync-sheet
@@ -57,6 +58,7 @@ jobs:
           echo "Doğrulama tamam — $new satır."
 
       - name: Değiştiyse commit'le
+        id: commit
         run: |
           set -euo pipefail
           mv overlay.new.csv overlay.csv
@@ -71,3 +73,11 @@ jobs:
           git add overlay.csv
           git commit -m "veri: sheet overlay senkronu ($(date -u +'%Y-%m-%d %H:%M UTC'))"
           git push
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      # Bot commit'leri push tetikleyicisini çalıştırmaz; kartları elle tetikle.
+      - name: Paylaşım kartlarını tetikle
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run og-cards.yml --ref main --repo "$GITHUB_REPOSITORY"
