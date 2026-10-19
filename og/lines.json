@@ -372,6 +372,12 @@
    "durum": "1",
    "kod": "TF1"
   },
+  "227": {
+   "acilis": "Açıklanmış tarih yok",
+   "ad": "Kocaeli Güney HRS Hattı",
+   "durum": "7",
+   "kod": "M4 (Kocaeli)"
+  },
   "23": {
    "acilis": "11 Kasım 2010",
    "ad": "Sanayi Mahallesi-Seyrantepe",
@@ -390,11 +396,67 @@
    "durum": "1",
    "kod": "M2"
   },
+  "259": {
+   "acilis": "2029",
+   "ad": "Kocaeli Kuzey HRS Hattı 1. Aşama",
+   "durum": "3",
+   "kod": "M2 (Kocaeli)",
+   "pct": null,
+   "ym": null
+  },
+  "260": {
+   "acilis": "2033",
+   "ad": "Kocaeli Kuzey HRS Hattı 2. Aşama (İzmit Doğu-Cengiz Topel Havalimanı)",
+   "durum": "6",
+   "kod": "M2 (Kocaeli)"
+  },
+  "262": {
+   "acilis": "2033",
+   "ad": "Kocaeli Kuzey HRS Hattı 2. Aşama (Tüpraş Petkim-Atalar)",
+   "durum": "6",
+   "kod": "M2 (Kocaeli)"
+  },
+  "266": {
+   "acilis": null,
+   "ad": "Otogar-Seka Park",
+   "durum": "1",
+   "kod": "T1 (Kocaeli)"
+  },
+  "267": {
+   "acilis": null,
+   "ad": "Seka Park-Plaj Yolu",
+   "durum": "1",
+   "kod": "T1 (Kocaeli)"
+  },
+  "268": {
+   "acilis": null,
+   "ad": "Plaj Yolu-Kuruçeşme",
+   "durum": "1",
+   "kod": "T1 (Kocaeli)"
+  },
+  "269": {
+   "acilis": null,
+   "ad": "Mehmet Alipaşa-Şehir Hastanesi",
+   "durum": "1",
+   "kod": "T2 (Kocaeli)"
+  },
   "27": {
    "acilis": "6 Ocak 2023",
    "ad": "Bostancı-Parseller",
    "durum": "1",
    "kod": "M8"
+  },
+  "270": {
+   "acilis": null,
+   "ad": "Otogar-Kocaelispor",
+   "durum": "1",
+   "kod": "T3 (Kocaeli)"
+  },
+  "271": {
+   "acilis": null,
+   "ad": "Kocaelispor-Kartepe",
+   "durum": "1",
+   "kod": "T3 (Kocaeli)"
   },
   "28": {
    "acilis": "20 Aralık 2002",
