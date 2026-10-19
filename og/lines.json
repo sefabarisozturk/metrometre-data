@@ -397,12 +397,13 @@
    "kod": "M2"
   },
   "259": {
-   "acilis": "2029",
+   "acilis": "Aralık 2029",
    "ad": "Kocaeli Kuzey HRS Hattı 1. Aşama",
+   "card": "b2941c40a5",
    "durum": "3",
    "kod": "M2 (Kocaeli)",
-   "pct": null,
-   "ym": null
+   "pct": 27.64,
+   "ym": "2026-09"
   },
   "260": {
    "acilis": "2033",
