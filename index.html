@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>metrometre | raylı sistem projeleri takip paneli</title>
-<meta name="description" content="İstanbul'da yapımı süren metro, tramvay ve banliyö hatlarının fiziki ilerlemesini, tahmini açılış tarihlerini ve aylık gidişatını bağımsız olarak izleyen panel.">
+<!-- Kapsam metni ("İstanbul ve Kocaeli") yeni il eklendiğinde burada, manifest.json'da ve worker/index.js'teki KAPSAM_YER sabitinde güncellenmeli.
+     Sayfa içindeki metinler (hakkında, aylık özet) veriden kendiliğinden türetilir. -->
+<meta name="description" content="İstanbul ve Kocaeli'de yapımı süren metro, tramvay ve banliyö hatlarının fiziki ilerlemesini, tahmini açılış tarihlerini ve aylık gidişatını bağımsız olarak izleyen panel.">
 <link rel="canonical" href="https://metrometre.com/">
 
 <!-- ──── SOSYAL MEDYA ÖNİZLEMESİ (Open Graph + X kartı) ──── -->
@@ -14,15 +16,15 @@
 <meta property="og:locale"       content="tr_TR">
 <meta property="og:url"          content="https://metrometre.com/">
 <meta property="og:title"        content="metrometre | raylı sistem projeleri takip paneli">
-<meta property="og:description"  content="İstanbul'daki raylı sistem projelerinin fiziki ilerlemesi ve tahmini açılış tarihleri, aylık olarak güncellenen bağımsız bir panelde.">
+<meta property="og:description"  content="İstanbul ve Kocaeli'deki raylı sistem projelerinin fiziki ilerlemesi ve tahmini açılış tarihleri, aylık olarak güncellenen bağımsız bir panelde.">
 <meta property="og:image"        content="https://metrometre.com/og-image.png">
 <meta property="og:image:width"  content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt"    content="metrometre — İstanbul raylı sistem projeleri takip paneli">
+<meta property="og:image:alt"    content="metrometre — raylı sistem projeleri takip paneli">
 <meta name="twitter:card"        content="summary_large_image">
 <meta name="twitter:site"        content="@sefabarisozturk">
 <meta name="twitter:title"       content="metrometre | raylı sistem projeleri takip paneli">
-<meta name="twitter:description" content="İstanbul'daki raylı sistem projelerinin fiziki ilerlemesi ve tahmini açılış tarihleri.">
+<meta name="twitter:description" content="İstanbul ve Kocaeli'deki raylı sistem projelerinin fiziki ilerlemesi ve tahmini açılış tarihleri.">
 <meta name="twitter:image"       content="https://metrometre.com/og-image.png">
 <!-- /hat/<id> adreslerinde bu etiketler functions/hat/[[path]].js tarafından hatta göre yeniden yazılır -->
 
@@ -285,6 +287,12 @@ html, body {
 .card-tag  { font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 4px; }
 .card-chip { font-size: 10px; color: var(--text-muted); display: flex; align-items: center; gap: 2px; }
 .chip-sep  { color: var(--border-2); }
+/* Başka ilin ağından gelen (bağlantılı) hatlarda ana ilin adı */
+.card-il {
+  font-size: 9.5px; font-weight: 700; letter-spacing: .02em;
+  padding: 1px 6px; border-radius: 4px;
+  color: var(--text-muted); background: var(--surface-2); border: 1px solid var(--border);
+}
 
 /* Durum rozeti renkleri */
 .st-isletme { background: #ECFDF5; color: #065F46; }
@@ -459,6 +467,50 @@ body.detail-open #tab-bar { right: 352px; }
   border-color: var(--accent);
   color: #fff;
 }
+
+/* ──── İL SEÇİCİ ──── */
+/* Sekmelerin solunda; yerel <select> kullanılır (mobilde sistem seçicisi açılır,
+   kaydırılabilir sekme şeridinde açılır menü kırpılmaz). Veride tek il varsa gizli. */
+.il-select-wrap {
+  pointer-events: all;
+  position: relative;
+  flex: 0 0 auto;
+  display: flex; align-items: center; gap: 6px;
+  height: 36px;
+  padding: 0 28px 0 12px;
+  border: 1px solid var(--border-2);
+  border-radius: 99px;
+  background: rgba(255,255,255,.92);
+  backdrop-filter: blur(6px);
+  color: var(--accent);
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.il-select-wrap[hidden] { display: none; }
+.il-select-wrap:hover { background: #fff; border-color: var(--accent); }
+.il-select-wrap:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+.il-select-wrap svg { width: 14px; height: 14px; flex-shrink: 0; }
+/* Açılır ok */
+.il-select-wrap::after {
+  content: '';
+  position: absolute; right: 12px; top: 50%;
+  width: 6px; height: 6px;
+  border-right: 1.8px solid var(--text-muted); border-bottom: 1.8px solid var(--text-muted);
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+#il-select {
+  appearance: none; -webkit-appearance: none;
+  border: none; background: transparent; outline: none;
+  font-family: var(--font); font-size: 12px; font-weight: 700; color: var(--text);
+  cursor: pointer;
+  /* Ok ve pin dahil tüm hap tıklanabilir olsun diye seçim kutusu hapı kaplar */
+  position: absolute; inset: 0;
+  padding: 0 28px 0 32px;
+  border-radius: 99px;
+}
+/* Görünür metin seçim kutusunun kendisidir; genişliği bu gizli kopya belirler */
+.il-select-sizer { visibility: hidden; font-size: 12px; font-weight: 700; padding-left: 1px; white-space: nowrap; }
 
 /* ──── HARİTA KONTEYNERİ ──── */
 #map-container { flex: 1; position: relative; }
@@ -1052,7 +1104,13 @@ a.src-badge:hover { border-color: currentColor; }
 
   /* Üst başlık */
   #logo-tagline { display: none; }
-  #logo-img { height: 22px; }
+  /* Logo (≈8,35:1) + üç yuvarlak düğme dar ekranlarda sığsın diye kenar boşluğu ve
+     düğme aralığı daraltılır; logo, düğmelerden kalan genişliğe göre küçülür
+     (24 px kenar + 3×40 düğme + 2×6 aralık + 10 px güvenlik payı = 166 px). */
+  #header { padding: 0 12px; gap: 10px; }
+  #header-actions { gap: 6px; }
+  #logo-link { min-width: 0; flex-shrink: 1; }
+  #logo-img { height: auto; width: min(184px, calc(100vw - 166px)); }
 
   /* Yapışkan şerit (metrikler + sekme çubuğu): header altında her iki panel üzerinde sabit. */
   #metrics, #tab-bar {
@@ -1091,6 +1149,11 @@ a.src-badge:hover { border-color: currentColor; }
   /* Mobilde panel alttan açıldığı için sekme çubuğu kaymaz */
   body.detail-open #tab-bar { right: 0; }
   .tab { padding: 0; flex: 1; justify-content: center; max-width: none; font-size: 10px; height: 32px; flex-shrink: 0; pointer-events: all; }
+  .il-select-wrap { height: 32px; padding: 0 22px 0 9px; gap: 4px; }
+  .il-select-wrap::after { right: 9px; width: 5px; height: 5px; }
+  .il-select-wrap svg { width: 12px; height: 12px; }
+  #il-select { font-size: 10.5px; padding: 0 22px 0 25px; }
+  .il-select-sizer { font-size: 10.5px; }
 
   /* ──── MOBİL TOGGLE BARI ──── */
   #mobile-toggle {
@@ -1333,6 +1396,12 @@ a.src-badge:hover { border-color: currentColor; }
   <div class="metric"><div class="metric-val loading" id="m2"></div><div class="metric-lbl" id="m2-lbl">Yükleniyor</div></div>
 </div>
 <div id="tab-bar" role="group" aria-label="Hat durumu kategorileri">
+  <!-- İl seçici: seçenekler veriden (IL alanı) doldurulur; tek il varsa gizli kalır -->
+  <label class="il-select-wrap" id="il-select-wrap" hidden title="İl seçin">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s7-6.1 7-12a7 7 0 0 0-14 0c0 5.9 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>
+    <span class="il-select-sizer" id="il-select-sizer" aria-hidden="true">İstanbul</span>
+    <select id="il-select" aria-label="Haritada gösterilecek il"></select>
+  </label>
   <button class="tab" type="button" aria-pressed="false" data-tab="isletme" data-label-long="İşletmedeki hatlar" data-label-short="İşletmede">İşletmedeki hatlar</button>
   <button class="tab active" type="button" aria-pressed="true" data-tab="yapim" data-label-long="Yapımı süren hatlar" data-label-short="Yapımı süren">Yapımı süren hatlar</button>
   <button class="tab" type="button" aria-pressed="false" data-tab="proje" data-label-long="Proje aşamasındaki hatlar" data-label-short="Proje halinde">Proje aşamasındaki hatlar</button>
@@ -1530,9 +1599,9 @@ a.src-badge:hover { border-color: currentColor; }
     <div class="modal-title" id="modal-title">metrometre hakkında</div>
     <button class="modal-close" id="modal-close" type="button" aria-label="Pencereyi kapat">✕</button>
     <div class="modal-body">
-      <p><strong>metrometre</strong>, İstanbul'da inşası süren raylı sistem projelerinin fiziksel ilerleme durumunu kamuya açık ve bağımsız bir şekilde izleyen bir paneldir. Herhangi bir kurum veya şirketle bağlantılı değildir; bağımsız bir sivil girişim olarak yönetilmektedir.</p>
+      <p><strong>metrometre</strong>, <span class="kapsam-yer">İstanbul ve Kocaeli'de</span> inşası süren raylı sistem projelerinin fiziksel ilerleme durumunu kamuya açık ve bağımsız bir şekilde izleyen bir paneldir. Herhangi bir kurum veya şirketle bağlantılı değildir; bağımsız bir sivil girişim olarak yönetilmektedir.</p>
       <div class="modal-section-title">Veri kaynakları</div>
-      <p>İlerleme yüzdeleri ve tahmini açılış tarihleri, kurumların kamuoyuyla paylaştığı en güncel resmî açıklamalar esas alınarak derlenmektedir. Resmî açıklamaların yanı sıra İBB Çözüm Merkezi'ne ve CİMER'e yapılan bilgi edinme başvurularından elde edilen veriler de kullanılmaktadır. Veriler; X, YouTube ve çeşitli sosyal medya platformlarındaki bağımsız saha paylaşımlarıyla çapraz kontrol edilmektedir.</p>
+      <p>İlerleme yüzdeleri ve tahmini açılış tarihleri, kurumların kamuoyuyla paylaştığı en güncel resmî açıklamalar esas alınarak derlenmektedir. Resmî açıklamaların yanı sıra CİMER'e, İBB Çözüm Merkezi'ne ve ilgili belediyelere yapılan bilgi edinme başvurularından elde edilen veriler de kullanılmaktadır. Veriler; X, YouTube ve çeşitli sosyal medya platformlarındaki bağımsız saha paylaşımlarıyla çapraz kontrol edilmektedir.</p>
       <p style="margin-top:8px">Her hattın detay panelinde, güncel ilerleme değerinin dayanağı aşağıdaki rozetlerden biriyle belirtilmektedir. Kaynağın bağlantısı varsa rozete tıklanarak açılabilmektedir.</p>
       <div id="src-legend" class="src-legend"></div>
       <div class="modal-section-title">Açık veri</div>
@@ -1664,6 +1733,217 @@ const SORT_CONFIG = {
 };
 
 // ═════════════════════════════════════════════════════
+//  İLLER
+// ═════════════════════════════════════════════════════
+// Her hat ve durak GeoJSON'daki IL alanıyla bir ile bağlanır.
+//  • Durak: tek il ("Kocaeli").
+//  • Hat: virgülle ayrılmış liste, ANA İL ÖNCE ("Kocaeli, İstanbul"). Ana il hattın
+//    ait olduğu ağdır (metriklerde orada sayılır); sonraki iller hattın ayrıca
+//    "bağlantılı hat" olarak göründüğü illerdir (ör. Darıca–Gebze metrosu
+//    İstanbul haritasında da görünür, listede "Bağlantılı hatlar" altında durur).
+// IL boşsa yedek kural: KOD'da "(Kocaeli)" geçiyorsa Kocaeli, değilse varsayılan il.
+// İl listesi veriden türetilir; yeni bir il için yalnızca veriye IL yazmak yeterlidir.
+// IL_AYAR'a eklemek isteğe bağlıdır (yer-ek'i kuralla türetilemeyen adlar ve
+// veri yüklenmeden önceki ilk harita görünümü için).
+const VARSAYILAN_IL = 'İstanbul';
+const IL_AYAR = {
+  'İstanbul': { slug:'istanbul', yer:"İstanbul'da", yerSifat:"İstanbul'daki", merkez:[28.97, 41.01], zoom:10 },
+  'Kocaeli':  { slug:'kocaeli',  yer:"Kocaeli'nde", yerSifat:"Kocaeli'ndeki", merkez:[29.92, 40.77], zoom:10 },
+};
+let ILLER = Object.keys(IL_AYAR);   // veriden güncellenir (prepareIller)
+
+// "Ankara" → "Ankara'da", "Gaziantep" → "Gaziantep'te" (ünlü uyumu + ünsüz benzeşmesi)
+function ilBulunma(il){
+  const s = String(il);
+  const low = s.toLocaleLowerCase('tr-TR');
+  const vowels = (low.match(/[aıoueiöü]/g) || []);
+  const last = vowels[vowels.length - 1] || 'e';
+  const v = 'aıou'.includes(last) ? 'a' : 'e';
+  const c = /[çfhkpsşt]$/.test(low) ? 't' : 'd';
+  return `${s}'${c}${v}`;
+}
+function ilAyar(il){
+  return IL_AYAR[il] || { slug: slugify(il), yer: ilBulunma(il), yerSifat: ilBulunma(il) + 'ki' };
+}
+// Yazım farklarını (büyük/küçük harf, Türkçe karakter) bilinen adlara indirger
+function normIl(raw){
+  const s = String(raw || '').trim();
+  if(!s) return '';
+  const known = Object.keys(IL_AYAR).find(k => trFold(k) === trFold(s));
+  return known || s.charAt(0).toLocaleUpperCase('tr-TR') + s.slice(1);
+}
+function ilListOf(raw, kod){
+  const out = [];
+  String(raw ?? '').split(/[,;|/]/).map(normIl).filter(Boolean)
+    .forEach(il => { if(!out.includes(il)) out.push(il); });
+  if(!out.length) out.push(/\(\s*kocaeli\s*\)/i.test(String(kod || '')) ? 'Kocaeli' : VARSAYILAN_IL);
+  return out;
+}
+function ilBySlug(slug){
+  const s = trFold(slug);
+  return ILLER.find(il => ilAyar(il).slug === s)
+      || Object.keys(IL_AYAR).find(il => IL_AYAR[il].slug === s) || null;
+}
+// "İstanbul ve Kocaeli'de" / "İstanbul, Kocaeli ve Bursa'da"
+function kapsamYer(){
+  const l = ILLER;
+  if(l.length <= 1) return ilAyar(l[0] || VARSAYILAN_IL).yer;
+  return `${l.slice(0, -1).join(', ')} ve ${ilAyar(l[l.length-1]).yer}`;
+}
+
+// Görünürlük / aidiyet (prepareIller'in yazdığı _IL / _ILS / _OWN_ILS alanlarına dayanır)
+function hatIlleri(p){ return (p && p._IL) || ilListOf(p?.IL, p?.KOD); }
+function hatAnaIl(p){ return hatIlleri(p)[0]; }
+function hatGorunur(f, il = activeIl){ return hatIlleri(f.properties).includes(il); }
+function hatKendi(p, il = activeIl){ return hatAnaIl(p) === il; }
+function durakGorunur(f, il = activeIl){ return (f.properties?._ILS || [VARSAYILAN_IL]).includes(il); }
+function durakKendi(f, il = activeIl){ return (f.properties?._OWN_ILS || [VARSAYILAN_IL]).includes(il); }
+// Bağlantılı (başka ilin ağından gelen) kayıtlarda kartta gösterilen il etiketi
+function ilChipHtml(p){
+  return hatKendi(p) ? '' : `<span class="card-il" title="${esc(hatAnaIl(p))} ağına ait bağlantılı hat">${esc(hatAnaIl(p))}</span>`;
+}
+
+// Nokta–doğru parçası uzaklığı (metre, yerel düzlem yaklaşımı)
+function pointSegDistM(p, a, b){
+  const kx = Math.cos(p[1] * Math.PI / 180) * 111320, ky = 110540;
+  const ax = (a[0]-p[0])*kx, ay = (a[1]-p[1])*ky, bx = (b[0]-p[0])*kx, by = (b[1]-p[1])*ky;
+  const dx = bx-ax, dy = by-ay, L = dx*dx + dy*dy;
+  const t = L ? Math.max(0, Math.min(1, -(ax*dx + ay*dy) / L)) : 0;
+  return Math.hypot(ax + t*dx, ay + t*dy);
+}
+function geomParts(g){
+  if(!g) return [];
+  if(g.type === 'LineString') return [g.coordinates || []];
+  if(g.type === 'MultiLineString') return g.coordinates || [];
+  return [];
+}
+
+// Veri yüklenince (ve overlay uygulandıktan sonra) bir kez çalışır:
+//  1) Hatların il listesi (_IL). Aynı hattın etapları / aynı projenin kayıtları
+//     birlikte görünsün diye il listeleri grup içinde birleştirilir: Marmaray'ın
+//     Gebze etabı Kocaeli'de de görünüyorsa B1 hattının tamamı orada görünür.
+//     Her kaydın ANA ili kendi IL değerinden gelir.
+//  2) Durakların göründüğü iller (_ILS) ve sayıldığı iller (_OWN_ILS): durak, üzerinde
+//     bulunduğu (aynı KOD, ≤150 m) hatların göründüğü her ilde görünür; o hatların ana
+//     illerinde sayılır. Önce durakla AYNI aşamadaki (sekmedeki) hatlar aranır — ör. yapımı
+//     süren Çayırova durağı, proje aşamasındaki SGH–Çayırova hattının ucuna da değdiği
+//     için İstanbul'a sayılmasın. Aynı aşamada hat yoksa tüm aşamalara bakılır; hiçbir
+//     hatta oturmayan durak kendi IL değerine düşer.
+//  3) İl listesi (ILLER): hatların ana illerinden; varsayılan il başta.
+function prepareIller(){
+  allHatlar.forEach(f => {
+    const p = f.properties || (f.properties = {});
+    p._IL = ilListOf(p.IL, p.KOD);
+  });
+  const mergeGroups = groups => {
+    for(const fs of groups.values()){
+      const union = [];
+      fs.forEach(f => f.properties._IL.forEach(il => { if(!union.includes(il)) union.push(il); }));
+      fs.forEach(f => {
+        const own = f.properties._IL[0];
+        f.properties._IL = [own, ...union.filter(il => il !== own)];
+      });
+    }
+  };
+  const isl = new Map(), prj = new Map();
+  allHatlar.forEach(f => {
+    const d = String(f.properties.PR_DURUM ?? '');
+    if(TAB_FILTERS.isletme.includes(d)){
+      lineKeysOf(f.properties).forEach(k => { if(!isl.has(k)) isl.set(k, []); isl.get(k).push(f); });
+    } else if(TAB_FILTERS.proje.includes(d)){
+      const id = projeId(f.properties);
+      if(!prj.has(id)) prj.set(id, []); prj.get(id).push(f);
+    }
+  });
+  mergeGroups(isl); mergeGroups(prj);
+
+  // Durak → hat eşleşmesi
+  const byKod = new Map();
+  allHatlar.forEach(f => {
+    if(!f.geometry) return;
+    const k = String(f.properties.KOD ?? '').trim();
+    if(!byKod.has(k)) byKod.set(k, []);
+    byKod.get(k).push({ f, parts: geomParts(f.geometry), bbox: featureBbox(f) });
+  });
+  const TOL = 0.003;   // bbox ön elemesi (~250 m)
+  const tabOf = durum => Object.keys(TAB_FILTERS).find(t => TAB_FILTERS[t].includes(String(durum ?? ''))) || null;
+  allDuraklar.forEach(d => {
+    const p = d.properties || (d.properties = {});
+    const own = ilListOf(p.IL, p.KOD)[0];
+    p._IL = [own];
+    const c = d.geometry?.type === 'Point' ? d.geometry.coordinates : null;
+    const ils = [], owns = [];
+    const adaylar = byKod.get(String(p.KOD ?? '').trim()) || [];
+    const ayniAsama = adaylar.filter(h => tabOf(h.f.properties.PR_DURUM) === tabOf(p.PR_DURUM));
+    const eslesen = hs => hs.filter(h => {
+      const b = h.bbox;
+      if(!c || !b || c[0] < b[0][0]-TOL || c[0] > b[1][0]+TOL || c[1] < b[0][1]-TOL || c[1] > b[1][1]+TOL) return false;
+      let mn = Infinity;
+      for(const part of h.parts){
+        for(let i = 1; i < part.length && mn > 150; i++) mn = Math.min(mn, pointSegDistM(c, part[i-1], part[i]));
+      }
+      return mn <= 150;
+    });
+    let hatlar = eslesen(ayniAsama);
+    if(!hatlar.length) hatlar = eslesen(adaylar);
+    if(c){
+      for(const h of hatlar){
+        h.f.properties._IL.forEach(il => { if(!ils.includes(il)) ils.push(il); });
+        const ana = h.f.properties._IL[0];
+        if(!owns.includes(ana)) owns.push(ana);
+      }
+    }
+    p._ILS     = ils.length  ? ils  : [own];
+    p._OWN_ILS = owns.length ? owns : [own];
+  });
+
+  const anaIller = [];
+  allHatlar.forEach(f => { const il = f.properties._IL[0]; if(!anaIller.includes(il)) anaIller.push(il); });
+  const known = Object.keys(IL_AYAR);
+  ILLER = anaIller.sort((a, b) =>
+    (a === VARSAYILAN_IL ? -1 : b === VARSAYILAN_IL ? 1 : 0)
+    || ((known.indexOf(a) + 1 || 999) - (known.indexOf(b) + 1 || 999))
+    || a.localeCompare(b, 'tr'));
+  if(!ILLER.includes(activeIl)) activeIl = ILLER.includes(VARSAYILAN_IL) ? VARSAYILAN_IL : (ILLER[0] || VARSAYILAN_IL);
+}
+
+// İl seçicisini ve ile bağlı metinleri günceller
+function syncIlUI(){
+  const wrap = document.getElementById('il-select-wrap');
+  const sel  = document.getElementById('il-select');
+  if(wrap && sel){
+    const opts = ILLER.map(il => `<option value="${esc(il)}">${esc(il)}</option>`).join('');
+    if(sel.dataset.opts !== opts){ sel.innerHTML = opts; sel.dataset.opts = opts; }
+    sel.value = activeIl;
+    document.getElementById('il-select-sizer').textContent = activeIl;
+    wrap.hidden = ILLER.length < 2;
+  }
+  document.querySelectorAll('.kapsam-yer').forEach(el => { el.textContent = kapsamYer(); });
+  const cmpTitle = document.getElementById('cmp-title');
+  if(cmpTitle) cmpTitle.textContent = 'Aylık İlerleme Tablosu' + (ILLER.length > 1 ? ` · ${activeIl}` : '');
+}
+
+// İl değiştirir: seçimi temizler, liste/harita/metrikleri yeniden çizer, ilin hatlarına yakınlaşır
+function setIl(il, opts = {}){
+  if(!ILLER.includes(il)) return;
+  const changed = il !== activeIl;
+  activeIl = il;
+  if(changed){
+    selectedFeature = null; selectedLineKey = null;
+    closeDetailPopup();
+  }
+  syncIlUI();
+  if(opts.render === false) return;
+  updateMetrics();
+  renderSortBar();
+  renderCards();
+  renderMap();
+  if(opts.fit !== false) fitGlobalBounds();
+  writeHash();
+  if(document.getElementById('cmp-backdrop').classList.contains('show')) renderCompareChart();
+}
+
+// ═════════════════════════════════════════════════════
 //  İŞLETMEDEKİ HATLAR — etapları hat (güzergâh) altında toplama
 // ═════════════════════════════════════════════════════
 // GeoJSON'daki her feature bir AÇILIŞ ETABIdır (ör. M2 sekiz etaptan oluşur).
@@ -1750,6 +2030,7 @@ function getIsletmeLines(){
              : (HAT_ADLARI[key] || (etaplar.length === 1 ? etaplar[0].ad : `${key} hattı`));
     out.push({
       key, off, ad, rep, features, etaplar,
+      il: hatAnaIl(rep), own: hatKendi(rep),   // ana il / etkin ilin kendi hattı mı (bağlantılı değil)
       kod: off ? String(rep.KOD || '') : key,
       tur: String(rep.TUR ?? ''),
       renk: normHex(rep.RENK_HEX) || '#9B9B9B',
@@ -1959,11 +2240,20 @@ let allDuraklar     = [];
 let progressByOid   = new Map();
 let progressMonths  = [];     // tüm hatları kapsayan benzersiz, sıralı YIL_AY listesi
 let activeTab       = 'yapim';
+// Etkin il. Sayfa açılırken adresteki #il=… okunur (harita ilk o ile açılsın diye);
+// veri gelince prepareIller ile doğrulanır.
+let activeIl        = (() => {
+  const m = /(?:^#|&)il=([^&]*)/.exec(location.hash);
+  if(!m) return VARSAYILAN_IL;
+  const s = trFold(decodeURIComponent(m[1]));
+  return Object.keys(IL_AYAR).find(il => IL_AYAR[il].slug === s) || VARSAYILAN_IL;
+})();
+let ilBounds        = new Map();   // il → ana hatlarının bbox'ı (ilk görünüm / "tümüne yakınlaş")
 let selectedFeature = null;   // o an seçili tek GeoJSON feature
 // İşletme sekmesinde seçili HAT (getIsletmeLines anahtarı: 'M2', 'M1A', 'DD:Sirkeci Banliyösü').
 // selectedFeature ile birlikte doluysa: hat seçili, içindeki o etap odakta.
 let selectedLineKey = null;
-let globalBounds    = null;   // tüm hatların bounding box'ı: [[minLng,minLat],[maxLng,maxLat]]
+let globalBounds    = null;   // tüm illerdeki tüm hatların bbox'ı: [[minLng,minLat],[maxLng,maxLat]] (maxBounds için)
 let map;
 let mapReady        = false;
 let initialFitDone  = false;  // loadData her çağrıldığında sıfırlanır; Retry sonrası ilk fit'in tekrar çalışmasını sağlar.
@@ -2006,8 +2296,9 @@ function initMap(){
   map = new maplibregl.Map({
     container: 'map',
     style: BASEMAP,
-    center: [28.97, 41.01],
-    zoom: 10,
+    // Veri gelene kadar etkin ilin merkezi; ardından ilin hatlarına fit yapılır
+    center: ilAyar(activeIl).merkez || [28.97, 41.01],
+    zoom: ilAyar(activeIl).zoom || 10,
     minZoom: 8,
     maxZoom: 16,
     attributionControl: false,
@@ -2089,6 +2380,8 @@ async function loadData(){
     // gelindiğinde detay panelindeki aylık grafik de ilk açılışta görünür.
     applySheetOverlay(overlayText);
     applyProgressText(overlayText);
+    // İl ataması (hat/durak) — filtrelemeden önce
+    prepareIller();
     // Bounds yalnızca hatlardan hesaplanır; duraklar zaten hat extent'inin içinde.
     computeGlobalBounds();
     onDataReady();
@@ -2112,9 +2405,24 @@ function coordsToBbox(coordsList){
 }
 
 function computeGlobalBounds(){
-  const all = [];
-  allHatlar.forEach(f => { for(const c of flatCoords(f.geometry)) all.push(c); });
+  const all = [], byIl = new Map();
+  allHatlar.forEach(f => {
+    const il = hatAnaIl(f.properties);
+    if(!byIl.has(il)) byIl.set(il, []);
+    for(const c of flatCoords(f.geometry)){ all.push(c); byIl.get(il).push(c); }
+  });
   globalBounds = coordsToBbox(all);
+  ilBounds = new Map();
+  for(const [il, cs] of byIl){ const b = coordsToBbox(cs); if(b) ilBounds.set(il, b); }
+}
+
+// Haritanın gezinme sınırı: tüm illerin hatlarını kapsayan kutu + cömert pay.
+// Böylece iller arasında serbestçe kaydırılabilir ama harita boş denize/kıtaya kaçmaz.
+function applyMaxBounds(){
+  if(!globalBounds || !mapReady) return;
+  const [[w,s],[e,n]] = globalBounds;
+  const px = Math.max(0.8, (e - w) * 0.35), py = Math.max(0.5, (n - s) * 0.35);
+  map.setMaxBounds([[w - px, s - py], [e + px, n + py]]);
 }
 
 function flatCoords(geometry){
@@ -2157,19 +2465,20 @@ function onDataReady(){
 // ═════════════════════════════════════════════════════
 //  FİLTRELEME YARDIMCILARI
 // ═════════════════════════════════════════════════════
+// Tümü etkin ille sınırlıdır: ilin kendi hatları + ona bağlantılı hatlar (bkz. İLLER)
 function getHatlarForTab(tab){
-  return allHatlar.filter(f => TAB_FILTERS[tab].includes(String(f.properties?.PR_DURUM)));
+  return allHatlar.filter(f => TAB_FILTERS[tab].includes(String(f.properties?.PR_DURUM)) && hatGorunur(f));
 }
 function getDuraklarForTab(tab){
-  return allDuraklar.filter(f => TAB_FILTERS[tab].includes(String(f.properties?.PR_DURUM)));
+  return allDuraklar.filter(f => TAB_FILTERS[tab].includes(String(f.properties?.PR_DURUM)) && durakGorunur(f));
 }
 function getHatlarOther(tab){
   const vals = TAB_FILTERS[tab];
-  return allHatlar.filter(f => !vals.includes(String(f.properties?.PR_DURUM)));
+  return allHatlar.filter(f => !vals.includes(String(f.properties?.PR_DURUM)) && hatGorunur(f));
 }
 function getDuraklarOther(tab){
   const vals = TAB_FILTERS[tab];
-  return allDuraklar.filter(f => !vals.includes(String(f.properties?.PR_DURUM)));
+  return allDuraklar.filter(f => !vals.includes(String(f.properties?.PR_DURUM)) && durakGorunur(f));
 }
 
 // ═════════════════════════════════════════════════════
@@ -2512,6 +2821,7 @@ function renderMap(){
   // İlk veri yüklemesinde tüm hatlara bir kez fit yap; Retry akışında initialFitDone sıfırlanır.
   if(!initialFitDone && allHatlar.length > 0){
     initialFitDone = true;
+    applyMaxBounds();
     fitGlobalBounds(false);
   }
 
@@ -2586,11 +2896,14 @@ function renderMap(){
 }
 
 // ═════════════════════════════════════════════════════
-//  TÜM HATLARA YAKINLAŞMA
+//  ETKİN İLİN HATLARINA YAKINLAŞMA
 // ═════════════════════════════════════════════════════
+// İlin kendi hatlarının kutusu kullanılır (bağlantılı hatlar ilin görünümünü
+// komşu ile doğru genişletmesin); il bilinmiyorsa tüm hatlar.
 function fitGlobalBounds(animated){
-  if(!globalBounds || !mapReady) return;
-  map.fitBounds(globalBounds, {
+  const b = ilBounds.get(activeIl) || globalBounds;
+  if(!b || !mapReady) return;
+  map.fitBounds(b, {
     padding: 40,
     duration: animated === false ? 0 : 600,
   });
@@ -2784,6 +3097,8 @@ function openDetailPopup(p){
 
   const statsEl = document.getElementById('detail-stats');
   const chips   = [];
+  // Başka ilin ağından gelen bağlantılı hat: ana ili belirt
+  if(!hatKendi(p)) chips.push(hatAnaIl(p));
   if(p.MESAFE != null && p.MESAFE !== ''){
     const km = parseFloat(p.MESAFE) || 0;
     chips.push(line ? fmtKm(km) : `${Math.round(km)} km`);
@@ -2875,6 +3190,7 @@ function openDetailPopup(p){
   dpEl.classList.add('open');
   document.getElementById('map-container').classList.add('detail-open');
   document.body.classList.add('detail-open');
+  updateTabLabels();
   // Peek yüksekliğini başlık ölçüsüne göre güncelle (bir sonraki kare)
   if(typeof measureDetailSheet === 'function') requestAnimationFrame(measureDetailSheet);
 }
@@ -3162,6 +3478,7 @@ function closeDetailPopup(){
   document.getElementById('detail-popup').classList.remove('open');
   document.getElementById('map-container').classList.remove('detail-open');
   document.body.classList.remove('detail-open');
+  updateTabLabels();
   closeSharePopover();
 }
 
@@ -3315,7 +3632,7 @@ function currentShareData(){
   if(!line) return null;
   return {
     text: lineTitle(line),
-    url: `${location.origin}/#tab=isletme&sort=hat&grup=${encodeURIComponent(line.key)}`,
+    url: `${location.origin}/#${ilHashPart()}tab=isletme&sort=hat&grup=${encodeURIComponent(line.key)}`,
   };
 }
 
@@ -3514,7 +3831,7 @@ document.getElementById('share-savemap').addEventListener('click', async () => {
   // Dosya adını hat koduna göre üret
   const p    = selectedFeature?.properties || {};
   const selLine = activeTab === 'isletme' ? lineByKey(selectedLineKey) : null;
-  const safe = String(p.KOD || selLine?.kod || 'harita').trim().replace(/[^\w.-]+/g, '_') || 'harita';
+  const safe = String(p.KOD || selLine?.kod || `${ilAyar(activeIl).slug}-harita`).trim().replace(/[^\w.-]+/g, '_') || 'harita';
   const fname = `metrometre-${safe}.png`;
 
   const url = URL.createObjectURL(blob);
@@ -3561,16 +3878,19 @@ document.addEventListener('keydown', e => {
 //  • Hat sayısı: işletmede hat kartı sayısı (bir hat birden çok açılış
 //    etabından oluşur; bkz. getIsletmeLines); yapım/proje sekmelerinde listedeki
 //    proje sayısı (ör. M7'nin iki ayrı uzatması iki proje).
+//  • Yalnızca etkin ilin KENDİ hatları sayılır; komşu ilden görünen bağlantılı hatlar
+//    (ör. İstanbul'da Darıca–Gebze metrosu) listede durur ama o ilin toplamına girmez.
+//    İstasyonlar da bulundukları hattın ana iline sayılır.
 function updateMetrics(){
   const isActive   = f => String(f.properties?.PR_DURUM) !== '0';
-  const hatlar     = getHatlarForTab(activeTab).filter(isActive);
+  const hatlar     = getHatlarForTab(activeTab).filter(isActive).filter(f => hatKendi(f.properties));
   const durakCount = new Set(
-    getDuraklarForTab(activeTab).filter(isActive)
+    getDuraklarForTab(activeTab).filter(isActive).filter(f => durakKendi(f))
       .map(f => trFold(f.properties?.AD).trim()).filter(Boolean)
   ).size;
   // Projede aynı hattın tekrar eden kayıtları uzunluğu şişirmesin diye proje bazında toplanır
   const mesafeSum  = activeTab === 'proje'
-    ? getProjeler().reduce((s,x) => s + x.km, 0)
+    ? getProjeler().filter(x => hatKendi(x.rep)).reduce((s,x) => s + x.km, 0)
     : hatlar.reduce((s,f) => s + (parseFloat(f.properties?.MESAFE)||0), 0);
   const mesafeFmt  = mesafeSum > 0 ? Math.round(mesafeSum) + ' km' : '—';
 
@@ -3579,7 +3899,7 @@ function updateMetrics(){
     // Hat sayısı listedeki hat kartlarıyla aynıdır: ortak gövde 'M1' ayrı hat değil,
     // M1A ve M1B'nin parçasıdır; 'M4-M10' kesimi M4'tür (bkz. getIsletmeLines).
     vals = [
-      { val:getIsletmeLines().filter(l => !l.off).length, lbl:'İşletmedeki hat' },
+      { val:getIsletmeLines().filter(l => !l.off && l.own).length, lbl:'İşletmedeki hat' },
       { val:mesafeFmt,     lbl:'Toplam uzunluk'  },
       { val:durakCount,    lbl:'İstasyon sayısı' },
     ];
@@ -3592,7 +3912,7 @@ function updateMetrics(){
   } else {
     vals = [
       // Aynı hattın birden çok kaydı tek proje sayılır (bkz. getProjeler)
-      { val:getProjeler().length, lbl:'Proje' },
+      { val:getProjeler().filter(x => hatKendi(x.rep)).length, lbl:'Proje' },
       { val:mesafeFmt,     lbl:'Toplam uzunluk'     },
       { val:durakCount,    lbl:'İstasyon sayısı'    },
     ];
@@ -3649,6 +3969,17 @@ function listHeader(title, sub){
   hd.innerHTML = `<span>${esc(title)}</span>${sub ? `<span class="list-hd-sub">${esc(sub)}</span>` : ''}`;
   return hd;
 }
+// Bağlantılı hatlar (başka ilin ağından gelip etkin ilde de görünenler) listenin
+// sonunda, ana illerine göre başlıklı gruplar halinde çizilir.
+// items: liste öğeleri, propsOf: öğe → hat öznitelikleri, add: öğeyi listeye ekler
+function appendLinkedGroups(list, items, propsOf, add, unit = 'hat'){
+  ILLER.filter(il => il !== activeIl).forEach(il => {
+    const g = items.filter(x => hatAnaIl(propsOf(x)) === il);
+    if(!g.length) return;
+    list.appendChild(listHeader('Bağlantılı hatlar', `${il} · ${g.length} ${unit}`));
+    g.forEach(add);
+  });
+}
 // Kart davranışı: tıklama + Enter/Space seçimi, ok tuşları / Home / End ile gezinme
 function wireCard(card, list, onSelect){
   card.setAttribute('role', 'option');
@@ -3676,18 +4007,12 @@ function renderIsletmeList(list){
   const key = activeSortKey.isletme;
 
   if(key === 'kronoloji'){
-    const etaplar = buildEtaplar(getHatlarForTab('isletme')).reverse();
-    let curDec = null;
-    etaplar.forEach(e => {
-      const yr  = parseInt(e.acilis.slice(0,4), 10);
-      const dec = isNaN(yr) ? null : Math.floor(yr / 10) * 10;
-      if(dec !== curDec){
-        curDec = dec;
-        const inDec = etaplar.filter(x => Math.floor(parseInt(x.acilis.slice(0,4),10) / 10) * 10 === dec);
-        const km = inDec.reduce((s,x) => s + x.km, 0);
-        list.appendChild(listHeader(dec == null ? 'Tarihsiz' : decadeLabel(dec),
-          `${inDec.length} açılış · ${fmtKm(km)}`));
-      }
+    // On yıllar yalnızca etkin ilin kendi açılışlarını sayar; bağlantılı hatların
+    // etapları sonda ayrı grupta durur.
+    const tum     = buildEtaplar(getHatlarForTab('isletme')).reverse();
+    const etaplar = tum.filter(e => hatKendi(e.rep));
+    const addEtap = e => {
+      const yr   = parseInt(e.acilis.slice(0,4), 10);
       const p    = e.rep;
       const renk = normHex(p.RENK_HEX) || '#9B9B9B';
       const mo   = parseInt(e.acilis.slice(5,7), 10);
@@ -3710,13 +4035,28 @@ function renderIsletmeList(list){
         </div>`;
       wireCard(card, list, () => onCardSelect(e.features[0]));
       list.appendChild(card);
+    };
+    let curDec = null;
+    etaplar.forEach(e => {
+      const yr  = parseInt(e.acilis.slice(0,4), 10);
+      const dec = isNaN(yr) ? null : Math.floor(yr / 10) * 10;
+      if(dec !== curDec){
+        curDec = dec;
+        const inDec = etaplar.filter(x => Math.floor(parseInt(x.acilis.slice(0,4),10) / 10) * 10 === dec);
+        const km = inDec.reduce((s,x) => s + x.km, 0);
+        list.appendChild(listHeader(dec == null ? 'Tarihsiz' : decadeLabel(dec),
+          `${inDec.length} açılış · ${fmtKm(km)}`));
+      }
+      addEtap(e);
     });
+    appendLinkedGroups(list, tum.filter(e => !hatKendi(e.rep)), e => e.rep, addEtap, 'etap');
     return;
   }
 
   const lines  = getIsletmeLines();
   const sortFn = SORT_CONFIG.isletme.find(o => o.key === key)?.fn;
-  const active = lines.filter(l => !l.off).sort(sortFn);
+  const active = lines.filter(l => !l.off && l.own).sort(sortFn);
+  const linked = lines.filter(l => !l.off && !l.own).sort(sortFn);
   const off    = lines.filter(l => l.off).sort((a,b) => a.ilk.localeCompare(b.ilk));
 
   const addLine = l => {
@@ -3742,7 +4082,7 @@ function renderIsletmeList(list){
         </div>
         <div class="card-info">
           <div class="card-name">${esc(l.ad)}</div>
-          <div class="card-meta">${tag}${chips}</div>
+          <div class="card-meta">${tag}${ilChipHtml(l.rep)}${chips}</div>
         </div>
         <div class="card-line-years" title="İlk açılış – son uzatma">
           ${y1 && y2 && y1 !== y2 ? `${y1}–${y2}` : esc(y1 || '—')}
@@ -3774,6 +4114,7 @@ function renderIsletmeList(list){
   } else {
     active.forEach(addLine);
   }
+  appendLinkedGroups(list, linked, l => l.rep, addLine);
   if(off.length){
     list.appendChild(listHeader('Devre dışı', `${off.length} hat`));
     off.forEach(addLine);
@@ -3786,11 +4127,13 @@ function renderIsletmeList(list){
 function renderProjeList(list){
   const key    = activeSortKey.proje;
   const sortFn = SORT_CONFIG.proje.find(o => o.key === key)?.fn;
-  const items  = getProjeler().sort(sortFn);
+  const all    = getProjeler().sort(sortFn);
+  const items  = all.filter(x => hatKendi(x.rep));       // etkin ilin kendi projeleri
+  const linked = all.filter(x => !hatKendi(x.rep));      // komşu ilden bağlantılı projeler
 
   // Tahmini açılış tüm projelerde aynıysa (bugün hepsi "2030 sonrası") her kartta
   // tekrarlamak yerine bir kez yazılır; farklılaşırsa kartlarda görünür.
-  const acilislar = new Set(items.map(x => x.acilis));
+  const acilislar = new Set(all.map(x => x.acilis));
   const ortakAcilis = acilislar.size === 1 ? [...acilislar][0] : null;
   if(ortakAcilis){
     const note = document.createElement('div');
@@ -3801,26 +4144,20 @@ function renderProjeList(list){
 
   const grupOf = key === 'asama' ? (x => x.asama.ad)
                : key === 'kurum' ? (x => x.kurum) : null;
-  let cur = null;
-  items.forEach(pr => {
-    if(grupOf && grupOf(pr) !== cur){
-      cur = grupOf(pr);
-      const g  = items.filter(x => grupOf(x) === cur);
-      const km = g.reduce((s,x) => s + x.km, 0);
-      list.appendChild(listHeader(cur, `${g.length} proje · ${fmtKm(km)}`));
-    }
+  const addCard = (pr, inLinked) => {
     const p    = pr.rep;
     const renk = normHex(p.RENK_HEX) || '#9B9B9B';
     const kurumLogo = p.PR_KURUM_LOGO
       ? `<img src="${esc(p.PR_KURUM_LOGO)}" alt="" onerror="this.style.display='none'" style="width:13px;height:13px;object-fit:contain">`
       : '';
-    const meta = [projeTuru(pr), key !== 'kurum' ? pr.kurum : null,
+    const meta = [projeTuru(pr), (key !== 'kurum' || inLinked) ? pr.kurum : null,
                   !ortakAcilis && pr.acilis ? (fmtTRDate(pr.acilis) || pr.acilis) : null]
       .filter(Boolean)
       .map((c,i,arr) => `<span class="card-chip">${esc(c)}</span>${i < arr.length-1 ? '<span class="chip-sep">·</span>' : ''}`)
       .join('');
     // Aşama görünümünde başlık aşamayı zaten söyler; kartta tekrarlanmaz
-    const stage = key === 'asama' ? ''
+    // (bağlantılı grupta başlık il olduğundan aşama kartta gösterilir)
+    const stage = (key === 'asama' && !inLinked) ? ''
       : `<div class="proje-stage">${projeBarHtml(pr.asama)}<span>${esc(pr.asama.ad)}</span></div>`;
 
     const card = document.createElement('div');
@@ -3836,14 +4173,26 @@ function renderProjeList(list){
         </div>
         <div class="card-info">
           <div class="card-name">${esc(pr.ad || '—')}</div>
-          <div class="card-meta">${meta}</div>
+          <div class="card-meta">${ilChipHtml(p)}${meta}</div>
         </div>
         <div class="card-line-years">${esc(fmtKm(pr.km))}<small>${pr.ist ? `${Math.round(pr.ist)} istasyon` : ''}</small></div>
       </div>
       ${stage}`;
     wireCard(card, list, () => onCardSelect(pr.repF));
     list.appendChild(card);
+  };
+
+  let cur = null;
+  items.forEach(pr => {
+    if(grupOf && grupOf(pr) !== cur){
+      cur = grupOf(pr);
+      const g  = items.filter(x => grupOf(x) === cur);
+      const km = g.reduce((s,x) => s + x.km, 0);
+      list.appendChild(listHeader(cur, `${g.length} proje · ${fmtKm(km)}`));
+    }
+    addCard(pr, false);
   });
+  appendLinkedGroups(list, linked, x => x.rep, x => addCard(x, true), 'proje');
 }
 
 function renderCards(){
@@ -3883,7 +4232,7 @@ function renderCards(){
     list.appendChild(note);
   }
 
-  wrapped.forEach(({ f, p }) => {
+  const addCard = ({ f, p }) => {
     const renk  = normHex(p.RENK_HEX) || '#9B9B9B';
     const durum = String(p.PR_DURUM ?? '');
     const pct   = p.PR_ILERLEME != null ? Math.round(parseFloat(p.PR_ILERLEME)) : null;
@@ -3971,7 +4320,7 @@ function renderCards(){
           <div class="card-name">${esc(p.AD||'—')}</div>
           <div class="card-meta">
             <span class="card-tag ${esc(DURUM_CLASS[durum]||'')}">${esc(DURUM_LABEL[durum]||durum)}</span>
-            ${chips}
+            ${ilChipHtml(p)}${chips}
           </div>
         </div>
       </div>
@@ -4007,7 +4356,11 @@ function renderCards(){
     });
 
     list.appendChild(card);
-  });
+  };
+
+  // Önce etkin ilin kendi hatları, ardından komşu ilden bağlantılı hatlar
+  wrapped.filter(w => hatKendi(w.p)).forEach(addCard);
+  appendLinkedGroups(list, wrapped.filter(w => !hatKendi(w.p)), w => w.p, addCard);
 
   // Roving tabindex başlangıcı: seçili kart (yoksa ilk kart) tek Tab durağı olur.
   const builtCards = list.querySelectorAll('.card');
@@ -4033,8 +4386,13 @@ function parseHash(){
 }
 
 // Mevcut panel durumunu hash'e yazar.
+// Varsayılan il adreste yazılmaz (eski bağlantılar ve sade adres için)
+function ilHashPart(il = activeIl){
+  return il === VARSAYILAN_IL ? '' : `il=${encodeURIComponent(ilAyar(il).slug)}&`;
+}
 function writeHash(){
   const parts = ['tab=' + activeTab, 'sort=' + activeSortKey[activeTab]];
+  if(activeIl !== VARSAYILAN_IL) parts.unshift('il=' + encodeURIComponent(ilAyar(activeIl).slug));
   if(activeTab === 'isletme' && selectedLineKey) parts.push('grup=' + encodeURIComponent(selectedLineKey));
   const objId = selectedFeature?.properties?.OBJECTID;
   if(objId != null && objId !== '') parts.push('hat=' + objId);
@@ -4049,7 +4407,8 @@ function syncDocumentTitle(){
   const line = (activeTab === 'isletme' && !selectedFeature) ? lineByKey(selectedLineKey) : null;
   const p = selectedFeature?.properties;
   document.title = line ? `${lineTitle(line)} | metrometre`
-                 : p    ? `${[p.KOD, p.AD].filter(Boolean).join(' ')} | metrometre` : BASE_TITLE;
+                 : p    ? `${[p.KOD, p.AD].filter(Boolean).join(' ')} | metrometre`
+                 : activeIl !== VARSAYILAN_IL ? `${activeIl} raylı sistem projeleri | metrometre` : BASE_TITLE;
 }
 
 // Paylaşılan /hat/<id>[-slug] adresiyle gelindiyse: hattın sekmesini bulup
@@ -4067,7 +4426,7 @@ function applyPathRoute(){
     const d   = String(f.properties?.PR_DURUM ?? '');
     const tab = TAB_FILTERS.isletme.includes(d) ? 'isletme'
               : TAB_FILTERS.proje.includes(d)   ? 'proje' : 'yapim';
-    hash = `#tab=${tab}&sort=${activeSortKey[tab]}&hat=${id}`;
+    hash = `#${ilHashPart(hatAnaIl(f.properties))}tab=${tab}&sort=${activeSortKey[tab]}&hat=${id}`;
   }
   history.replaceState(null, '', '/' + (hash || ''));
 }
@@ -4076,6 +4435,18 @@ function applyPathRoute(){
 // Kart render'ından ÖNCE çağrılmalı.
 function applyHashState(){
   const h = parseHash();
+  // İl: adresteki il; yoksa varsayılan. Bağlantıdaki hat bu ilde görünmüyorsa
+  // (eski /hat/ bağlantıları, elle yazılmış adresler) hattın ana iline geçilir.
+  let il = (h.il && ilBySlug(h.il)) || VARSAYILAN_IL;
+  if(!ILLER.includes(il)) il = ILLER[0] || VARSAYILAN_IL;
+  const hf = h.hat ? allHatlar.find(x => String(x.properties?.OBJECTID) === String(h.hat))
+           : h.grup ? allHatlar.find(x => TAB_FILTERS.isletme.includes(String(x.properties?.PR_DURUM))
+                                       && lineKeysOf(x.properties).includes(h.grup))
+           : null;
+  if(hf && !hatIlleri(hf.properties).includes(il)) il = hatAnaIl(hf.properties);
+  activeIl = il;
+  syncIlUI();
+  syncDocumentTitle();
   if(h.tab && TAB_FILTERS[h.tab]){
     activeTab = h.tab;
     syncTabUI();
@@ -4209,11 +4580,12 @@ searchInput.addEventListener('input', () => renderSearchResults(searchInput.valu
 
 function renderSearchResults(query){
   // Türkçe katlama: "ikitelli" → "İkitelli", "kabatas" → "Kabataş" bulunur
+  // Arama tüm illerde yapılır; etkin ilde görünen hatlar önce gelir.
   const q = trFold(query).trim();
   const results = allHatlar.filter(f => {
     const p = f.properties || {};
-    return trFold(p.KOD).includes(q) || trFold(p.AD).includes(q);
-  }).slice(0,10);
+    return trFold(p.KOD).includes(q) || trFold(p.AD).includes(q) || trFold(hatAnaIl(p)).includes(q);
+  }).sort((a, b) => Number(hatGorunur(b)) - Number(hatGorunur(a))).slice(0,10);
 
   searchResults.innerHTML = '';
   if(results.length === 0 && q.length > 0){
@@ -4228,16 +4600,19 @@ function renderSearchResults(query){
     row.innerHTML = `
       <div class="search-result-swatch" style="background:${renk}"></div>
       <span class="search-result-name">${esc(p.AD||'—')}</span>
-      <span class="search-result-kod">${esc(p.KOD||'')}</span>`;
+      <span class="search-result-kod">${esc([p.KOD, hatGorunur(f) ? '' : hatAnaIl(p)].filter(Boolean).join(' · '))}</span>`;
     row.addEventListener('click', () => {
       searchPanel.classList.remove('open');
       searchInput.value = '';
+      // Hat etkin ilde görünmüyorsa önce ana iline geç
+      const ilChanged = !hatGorunur(f);
+      if(ilChanged) setIl(hatAnaIl(p), { render:false });
       // Önce doğru sekmeye geç
       const durum = String(p.PR_DURUM ?? '');
       let targetTab = 'yapim';
       if(TAB_FILTERS.isletme.includes(durum)) targetTab = 'isletme';
       else if(TAB_FILTERS.proje.includes(durum)) targetTab = 'proje';
-      if(targetTab !== activeTab){
+      if(targetTab !== activeTab || ilChanged){
         activeTab = targetTab;
         syncTabUI();
         updateMetrics();
@@ -4457,9 +4832,14 @@ window.addEventListener('resize', () => {
 // ═════════════════════════════════════════════════════
 //  SEKME ETİKETİ DUYARLI (mobilde kısa)
 // ═════════════════════════════════════════════════════
+// Masaüstünde de sekme şeridi daralınca (il seçici + açık detay paneli) kısa etiket kullanılır.
+// Genişlik, şeridin geçiş animasyonunun sonucuna göre (harita alanı − açık panel) hesaplanır.
 function updateTabLabels(){
+  const mc = document.getElementById('map-container');
+  const avail = mc ? mc.clientWidth - (document.body.classList.contains('detail-open') ? 352 : 0) : Infinity;
+  const short = isMobile() || avail < 780;
   document.querySelectorAll('.tab[data-label-short]').forEach(tab => {
-    tab.textContent = isMobile() ? tab.dataset.labelShort : tab.dataset.labelLong;
+    tab.textContent = short ? tab.dataset.labelShort : tab.dataset.labelLong;
   });
 }
 updateTabLabels();
@@ -4931,6 +5311,8 @@ function getCompareSeries(){
   for(const [key, rec] of progressByOid){
     if(!rec.series.length) continue;
     const meta = rec.oid ? metaByOid.get(rec.oid) : null;
+    // Etkin ilde görünen hatlar (kendi + bağlantılı); geometrisi bulunmayan kayıt varsayılan ilde
+    if(meta ? !hatIlleri(meta).includes(activeIl) : activeIl !== VARSAYILAN_IL) continue;
     const renk = (meta && normHex(meta.RENK_HEX)) || CMP_PALETTE[pi % CMP_PALETTE.length];
     pi++;
     out.push({
@@ -4938,6 +5320,7 @@ function getCompareSeries(){
       kod: rec.kod || (meta && meta.KOD) || '',
       ad:  rec.hat || (meta && meta.AD) || rec.kod || key,
       durum: rec.durum || '',
+      kendi: meta ? hatKendi(meta) : true,
       renk,
       series: rec.series,
       last: rec.series[rec.series.length-1].pct,
@@ -5008,7 +5391,7 @@ function renderCompareChart(){
       lines += `<circle class="cmp-dot${cls}" cx="${xAt(xIndex.get(s.ym)).toFixed(1)}" cy="${yAt(s.pct).toFixed(1)}" r="${isLast?3.5:2.5}" ${fill}></circle>`;
     });
     if(!off){
-      const lbl = d.kod ? `${d.kod} · ${d.ad}` : d.ad;
+      const lbl = (d.kod ? `${d.kod} · ${d.ad}` : d.ad) + (d.kendi ? '' : ` (bağlantılı)`);
       visPts.forEach(s => {
         if(!cmpByMonth.has(s.ym)) cmpByMonth.set(s.ym, []);
         cmpByMonth.get(s.ym).push({ label: lbl, renk: d.renk, pct: s.pct, y: yAt(s.pct) });
@@ -5078,8 +5461,12 @@ const shortLineName = s => String(s || '').replace(/\s+(Metro|Tramvay|Füniküle
 function buildMonthlySummary(){
   const ym = latestDataYM();
   if(!ym) return null;
+  // Yalnızca etkin ilin kendi hatları (bağlantılı hatlar komşu ilin özetinde yer alır)
+  const metaByOid = new Map(allHatlar.map(f => [String(f.properties?.OBJECTID ?? ''), f.properties]));
   const movers = [];
   for(const rec of progressByOid.values()){
+    const meta = rec.oid ? metaByOid.get(String(rec.oid)) : null;
+    if(meta ? !hatKendi(meta) : activeIl !== VARSAYILAN_IL) continue;
     const ser = rec.series;
     const n = ser.length;
     if(n < 2 || ser[n-1].ym !== ym) continue;
@@ -5088,12 +5475,12 @@ function buildMonthlySummary(){
   }
   if(!movers.length) return null;
   movers.sort((a, b) => b.delta - a.delta);
-  const head = `${ymLong(ym)} itibarıyla İstanbul'daki raylı sistem projelerinde en çok ilerleyenler:`;
+  const head = `${ymLong(ym)} itibarıyla ${ilAyar(activeIl).yerSifat} raylı sistem projelerinde en çok ilerleyenler:`;
   const line = m => `▲ ${m.name} %${pctText(Math.round(m.pct*100)/100)} (+${pctText(Math.round(m.delta*10)/10)} puan)`;
   let picked = movers.slice(0, 3);
   const fit = arr => `${head}\n\n${arr.map(line).join('\n')}\n\nTüm hatlar:`;
   while(picked.length > 1 && fit(picked).length > 250) picked = picked.slice(0, -1);
-  return { text: fit(picked), url: location.origin + '/', picked, head };
+  return { text: fit(picked), url: location.origin + '/' + (activeIl === VARSAYILAN_IL ? '' : '#' + ilHashPart().replace(/&$/, '')), picked, head };
 }
 function renderMonthlySummary(){
   const box = document.getElementById('cmp-summary');
@@ -5228,6 +5615,12 @@ document.addEventListener('keydown', e => {
     `<div class="src-legend-row"><span class="src-badge src-${t.key}"><span class="src-dot"></span>${esc(t.label)}</span><span>${esc(t.desc)}</span></div>`
   ).join('');
 })();
+
+document.getElementById('il-select').addEventListener('change', e => {
+  setIl(e.target.value);
+  if(isMobile() && mobileView === 'map') setTimeout(() => map && map.resize(), 0);
+});
+syncIlUI();
 
 initMap();
 loadData();
