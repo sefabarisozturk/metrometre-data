@@ -551,6 +551,112 @@ body.detail-open #tab-bar { right: 352px; }
 }
 #map-credit[hidden] { display: none; }
 
+/* ──── HARİTA KATMAN ÇİPLERİ (sekme çubuğunun altında) ──── */
+/* Etkin sekme haritada her zaman tam görünür; diğer iki durum soluk → tam → gizli
+   arasında döner. Çipteki çizgi örneği aynı zamanda haritanın lejantıdır. */
+#katman-bar {
+  position: absolute;
+  top: 64px; left: 0; right: 0;
+  display: flex; justify-content: center; align-items: center;
+  z-index: 110;
+  pointer-events: none;
+  transition: right .3s cubic-bezier(.4,0,.2,1);
+}
+#map-container.detail-open #katman-bar { right: 352px; }
+.katman-group {
+  pointer-events: all;
+  display: flex; align-items: center; gap: 2px;
+  padding: 3px;
+  background: rgba(255,255,255,.88);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--border-2);
+  border-radius: 99px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+.katman-lbl {
+  font-size: 10px; font-weight: 600; color: var(--text-dim);
+  padding: 0 6px 0 8px; letter-spacing: .02em;
+}
+.katman-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 24px; padding: 0 10px 0 8px;
+  border: 1px solid transparent; border-radius: 99px;
+  background: transparent;
+  font-family: var(--font); font-size: 11px; font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer; white-space: nowrap; user-select: none;
+  transition: background .12s, color .12s, border-color .12s;
+}
+.katman-chip svg { width: 20px; height: 6px; flex-shrink: 0; overflow: visible; }
+.katman-chip:hover { background: var(--surface-2); color: var(--text); }
+.katman-chip[data-mod="soluk"] svg { opacity: .35; }
+.katman-chip[data-mod="tam"] { background: #fff; color: var(--text); border-color: var(--text); }
+.katman-chip[data-mod="gizli"] { color: var(--text-dim); }
+.katman-chip[data-mod="gizli"] .katman-ad { text-decoration: line-through; text-decoration-thickness: 1.5px; }
+.katman-chip[data-mod="gizli"] svg { opacity: .15; }
+/* Etkin sekmenin çipi: değiştirilemez, sekmeyle aynı vurgu */
+.katman-chip.etkin { border-color: var(--accent); color: var(--accent); cursor: default; }
+.katman-chip.etkin:hover { background: #fff; color: var(--accent); }
+
+/* ──── HAT BİLGİ KUTUCUĞU (hover / dokunma) ──── */
+#hat-tip {
+  position: absolute; left: 0; top: 0;
+  z-index: 140;
+  width: max-content; max-width: 300px;
+  background: rgba(255,255,255,.97);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 10px;
+  box-shadow: 0 6px 22px rgba(0,0,0,.14);
+  padding: 4px;
+  pointer-events: none;
+  font-family: var(--font);
+}
+#hat-tip[hidden] { display: none; }
+#hat-tip.dokunma { pointer-events: all; }
+.tip-row {
+  display: flex; align-items: flex-start; gap: 9px;
+  padding: 7px 8px;
+  border-radius: 7px;
+  width: 100%; text-align: left;
+  border: none; background: transparent; font-family: inherit; color: inherit;
+}
+.tip-row + .tip-row { border-top: 1px solid var(--border); border-radius: 0; }
+button.tip-row { cursor: pointer; }
+button.tip-row:active { background: var(--surface-2); }
+.tip-badge {
+  flex-shrink: 0;
+  min-width: 26px; height: 20px; padding: 0 5px;
+  border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 800; letter-spacing: -.01em;
+  margin-top: 1px;
+}
+.tip-body { min-width: 0; flex: 1; }
+.tip-title { font-size: 12px; font-weight: 700; color: var(--text); line-height: 1.3; }
+.tip-meta {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 4px 6px;
+  margin-top: 3px;
+  font-size: 10.5px; font-weight: 500; color: var(--text-muted);
+}
+.tip-meta .card-tag { font-size: 9.5px; padding: 1px 5px; }
+.tip-prog { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 6px; margin-top: 6px; font-size: 10.5px; color: var(--text-muted); }
+.tip-prog > span { white-space: nowrap; }
+.tip-bar { width: 52px; height: 4px; border-radius: 2px; background: var(--border); overflow: hidden; flex-shrink: 0; }
+.tip-bar i { display: block; height: 100%; border-radius: 2px; }
+.tip-pct { font-weight: 700; color: var(--text); }
+.tip-sep { color: var(--border-2); }
+.tip-go {
+  display: flex; align-items: center; gap: 3px;
+  margin-top: 5px;
+  font-size: 10.5px; font-weight: 600; color: var(--accent);
+}
+.tip-foot {
+  padding: 5px 8px 4px;
+  border-top: 1px solid var(--border);
+  font-size: 10px; font-weight: 500; color: var(--text-dim);
+}
+
 /* ──── ARAMA PANELİ ──── */
 #search-panel {
   display: none;
@@ -1319,6 +1425,14 @@ a.src-badge:hover { border-color: currentColor; }
   #detail-head { padding-top: 4px; }        /* tutamaç zaten üstte boşluk bırakıyor */
   /* Mobilde araçlar sağ üstte kalır; sheet alttan geldiği için kaydırma yok */
   #map-container.detail-open #map-tools { right: 12px; }
+  /* Katman çipleri: mobilde sekme şeridi haritanın dışında; çipler haritanın sol üstünde */
+  #katman-bar, #map-container.detail-open #katman-bar { top: 12px; left: 12px; right: 68px; justify-content: flex-start; }
+  .katman-lbl { display: none; }
+  .katman-chip { height: 30px; padding: 0 9px 0 7px; font-size: 11px; gap: 5px; }
+  .katman-chip svg { width: 16px; }
+  #map-container:has(#detail-popup.expanded) #katman-bar { opacity: 0; pointer-events: none; }
+  #map-container:has(#detail-popup.expanded) .katman-group { pointer-events: none; }
+  #hat-tip { max-width: calc(100% - 24px); }
   /* Sheet tam ekrana genişleyince harita araçları haritayı zaten kapatan kartın
      üstünde asılı kalmasın; peek durumunda ise görünür kalırlar. */
   #map-container:has(#detail-popup.expanded) #map-tools {
@@ -1435,6 +1549,16 @@ a.src-badge:hover { border-color: currentColor; }
       </div>
 
       <div id="map-credit" hidden>© Esri, Maxar, Earthstar Geographics</div>
+
+      <!-- Haritadaki hat katmanları: çipler JS ile çizilir (renderKatmanBar) -->
+      <div id="katman-bar">
+        <div class="katman-group" role="group" aria-label="Haritada gösterilen hat katmanları">
+          <span class="katman-lbl" aria-hidden="true">Haritada</span>
+        </div>
+      </div>
+
+      <!-- Hat bilgi kutucuğu: hover (masaüstü) / dokunma (mobil) -->
+      <div id="hat-tip" role="tooltip" hidden></div>
 
       <div id="search-panel">
         <input id="search-input" type="text" placeholder="Hat kodu veya adı ara…" autocomplete="off">
@@ -1700,6 +1824,29 @@ const DURUM_CLASS = {
   '2':'st-test','3':'st-insaat','4':'st-bekle',
   '5':'st-proje','6':'st-proje','7':'st-proje','8':'st-proje',
 };
+
+// ──── HARİTA KATMANLARI ────
+// Sekme paneli (liste + kart) yönetir; haritada hangi durumun nasıl görüneceğini
+// katman çipleri belirler. Etkin sekme her zaman TAM görünür; diğer iki durumun
+// görünümü kullanıcıya bırakılır: 'soluk' (varsayılan) → 'tam' → 'gizli'.
+const KATMANLAR    = ['isletme', 'yapim', 'proje'];
+const KATMAN_AD    = { isletme:'İşletme', yapim:'Yapım', proje:'Proje' };
+const KATMAN_UZUN  = { isletme:'İşletmedeki hatlar', yapim:'Yapımı süren hatlar', proje:'Proje aşamasındaki hatlar' };
+const KATMAN_MOD_AD = { tam:'tam görünür', soluk:'soluk', gizli:'gizli' };
+const KATMAN_SIRA  = { soluk:'tam', tam:'gizli', gizli:'soluk' };   // çipe tıklayınca sonraki durum
+// Çizgi biçimi durumu kodlar (renkten bağımsız): işletme düz, yapım uzun kesikli,
+// proje noktalı. line-dasharray çizgi kalınlığı birimindedir; null = düz.
+const KATMAN_DASH  = { isletme:null, yapim:[5, 1.2], proje:[0, 2.5] };
+const KATMAN_CAP   = { isletme:'round', yapim:'butt', proje:'round' };
+const SOLUK_OPAK   = 0.32;   // soluk hatların opaklığı (kendi renginde)
+const TAM_EK_KALINLIK = 0.5; // tam görünen hatlar soluklardan biraz kalın çizilir (öne çıksın)
+const katmanMod    = { isletme:'soluk', yapim:'soluk', proje:'soluk' };
+function modOf(tab){ return tab === activeTab ? 'tam' : katmanMod[tab]; }
+// PR_DURUM → sekme anahtarı (eşleşmezse null)
+function tabOfDurum(durum){
+  const d = String(durum ?? '');
+  return KATMANLAR.find(t => TAB_FILTERS[t].includes(d)) || null;
+}
 
 // Her sekmenin sıralama seçenekleri (label ve karşılaştırıcı fn)
 const SORT_CONFIG = {
@@ -2253,8 +2400,11 @@ const activeSortKey = { isletme:'hat', yapim:'acilis', proje:'asama' };
 // ═════════════════════════════════════════════════════
 //  HARİTA KAYNAK / KATMAN ID'LERİ
 // ═════════════════════════════════════════════════════
+// "active" = tam görünür katmanlar (etkin sekme + tam'a alınanlar), "other" = soluk katmanlar
 const SRC_HAT_ACTIVE     = 'hat-active';
 const SRC_HAT_OTHER      = 'hat-other';
+const SRC_HAT_HIT        = 'hat-hit';     // görünür tüm hatlar — hover/tıklama isabet alanı
+const SRC_HAT_HOVER      = 'hat-hover';   // imlecin altındaki hat(lar)ın vurgusu
 const SRC_DURAK_ACTIVE   = 'durak-active';
 const SRC_DURAK_OTHER    = 'durak-other';
 const SRC_HAT_SELECTED   = 'hat-selected';
@@ -2450,6 +2600,7 @@ function normalizeFeatureColors(features){
     const raw = String(p.RENK_HEX || '').trim();
     const hex = raw.replace(/^#+/,'');
     p.RENK_HEX_NORM = hex ? '#'+hex : '#9B9B9B';
+    p._TAB = tabOfDurum(p.PR_DURUM);   // harita katmanı (çizgi biçimi ve görünürlük)
     f.properties = p;
   });
 }
@@ -2478,14 +2629,6 @@ function getHatlarForTab(tab){
 }
 function getDuraklarForTab(tab){
   return allDuraklar.filter(f => TAB_FILTERS[tab].includes(String(f.properties?.PR_DURUM)) && durakGorunur(f));
-}
-function getHatlarOther(tab){
-  const vals = TAB_FILTERS[tab];
-  return allHatlar.filter(f => !vals.includes(String(f.properties?.PR_DURUM)) && hatGorunur(f));
-}
-function getDuraklarOther(tab){
-  const vals = TAB_FILTERS[tab];
-  return allDuraklar.filter(f => !vals.includes(String(f.properties?.PR_DURUM)) && durakGorunur(f));
 }
 
 // ═════════════════════════════════════════════════════
@@ -2663,6 +2806,8 @@ function initMapLayers(){
   upsertSource(SRC_HAT_SELECTED,   EMPTY());
   upsertSource(SRC_DURAK_SELECTED, EMPTY());
   upsertSource(SRC_HAT_LABEL,      EMPTY());
+  upsertSource(SRC_HAT_HIT,        EMPTY());
+  upsertSource(SRC_HAT_HOVER,      EMPTY());
 
   // Çift kuruluma karşı koruma; ekleme SIRASI çizim sırasını belirler.
   const add = spec => { if(!map.getLayer(spec.id)) map.addLayer(spec); };
@@ -2684,28 +2829,43 @@ function initMapLayers(){
         layout:{ visibility: satelliteOn ? 'visible' : 'none' } });
 
   // ──── Hatlar ────
-  add({ id:'other-lines', type:'line', source:SRC_HAT_OTHER,
+  // Her durum (işletme / yapım / proje) kendi çizgi biçimiyle ayrı katmanda çizilir:
+  // MapLibre'de line-dasharray veriye bağlı ifade almadığı için durum başına bir katman.
+  // Soluk katmanlar tam görünenlerin altında kalır.
+  const lineColor = ['coalesce',['get','RENK_HEX_NORM'],'#9B9B9B'];
+  const lineWidth = ['coalesce',['get','KALINLIK_LN'],3];
+  const durumLines = (prefix, source, paint, extraWidth = 0) => KATMANLAR.forEach(t => add({
+    id:`${prefix}-${t}`, type:'line', source,
+    filter:['==',['get','_TAB'],t],
     paint:{
-      'line-color':['coalesce',['get','RENK_HEX_NORM'],'#9B9B9B'],
-      'line-width':['coalesce',['get','KALINLIK_LN'],3],
-      'line-opacity':0.2,
-    }, layout:{'line-cap':'round','line-join':'round'} });
+      'line-color': lineColor,
+      'line-width': extraWidth ? ['+', lineWidth, extraWidth] : lineWidth,
+      ...(KATMAN_DASH[t] ? { 'line-dasharray': KATMAN_DASH[t] } : {}),
+      ...paint,
+    },
+    layout:{ 'line-cap':KATMAN_CAP[t], 'line-join':'round' },
+  }));
+  durumLines('other-lines',  SRC_HAT_OTHER,  { 'line-opacity':SOLUK_OPAK });
+  durumLines('active-lines', SRC_HAT_ACTIVE, { 'line-opacity':1 }, TAM_EK_KALINLIK);
 
-  add({ id:'active-lines', type:'line', source:SRC_HAT_ACTIVE,
+  // ──── Hover vurgusu ────
+  // İmlecin altındaki hat (soluk olsa bile) hafif bir hale ve tam opak çizgiyle öne çıkar.
+  add({ id:'hover-glow', type:'line', source:SRC_HAT_HOVER,
     paint:{
-      'line-color':['coalesce',['get','RENK_HEX_NORM'],'#9B9B9B'],
-      'line-width':['coalesce',['get','KALINLIK_LN'],3],
-      'line-opacity':1,
+      'line-color': lineColor,
+      'line-width':['+', lineWidth, 8],
+      'line-opacity':0.22, 'line-blur':4,
     }, layout:{'line-cap':'round','line-join':'round'} });
+  durumLines('hover-lines', SRC_HAT_HOVER, { 'line-opacity':1 }, 1.5);
 
   // ──── Görünmez dokunma alanı ────
-  // İnce hatların rahat seçilebilmesi için aktif hatların üstünde geniş, saydam
-  // bir katman. Tıklama ve hover bu katmana bağlanır; opacity 0 olduğundan
-  // görsele etkisi yoktur ama queryRenderedFeatures isabet alanını genişletir.
-  add({ id:'active-lines-hit', type:'line', source:SRC_HAT_ACTIVE,
+  // İnce hatların rahat seçilebilmesi için görünür TÜM hatların (soluk dahil) üstünde
+  // geniş, saydam bir katman. Hover ve tıklama bu katmana bağlanır; opacity 0
+  // olduğundan görsele etkisi yoktur ama queryRenderedFeatures isabet alanını genişletir.
+  add({ id:'lines-hit', type:'line', source:SRC_HAT_HIT,
     paint:{
       'line-color':'#000000',
-      'line-width':['+',['coalesce',['get','KALINLIK_LN'],3],16],
+      'line-width':['+', lineWidth, 14],
       'line-opacity':0,
     }, layout:{'line-cap':'round','line-join':'round'} });
 
@@ -2724,12 +2884,7 @@ function initMapLayers(){
       'line-opacity':0.55, 'line-blur':3,
     }, layout:{'line-cap':'round','line-join':'round'} });
 
-  add({ id:'selected-line', type:'line', source:SRC_HAT_SELECTED,
-    paint:{
-      'line-color':['coalesce',['get','RENK_HEX_NORM'],'#9B9B9B'],
-      'line-width':['+',['coalesce',['get','KALINLIK_LN'],3],2],
-      'line-opacity':1,
-    }, layout:{'line-cap':'round','line-join':'round'} });
+  durumLines('selected-line', SRC_HAT_SELECTED, { 'line-opacity':1 }, 2);
 
   // ──── Duraklar ────
   add({ id:'other-stops', type:'circle', source:SRC_DURAK_OTHER,
@@ -2738,7 +2893,7 @@ function initMapLayers(){
       'circle-color':['coalesce',['get','RENK_HEX_NORM'],'#9B9B9B'],
       'circle-radius':['coalesce',['get','BOYUT_PT'],5],
       'circle-stroke-color':'#ffffff', 'circle-stroke-width':1.5,
-      'circle-opacity':0.2, 'circle-stroke-opacity':0.2,
+      'circle-opacity':0.35, 'circle-stroke-opacity':0.35,
     } });
 
   add({ id:'active-stops', type:'circle', source:SRC_DURAK_ACTIVE,
@@ -2834,8 +2989,14 @@ function renderMap(){
 
   const activeHatlar   = getHatlarForTab(activeTab);
   const activeDuraklar = getDuraklarForTab(activeTab);
-  const otherHatlar    = getHatlarOther(activeTab);
-  const otherDuraklar  = getDuraklarOther(activeTab);
+  // Katman çiplerine göre: tam görünen durumlar (etkin sekme dahil) ve soluk olanlar.
+  // Gizli durumlar hiçbir kaynağa girmez.
+  const tamTabs   = KATMANLAR.filter(t => modOf(t) === 'tam');
+  const solukTabs = KATMANLAR.filter(t => modOf(t) === 'soluk');
+  const hatTam      = allHatlar.filter(f => tamTabs.includes(f.properties?._TAB) && hatGorunur(f));
+  const otherHatlar = allHatlar.filter(f => solukTabs.includes(f.properties?._TAB) && hatGorunur(f));
+  const durakTam      = allDuraklar.filter(f => tamTabs.includes(f.properties?._TAB) && durakGorunur(f));
+  const otherDuraklar = allDuraklar.filter(f => solukTabs.includes(f.properties?._TAB) && durakGorunur(f));
 
   // Glow için seçili feature'lar (OBJECTID ile eşleşir; KOD aynı olabilir, OBJECTID benzersiz):
   //  • etap seçiliyse o etap (işletmede aynı açılışın tüm parçaları),
@@ -2855,25 +3016,29 @@ function renderMap(){
 
   // Seçili kesim selected katmanlardan çizildiği için active'den çıkarılır (çift çizim önlenir).
   const activeHatlarDisplay = selOids.size
-    ? activeHatlar.filter(f => !selOids.has(String(f.properties?.OBJECTID)))
-    : activeHatlar;
+    ? hatTam.filter(f => !selOids.has(String(f.properties?.OBJECTID)))
+    : hatTam;
 
   // Sadece kaynak verisi güncellenir; katmanlar initMapLayers() içinde tek seferlik kuruldu.
   upsertSource(SRC_HAT_ACTIVE,     { type:'FeatureCollection', features:activeHatlarDisplay });
   upsertSource(SRC_HAT_OTHER,      { type:'FeatureCollection', features:otherHatlar });
-  upsertSource(SRC_DURAK_ACTIVE,   { type:'FeatureCollection', features:activeDuraklar });
+  upsertSource(SRC_HAT_HIT,        { type:'FeatureCollection', features:hatTam.concat(otherHatlar) });
+  upsertSource(SRC_DURAK_ACTIVE,   { type:'FeatureCollection', features:durakTam });
   upsertSource(SRC_DURAK_OTHER,    { type:'FeatureCollection', features:otherDuraklar });
   upsertSource(SRC_HAT_SELECTED,   { type:'FeatureCollection', features:selectedHatFeatures });
   upsertSource(SRC_DURAK_SELECTED, { type:'FeatureCollection', features:selectedDurakFeatures });
+  hideHatTip();
 
   // ──── Yapım hattı ikon etiketleri ────
-  // Yalnızca "Yapımı süren hatlar" sekmesinde, IKON_URL'i olan her hat için TEK
-  // bir Point etiketi. Anchor, hattın orta bandında istasyonlardan en uzak nokta
-  // olarak seçilir (istasyon noktası/adı etiketiyle çakışmaz). Seçili hat da
-  // dahildir (kaynak seçimden bağımsız beslenir → seçimde ikon kaybolmaz).
+  // Yapım katmanı tam görünürken (etkin sekme ya da çiple tam'a alınmış), IKON_URL'i
+  // olan her hat için TEK bir Point etiketi. Anchor, hattın orta bandında
+  // istasyonlardan en uzak nokta olarak seçilir (istasyon noktası/adı etiketiyle
+  // çakışmaz). Seçili hat da dahildir (kaynak seçimden bağımsız beslenir → seçimde
+  // ikon kaybolmaz).
   let labelFeatures = [];
-  if(activeTab === 'yapim'){
-    labelFeatures = activeHatlar
+  if(modOf('yapim') === 'tam'){
+    const yapimDuraklar = getDuraklarForTab('yapim');
+    labelFeatures = getHatlarForTab('yapim')
       .filter(f => f.properties && f.properties.IKON_URL && f.geometry)
       .map(f => {
         const p    = f.properties;
@@ -2883,7 +3048,7 @@ function renderMap(){
         // Bu hattın istasyon koordinatları (KOD + hat bbox'ı ile sınırlanır)
         const bbox = featureBbox(f);
         const stns = bbox
-          ? duraklarInBbox(activeDuraklar.filter(d => d.properties?.KOD === p.KOD), bbox)
+          ? duraklarInBbox(yapimDuraklar.filter(d => d.properties?.KOD === p.KOD), bbox)
               .map(d => d.geometry?.coordinates).filter(Boolean)
           : [];
         const anchor = labelAnchorForLine(f.geometry, stns);
@@ -2910,12 +3075,13 @@ function renderMap(){
 function fitGlobalBounds(animated){
   const b = ilBounds.get(activeIl) || globalBounds;
   if(!b || !mapReady) return;
-  // Masaüstünde il seçici + sekme şeridi haritanın üstünde yüzer (≈ 92 px); en kuzeydeki
-  // hat (ör. M11 havalimanı ucu) şeridin altında kalmasın diye üstte o kadar pay bırakılır.
-  // Sağda harita araçları sütunu için de pay vardır. Mobilde şerit haritanın dışındadır.
+  // Masaüstünde il seçici + sekme şeridi + katman çipleri haritanın üstünde yüzer (≈ 104 px);
+  // en kuzeydeki hat (ör. M11 havalimanı ucu) bunların altında kalmasın diye üstte o kadar pay
+  // bırakılır. Sağda harita araçları sütunu için de pay vardır. Mobilde sekme şeridi haritanın
+  // dışındadır; yalnızca katman çipleri için üstte pay bırakılır.
   const padding = isMobile()
-    ? { top:40, bottom:40, left:30, right:64 }
-    : { top:92, bottom:40, left:40, right:64 };
+    ? { top:54, bottom:40, left:30, right:64 }
+    : { top:104, bottom:40, left:40, right:64 };
   map.fitBounds(b, {
     padding,
     duration: animated === false ? 0 : 600,
@@ -3032,7 +3198,7 @@ function zoomToFeatures(features){
   // Mobilde sekme çubuğu haritanın üstünde ayrı şeritte durur, alttan açılan sheet için altta yer bırakılır.
   const padding = isMobile()
     ? { top:70, bottom:160, left:40, right:40 }
-    : { top:92, bottom:60, left:40, right:360 };
+    : { top:104, bottom:60, left:40, right:360 };
   map.fitBounds(bbox, {
     padding,
     maxZoom: 13,
@@ -4411,6 +4577,8 @@ function writeHash(){
   if(activeTab === 'isletme' && selectedLineKey) parts.push('grup=' + encodeURIComponent(selectedLineKey));
   const objId = selectedFeature?.properties?.OBJECTID;
   if(objId != null && objId !== '') parts.push('hat=' + objId);
+  const kh = katmanHashPart();
+  if(kh) parts.push(kh);
   const hash = '#' + parts.join('&');
   if(location.hash !== hash) history.replaceState(null, '', hash);
   syncDocumentTitle();
@@ -4462,6 +4630,7 @@ function applyHashState(){
   activeIl = il;
   syncIlUI();
   syncDocumentTitle();
+  applyKatmanHash(h.katman);
   if(h.tab && TAB_FILTERS[h.tab]){
     activeTab = h.tab;
     syncTabUI();
@@ -4619,53 +4788,58 @@ function renderSearchResults(query){
     row.addEventListener('click', () => {
       searchPanel.classList.remove('open');
       searchInput.value = '';
-      // Hat etkin ilde görünmüyorsa önce ana iline geç
-      const ilChanged = !hatGorunur(f);
-      if(ilChanged) setIl(hatAnaIl(p), { render:false });
-      // Önce doğru sekmeye geç
-      const durum = String(p.PR_DURUM ?? '');
-      let targetTab = 'yapim';
-      if(TAB_FILTERS.isletme.includes(durum)) targetTab = 'isletme';
-      else if(TAB_FILTERS.proje.includes(durum)) targetTab = 'proje';
-      if(targetTab !== activeTab || ilChanged){
-        activeTab = targetTab;
-        syncTabUI();
-        updateMetrics();
-        renderSortBar();
-      }
-      selectedFeature = null; selectedLineKey = null;
-      renderCards();
-      renderMap();
-      // Kart eşleşmesi OBJECTID üzerinden (KOD benzersiz değil)
-      setTimeout(() => {
-        if(activeTab === 'isletme'){
-          // Etap adıyla aranmış olabilir: hattını seç, etabı odakla
-          onCardSelect(f, { focus:true });
-          const card = isLineView()
-            ? document.querySelector(`.card[data-line="${CSS.escape(selectedLineKey || '')}"]`)
-            : document.querySelector(`.card[data-etap="${CSS.escape(etapId(p))}"]`);
-          if(card) card.scrollIntoView({ behavior:'smooth', block:'nearest' });
-          return;
-        }
-        if(activeTab === 'proje'){
-          // Projenin hangi kaydı bulunmuş olursa olsun (geometrisiz olabilir) projenin temsilcisi seçilir
-          const pr = projeOfFeature(f);
-          if(!pr) return;
-          if(!(selectedFeature && projeId(selectedFeature.properties) === pr.key)) onCardSelect(pr.repF);
-          const card = document.querySelector(`.card[data-proje="${CSS.escape(pr.key)}"]`);
-          if(card) card.scrollIntoView({ behavior:'smooth', block:'nearest' });
-          return;
-        }
-        const objId = String(p.OBJECTID ?? '');
-        const card  = document.querySelector(`.card[data-objectid="${objId}"]`);
-        if(card){
-          onCardSelect(f);
-          card.scrollIntoView({ behavior:'smooth', block:'nearest' });
-        }
-      }, 50);
+      // Etap adıyla aranmış olabilir: işletmede hattı seçilir, etap odaklanır
+      goToHat(f, { focus:true });
     });
     searchResults.appendChild(row);
   });
+}
+
+// Bir hattı, hangi sekmede/ilde olursa olsun açar: gerekirse iline ve sekmesine
+// geçer, kartını seçer ve detay panelini açar. Arama sonuçları ve haritada başka
+// sekmedeki bir hatta tıklama buradan geçer. opts.focus: işletmede etabı odakla.
+function goToHat(f, opts = {}){
+  const p = f.properties || {};
+  // Hat etkin ilde görünmüyorsa önce ana iline geç
+  const ilChanged = !hatGorunur(f);
+  if(ilChanged) setIl(hatAnaIl(p), { render:false });
+  // Önce doğru sekmeye geç
+  const targetTab = tabOfDurum(p.PR_DURUM) || 'yapim';
+  if(targetTab !== activeTab || ilChanged){
+    activeTab = targetTab;
+    syncTabUI();
+    updateMetrics();
+    renderSortBar();
+  }
+  selectedFeature = null; selectedLineKey = null;
+  renderCards();
+  renderMap();
+  // Kart eşleşmesi OBJECTID üzerinden (KOD benzersiz değil)
+  setTimeout(() => {
+    if(activeTab === 'isletme'){
+      onCardSelect(f, { focus: !!opts.focus });
+      const card = isLineView()
+        ? document.querySelector(`.card[data-line="${CSS.escape(selectedLineKey || '')}"]`)
+        : document.querySelector(`.card[data-etap="${CSS.escape(etapId(p))}"]`);
+      if(card) card.scrollIntoView({ behavior:'smooth', block:'nearest' });
+      return;
+    }
+    if(activeTab === 'proje'){
+      // Projenin hangi kaydı bulunmuş olursa olsun (geometrisiz olabilir) projenin temsilcisi seçilir
+      const pr = projeOfFeature(f);
+      if(!pr) return;
+      if(!(selectedFeature && projeId(selectedFeature.properties) === pr.key)) onCardSelect(pr.repF);
+      const card = document.querySelector(`.card[data-proje="${CSS.escape(pr.key)}"]`);
+      if(card) card.scrollIntoView({ behavior:'smooth', block:'nearest' });
+      return;
+    }
+    const objId = String(p.OBJECTID ?? '');
+    const card  = document.querySelector(`.card[data-objectid="${objId}"]`);
+    if(card){
+      onCardSelect(f);
+      card.scrollIntoView({ behavior:'smooth', block:'nearest' });
+    }
+  }, 50);
 }
 
 // ═════════════════════════════════════════════════════
@@ -4680,7 +4854,71 @@ function syncTabUI(){
     t.classList.toggle('active', on);
     t.setAttribute('aria-pressed', on ? 'true' : 'false');
   });
+  renderKatmanBar();
 }
+
+// ═════════════════════════════════════════════════════
+//  HARİTA KATMAN ÇİPLERİ
+// ═════════════════════════════════════════════════════
+// Çipler yalnızca haritayı etkiler; liste ve detay paneli etkin sekmeye bağlı kalır.
+// Çipteki çizgi örneği haritadaki çizgi biçimiyle aynıdır (lejant işlevi görür).
+function katmanSampleSvg(t){
+  const dash = t === 'yapim' ? ' stroke-dasharray="6 2.2"' : t === 'proje' ? ' stroke-dasharray="0 4.6"' : '';
+  const cap  = t === 'yapim' ? 'butt' : 'round';
+  return `<svg viewBox="0 0 20 6" aria-hidden="true"><line x1="2" y1="3" x2="18" y2="3" stroke="currentColor" stroke-width="2.6" stroke-linecap="${cap}"${dash}/></svg>`;
+}
+function renderKatmanBar(){
+  const group = document.querySelector('#katman-bar .katman-group');
+  if(!group) return;
+  if(!group.querySelector('.katman-chip')){
+    KATMANLAR.forEach(t => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'katman-chip';
+      b.dataset.katman = t;
+      b.innerHTML = `${katmanSampleSvg(t)}<span class="katman-ad">${esc(KATMAN_AD[t])}</span>`;
+      b.addEventListener('click', () => cycleKatman(t));
+      group.appendChild(b);
+    });
+  }
+  group.querySelectorAll('.katman-chip').forEach(b => {
+    const t = b.dataset.katman;
+    const etkin = t === activeTab;
+    const mod = modOf(t);
+    b.dataset.mod = mod;
+    b.classList.toggle('etkin', etkin);
+    b.setAttribute('aria-disabled', etkin ? 'true' : 'false');
+    const durum = `${KATMAN_UZUN[t]}: haritada ${KATMAN_MOD_AD[mod]}`;
+    b.title = etkin
+      ? `${durum} (etkin sekme)`
+      : `${durum} · tıklayınca ${KATMAN_MOD_AD[KATMAN_SIRA[mod]]}`;
+    b.setAttribute('aria-label', b.title);
+  });
+}
+function cycleKatman(t){
+  if(t === activeTab) return;   // etkin sekme her zaman tam görünür
+  katmanMod[t] = KATMAN_SIRA[katmanMod[t]] || 'soluk';
+  renderKatmanBar();
+  renderMap();
+  writeHash();
+}
+// Adres biçimi: varsayılandan (soluk) farklı katmanlar; tam → "isletme", gizli → "-proje"
+//   #tab=yapim&sort=acilis&katman=isletme,-proje
+function katmanHashPart(){
+  const parts = KATMANLAR.filter(t => katmanMod[t] !== 'soluk')
+    .map(t => katmanMod[t] === 'gizli' ? '-' + t : t);
+  return parts.length ? 'katman=' + parts.join(',') : '';
+}
+function applyKatmanHash(raw){
+  KATMANLAR.forEach(t => { katmanMod[t] = 'soluk'; });
+  String(raw || '').split(',').map(s => s.trim()).filter(Boolean).forEach(s => {
+    const gizli = s.startsWith('-');
+    const t = gizli ? s.slice(1) : s;
+    if(KATMANLAR.includes(t)) katmanMod[t] = gizli ? 'gizli' : 'tam';
+  });
+  renderKatmanBar();
+}
+renderKatmanBar();   // veri gelmeden de çipler görünsün
 
 const tabEls = Array.from(document.querySelectorAll('.tab'));
 tabEls.forEach((tab, i) => {
@@ -4861,31 +5099,230 @@ updateTabLabels();
 window.addEventListener('resize', updateTabLabels);
 
 // ═════════════════════════════════════════════════════
-//  HARİTA TIKLAMASI → HAT SEÇİMİ (yalnız aktif sekme)
+//  HAT BİLGİ KUTUCUĞU (hover / dokunma)
+// ═════════════════════════════════════════════════════
+// Haritada görünen her hat (soluk olanlar dahil) bilgi verir. Kutucuk hattın
+// durumuna göre en fazla üç satır gösterir: kod rozeti + ad, durum etiketi + ölçüler,
+// ve durumuna özgü bilgi (işletme: ilk açılış · yapım: ilerleme + tahmini açılış ·
+// proje: sorumlu kurum + tahmini açılış). Birden çok hattın üst üste geldiği
+// yerlerde hepsi alt alta listelenir.
+const hatTipEl = document.getElementById('hat-tip');
+const HOVER_YOK = window.matchMedia('(hover: none)');   // dokunmatik cihaz: hover yok
+const TIP_MAX = 4;
+let hatTipKey = '';   // son gösterilen grup listesinin anahtarı (gereksiz yeniden çizimi önler)
+
+// Rozet metin rengi: açık hat renklerinde koyu, koyu renklerde beyaz
+function rozetYazi(hex){
+  const h = String(hex || '').replace('#', '');
+  if(h.length !== 6) return '#fff';
+  const [r, g, b] = [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16) / 255)
+    .map(c => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+  return (0.2126 * r + 0.7152 * g + 0.0722 * b) > 0.45 ? '#111' : '#fff';
+}
+function rozetKod(kod){ return String(kod || '').replace(/\s*\(.*\)\s*$/, '').trim() || '•'; }
+
+// Haritadan gelen (isabet katmanı) feature'ları bilgi gruplarına çevirir.
+// İşletmede grup HATTIR (M1 ortak gövdesi hem M1A hem M1B olarak listelenir),
+// projede proje, yapımda kaydın kendisi. Etkin sekmenin grupları önce gelir.
+function hatGruplari(hitFeatures){
+  const groups = new Map();
+  let lines = null, projeler = null;
+  (hitFeatures || []).forEach(hf => {
+    const oid = String(hf.properties?.OBJECTID ?? '');
+    const f = allHatlar.find(x => String(x.properties?.OBJECTID) === oid);
+    if(!f) return;
+    const p = f.properties, tab = p._TAB;
+    if(tab === 'isletme'){
+      lines = lines || getIsletmeLines();
+      lineKeysOf(p).forEach(k => {
+        const l = lines.find(x => x.key === k);
+        if(l && !groups.has('L:' + k)) groups.set('L:' + k, { key:'L:' + k, tab, f, line:l, features:l.features });
+      });
+    } else if(tab === 'proje'){
+      projeler = projeler || getProjeler();
+      const pr = projeler.find(x => x.key === projeId(p));
+      if(pr && !groups.has('P:' + pr.key)) groups.set('P:' + pr.key, { key:'P:' + pr.key, tab, f, pr, features:pr.features.filter(x => x.geometry) });
+    } else if(tab === 'yapim'){
+      if(!groups.has('Y:' + oid)) groups.set('Y:' + oid, { key:'Y:' + oid, tab, f, features:[f] });
+    }
+  });
+  const sira = t => t === activeTab ? -1 : KATMANLAR.indexOf(t);
+  return [...groups.values()].sort((a, b) => sira(a.tab) - sira(b.tab));
+}
+
+function hatTipRowHtml(g, asButton){
+  const sep = '<span class="tip-sep">·</span>';
+  let renk, kod, ad, tag, olcu = [], alt = '';
+  if(g.tab === 'isletme'){
+    const l = g.line;
+    renk = l.renk; kod = l.off ? (l.rep.KOD || '•') : l.kod; ad = l.ad;
+    tag  = l.off ? `<span class="card-tag st-devre">Devre dışı</span>` : `<span class="card-tag st-isletme">İşletmede</span>`;
+    olcu = [fmtKm(l.km), l.ist ? `${l.ist} istasyon` : null];
+    const yil = /^\d{4}/.test(l.ilk) ? l.ilk.slice(0, 4) : '';
+    if(yil && !l.off) alt = `<div class="tip-prog">${esc(yil + ilkAcilisEki(yil))} hizmette</div>`;
+  } else if(g.tab === 'yapim'){
+    const p = g.f.properties, d = String(p.PR_DURUM ?? '');
+    renk = normHex(p.RENK_HEX) || '#9B9B9B'; kod = p.KOD; ad = p.AD || '—';
+    tag  = `<span class="card-tag ${esc(DURUM_CLASS[d] || '')}">${esc(DURUM_LABEL[d] || d)}</span>`;
+    olcu = [p.MESAFE ? fmtKm(p.MESAFE) : null, p.ISTASYON ? `${Math.round(parseFloat(p.ISTASYON) || 0)} istasyon` : null];
+    const pct = p.PR_ILERLEME != null && p.PR_ILERLEME !== '' ? Math.round(parseFloat(p.PR_ILERLEME)) : null;
+    const acilis = fmtTRDate(p.PR_ACILIS) || (String(p.PR_ACILIS || '').trim().replace(/^-$/, ''));
+    const parts = [];
+    if(pct != null && isFinite(pct)) parts.push(`<span class="tip-bar"><i style="width:${Math.max(0, Math.min(100, pct))}%;background:${renk}"></i></span><span class="tip-pct">%${pct}</span>`);
+    if(acilis) parts.push(`<span>Tahmini açılış <b style="color:var(--text);font-weight:600">${esc(acilis)}</b></span>`);
+    if(parts.length) alt = `<div class="tip-prog">${parts.join(sep)}</div>`;
+  } else {
+    const pr = g.pr;
+    renk = normHex(pr.rep.RENK_HEX) || '#9B9B9B'; kod = pr.kod; ad = pr.ad || '—';
+    tag  = `<span class="card-tag st-proje">${esc(pr.asama.ad)}</span>`;
+    olcu = [pr.km ? fmtKm(pr.km) : null];
+    const acilis = fmtTRDate(pr.acilis) || pr.acilis.replace(/^-$/, '');
+    const parts = [pr.kurum !== 'Kurum belirtilmemiş' ? esc(pr.kurum) : null,
+                   acilis ? `Tahmini açılış ${esc(acilis)}` : null].filter(Boolean);
+    if(parts.length) alt = `<div class="tip-prog">${parts.join(sep)}</div>`;
+  }
+  const meta = [tag, ...olcu.filter(Boolean).map(esc)].join(sep);
+  const go = asButton
+    ? `<div class="tip-go">${g.tab === activeTab ? 'Detayı aç' : esc(KATMAN_UZUN[g.tab]) + ' sekmesinde aç'} ›</div>` : '';
+  const tagName = asButton ? 'button' : 'div';
+  return `<${tagName} class="tip-row"${asButton ? ` type="button" data-key="${esc(g.key)}"` : ''}>
+    <span class="tip-badge" style="background:${renk};color:${rozetYazi(renk)}">${esc(rozetKod(kod))}</span>
+    <div class="tip-body">
+      <div class="tip-title">${esc(ad)}</div>
+      <div class="tip-meta">${meta}</div>
+      ${alt}${go}
+    </div>
+  </${tagName}>`;
+}
+// "1989" → "1989'dan beri", "2000" → "2000'den beri" (sayının okunuşuna göre ek)
+function ilkAcilisEki(yil){
+  const n = parseInt(yil, 10);
+  const son = n % 10, onlar = Math.floor(n / 10) % 10;
+  // Son okunan sözcüğün ünlüsü: bir/iki/üç/dört/beş/altı/yedi/sekiz/dokuz, on/yirmi/otuz/…, yüz, bin
+  const birler = ['', 'bir', 'iki', 'üç', 'dört', 'beş', 'altı', 'yedi', 'sekiz', 'dokuz'];
+  const onluk  = ['', 'on', 'yirmi', 'otuz', 'kırk', 'elli', 'altmış', 'yetmiş', 'seksen', 'doksan'];
+  const soz = son ? birler[son] : onlar ? onluk[onlar] : (Math.floor(n / 100) % 10 ? 'yüz' : 'bin');
+  const v = (soz.match(/[aıoueiöü]/g) || ['e']).pop();
+  const kalin = 'aıou'.includes(v);
+  const sert = /[çfhkpsşt]$/.test(soz);
+  return `'${sert ? 't' : 'd'}${kalin ? 'a' : 'e'}n beri`;
+}
+
+function showHatTip(groups, point, dokunma){
+  const shown = groups.slice(0, TIP_MAX);
+  const key = (dokunma ? 'd|' : 'h|') + shown.map(g => g.key).join(',');
+  if(key !== hatTipKey){
+    hatTipKey = key;
+    let foot = '';
+    if(!dokunma){
+      const first = shown[0];
+      if(groups.length > TIP_MAX) foot = `+${groups.length - TIP_MAX} hat daha`;
+      else if(first && first.tab !== activeTab) foot = `Tıklayınca ${KATMAN_UZUN[first.tab].toLocaleLowerCase('tr-TR')} sekmesinde açılır`;
+    }
+    hatTipEl.innerHTML = shown.map(g => hatTipRowHtml(g, dokunma)).join('')
+      + (foot ? `<div class="tip-foot">${esc(foot)}</div>` : '');
+    hatTipEl.classList.toggle('dokunma', !!dokunma);
+    if(dokunma){
+      hatTipEl.querySelectorAll('button.tip-row').forEach(btn => {
+        btn.addEventListener('click', ev => {
+          ev.stopPropagation();
+          const g = shown.find(x => x.key === btn.dataset.key);
+          hideHatTip();
+          if(g) openGroup(g);
+        });
+      });
+    }
+    // Vurgu: grubun tüm parçaları (ör. M2'nin bütün etapları)
+    if(map.getSource(SRC_HAT_HOVER)){
+      map.getSource(SRC_HAT_HOVER).setData({ type:'FeatureCollection',
+        features: shown.flatMap(g => g.features).filter(f => f.geometry && modOf(f.properties._TAB) !== 'gizli') });
+    }
+  }
+  hatTipEl.hidden = false;
+  // Konum: imlecin sağ altı; kenara taşarsa ters tarafa döner
+  const mc = document.getElementById('map-container');
+  const W = mc.clientWidth - (mc.classList.contains('detail-open') && !isMobile() ? 352 : 0);
+  const H = mc.clientHeight;
+  const w = hatTipEl.offsetWidth, h = hatTipEl.offsetHeight;
+  const gap = dokunma ? 10 : 14;
+  let x = point.x + gap, y = point.y + gap;
+  if(x + w > W - 8) x = point.x - gap - w;
+  if(y + h > H - 8) y = point.y - gap - h;
+  x = Math.max(8, Math.min(x, W - w - 8));
+  y = Math.max(8, Math.min(y, H - h - 8));
+  hatTipEl.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+}
+function hideHatTip(){
+  if(!hatTipEl) return;
+  hatTipEl.hidden = true;
+  hatTipKey = '';
+  if(mapReady && map.getSource(SRC_HAT_HOVER)){
+    map.getSource(SRC_HAT_HOVER).setData({ type:'FeatureCollection', features:[] });
+  }
+}
+
+// Bir bilgi grubunu açar: etkin sekmedeyse doğrudan seçer, değilse sekmesine geçer.
+function openGroup(g){
+  if(g.tab === activeTab){
+    if(g.tab === 'isletme'){
+      // Hat görünümünde hat seçilir; kronolojide tıklanan etap (eski davranış)
+      if(isLineView()) selectLine(g.line.key);
+      else             onCardSelect(g.f);
+    } else if(g.tab === 'proje'){
+      onCardSelect(g.pr.repF);
+    } else {
+      onCardSelect(g.f);
+    }
+  } else if(g.tab === 'isletme'){
+    // Hat (ör. ortak gövdeden M1B) doğru seçilsin diye temsil eden etap verilir
+    goToHat(g.line.features.find(f => String(f.properties?.KOD) === g.line.key) || g.line.features[0] || g.f);
+  } else {
+    goToHat(g.tab === 'proje' ? g.pr.repF : g.f);
+  }
+  if(isMobile()) applyMobileView('map');
+}
+
+// ═════════════════════════════════════════════════════
+//  HARİTA ETKİLEŞİMİ → BİLGİ KUTUCUĞU + HAT SEÇİMİ
 // ═════════════════════════════════════════════════════
 function attachMapClickHandlers(){
-  // Sadece aktif sekmedeki hatlar tıklanabilir; pasif hatlar arka plan.
-  // Tıklama, ince görünür çizgi yerine geniş görünmez 'active-lines-hit' katmanına
-  // bağlıdır — böylece dokunma isabet alanı belirgin biçimde genişler.
-  map.on('click', 'active-lines-hit', e => {
-    const feature = e.features && e.features[0];
-    if(!feature) return;
-
-    const clickedObjId = String(feature.properties?.OBJECTID ?? '');
-    const activeHatlar = getHatlarForTab(activeTab);
-    const matchedFeature = activeHatlar.find(f => String(f.properties?.OBJECTID) === clickedObjId);
-
-    if(!matchedFeature) return;
-
-    onCardSelect(matchedFeature);
-
-    // Mobilde harita görünümüne kaydır
-    if(isMobile()) applyMobileView('map');
+  // Hover ve tıklama, ince görünür çizgi yerine görünür tüm hatları kapsayan geniş,
+  // görünmez 'lines-hit' katmanına bağlıdır — isabet alanı belirgin biçimde genişler.
+  map.on('mousemove', 'lines-hit', e => {
+    if(HOVER_YOK.matches) return;
+    const groups = hatGruplari(e.features);
+    if(!groups.length){ hideHatTip(); return; }
+    map.getCanvas().style.cursor = 'pointer';
+    showHatTip(groups, e.point, false);
   });
+  map.on('mouseleave', 'lines-hit', () => {
+    map.getCanvas().style.cursor = '';
+    if(!HOVER_YOK.matches) hideHatTip();
+  });
+  map.on('dragstart', hideHatTip);
+  map.on('zoomstart', hideHatTip);
 
-  // Hover'da işaretçi (geniş dokunma alanı üzerinde)
-  map.on('mouseenter', 'active-lines-hit', () => { map.getCanvas().style.cursor = 'pointer'; });
-  map.on('mouseleave', 'active-lines-hit', () => { map.getCanvas().style.cursor = ''; });
+  // Tıklama: etkin sekmedeki hat doğrudan seçilir (eski davranış). Başka sekmedeki
+  // hat masaüstünde sekmesine geçirir; dokunmatik cihazda önce bilgi kutucuğu açılır,
+  // kutucuktaki satıra dokununca o hattın sekmesine geçilir.
+  map.on('click', e => {
+    const hits = map.getLayer('lines-hit')
+      ? map.queryRenderedFeatures(e.point, { layers:['lines-hit'] }) : [];
+    const groups = hatGruplari(hits);
+    if(!groups.length){ hideHatTip(); return; }
+    const first = groups[0];
+    if(first.tab === activeTab){
+      hideHatTip();
+      openGroup(first);
+      return;
+    }
+    if(HOVER_YOK.matches){
+      showHatTip(groups, e.point, true);
+      return;
+    }
+    hideHatTip();
+    openGroup(first);
+  });
 }
 
 // ═════════════════════════════════════════════════════
