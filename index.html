@@ -2412,8 +2412,25 @@ function computeGlobalBounds(){
     for(const c of flatCoords(f.geometry)){ all.push(c); byIl.get(il).push(c); }
   });
   globalBounds = coordsToBbox(all);
+  // İlin görünümü: kendi hatları + bağlantılı hatların ile yakın (≤ 6 km) kısımları.
+  // Böylece İstanbul görünümüne Darıca–Gebze metrosu girer, ama Kocaeli görünümü
+  // Marmaray yüzünden Kadıköy'e kadar genişlemez.
+  const YAKIN_KM = 6;
   ilBounds = new Map();
-  for(const [il, cs] of byIl){ const b = coordsToBbox(cs); if(b) ilBounds.set(il, b); }
+  for(const [il, cs] of byIl){
+    const own = coordsToBbox(cs);
+    if(!own) continue;
+    const [[w,s],[e,n]] = own;
+    const kx = Math.cos((s + n) / 2 * Math.PI / 180) * 111.32;
+    const yakin = c => Math.hypot(Math.max(0, w - c[0], c[0] - e) * kx,
+                                  Math.max(0, s - c[1], c[1] - n) * 110.54) <= YAKIN_KM;
+    const ek = [];
+    allHatlar.forEach(f => {
+      if(hatAnaIl(f.properties) === il || !hatIlleri(f.properties).includes(il)) return;
+      for(const c of flatCoords(f.geometry)) if(yakin(c)) ek.push(c);
+    });
+    ilBounds.set(il, ek.length ? coordsToBbox(cs.concat(ek)) : own);
+  }
 }
 
 // Haritanın gezinme sınırı: tüm illerin hatlarını kapsayan kutu + cömert pay.
