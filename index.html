@@ -561,7 +561,7 @@ body.detail-open #tab-bar { right: 352px; }
 #lejant {
   position: absolute; left: 12px; bottom: 12px;
   z-index: 110;
-  width: 276px;
+  width: 252px;
   background: rgba(255,255,255,.94);
   backdrop-filter: blur(6px);
   border: 1px solid rgba(0,0,0,.1);
@@ -587,40 +587,55 @@ body.detail-open #tab-bar { right: 352px; }
 }
 #lejant.kapali #lejant-toggle .lj-ok { transform: translateY(2px) rotate(-135deg); }
 @media (hover: hover) { #lejant-toggle:hover .lj-baslik { color: var(--accent); } }
-#lejant-body { padding: 2px 6px 6px; border-top: 1px solid var(--border); }
+#lejant-body { padding: 4px 5px 5px; border-top: 1px solid var(--border); }
 #lejant.kapali #lejant-body { display: none; }
 #lejant.kapali { width: auto; }
-.lj-row {
-  display: flex; align-items: center; gap: 8px;
-  height: 32px; padding: 0 2px 0 5px;
+.lj-row, .lj-silik {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; min-height: 40px; padding: 5px 8px 5px 7px;
+  border: none; border-radius: 7px; background: transparent;
+  font-family: var(--font); text-align: left; color: var(--text);
+  cursor: pointer;
+  transition: background .12s;
 }
-.lj-row + .lj-row { border-top: 1px solid var(--surface-2); }
+.lj-row:hover, .lj-silik:hover { background: var(--surface-2); }
+.lj-row.kilitli { cursor: default; }
+.lj-row.kilitli:hover { background: transparent; }
 .lj-row svg.lj-ornek { width: 24px; height: 6px; flex-shrink: 0; overflow: visible; color: var(--text); transition: opacity .15s; }
-.lj-row[data-mod="soluk"] svg.lj-ornek { opacity: .35; }
-.lj-row[data-mod="gizli"] svg.lj-ornek { opacity: .12; }
-.lj-ad { flex: 1; min-width: 0; font-size: 11.5px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.lj-row[data-mod="gizli"] .lj-ad { color: var(--text-dim); }
-.lj-etkin {
-  font-size: 9.5px; font-weight: 700; color: var(--accent);
-  background: #FEF2F2; border-radius: 4px; padding: 2px 6px;
-  letter-spacing: .02em;
-}
-/* Tam / soluk / gizli seçimi: üç bölmeli küçük seçici */
-.lj-seg {
-  display: flex; gap: 1px; padding: 2px;
-  background: var(--surface-2); border-radius: 7px;
-}
-.lj-seg button {
-  height: 22px; padding: 0 7px;
+/* İşaretsiz satırın çizgi örneği haritadaki gibi silik ya da neredeyse görünmez */
+.lj-row:not(.acik) svg.lj-ornek { opacity: .35; }
+#lejant-body[data-silik="0"] .lj-row:not(.acik) svg.lj-ornek { opacity: .12; }
+#lejant-body[data-silik="0"] .lj-row:not(.acik) .lj-ad { color: var(--text-dim); }
+.lj-metin { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.lj-ad  { font-size: 12px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lj-alt { font-size: 10px; font-weight: 500; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Onay kutusu: işaretli = vurgu rengi; kilitli (seçili sekme) = gri zemin + kilit */
+.lj-kutu {
+  width: 18px; height: 18px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  border: none; border-radius: 5px; background: transparent;
-  font-family: var(--font); font-size: 10px; font-weight: 600;
-  color: var(--text-dim); cursor: pointer;
-  transition: background .12s, color .12s, box-shadow .12s;
+  border: 1.5px solid var(--border-2); border-radius: 5px;
+  background: #fff; color: #fff;
+  transition: background .12s, border-color .12s;
 }
-.lj-seg button:hover { color: var(--text); }
-.lj-seg button[aria-checked="true"] { background: #fff; color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.14); }
-.lj-not { padding: 5px 5px 1px; font-size: 9.5px; font-weight: 500; color: var(--text-dim); line-height: 1.35; }
+.lj-kutu svg { width: 12px; height: 12px; }
+.lj-row.acik .lj-kutu { background: var(--accent); border-color: var(--accent); }
+.lj-row.kilitli .lj-kutu { background: var(--surface-2); border-color: var(--border); color: var(--text-dim); }
+.lj-row.kilitli .lj-kutu svg { width: 11px; height: 11px; }
+/* Silik gösterim anahtarı */
+.lj-silik { margin-top: 4px; border-top: 1px solid var(--border); border-radius: 0 0 7px 7px; padding-top: 8px; }
+.lj-silik .lj-ad { font-weight: 500; }
+.lj-anahtar {
+  position: relative; width: 30px; height: 17px; flex-shrink: 0;
+  border-radius: 9px; background: var(--border-2);
+  transition: background .15s;
+}
+.lj-anahtar i {
+  position: absolute; top: 2px; left: 2px; width: 13px; height: 13px;
+  border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.2);
+  transition: left .15s;
+}
+.lj-silik[aria-checked="true"] .lj-anahtar { background: var(--accent); }
+.lj-silik[aria-checked="true"] .lj-anahtar i { left: 15px; }
 
 /* ──── HAT BİLGİ KUTUCUĞU (hover / dokunma) ──── */
 #hat-tip {
@@ -1450,11 +1465,10 @@ a.src-badge:hover { border-color: currentColor; }
   /* Mobilde araçlar sağ üstte kalır; sheet alttan geldiği için kaydırma yok */
   #map-container.detail-open #map-tools { right: 12px; }
   /* Lejant: mobilde alttan açılan detay kartıyla çakışmasın diye sol üstte; varsayılan katlı */
-  #lejant { top: 12px; bottom: auto; width: 290px; max-width: calc(100% - 80px); }
+  #lejant { top: 12px; bottom: auto; width: 262px; max-width: calc(100% - 80px); }
   #lejant.kapali { width: auto; }
   #lejant-toggle { height: 36px; font-size: 12px; }
-  .lj-row { height: 38px; }
-  .lj-seg button { height: 28px; padding: 0 8px; font-size: 10.5px; }
+  .lj-row, .lj-silik { min-height: 46px; }
   #map-container.detail-open #map-credit { right: 8px; }
   #map-container:has(#detail-popup.expanded) #lejant { opacity: 0; pointer-events: none; }
   #hat-tip { max-width: calc(100% - 24px); }
@@ -1575,11 +1589,11 @@ a.src-badge:hover { border-color: currentColor; }
 
       <div id="map-credit" hidden>© Esri, Maxar, Earthstar Geographics</div>
 
-      <!-- Harita lejantı + katman kontrolü: satırlar JS ile çizilir (renderKatmanBar) -->
+      <!-- Harita lejantı + "Haritada göster" kontrolü: satırlar JS ile çizilir (renderKatmanBar) -->
       <div id="lejant">
         <button id="lejant-toggle" type="button" aria-expanded="true" aria-controls="lejant-body">
           <svg class="lj-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
-          <span class="lj-baslik">Hat katmanları</span>
+          <span class="lj-baslik">Haritada göster</span>
           <span class="lj-ok" aria-hidden="true"></span>
         </button>
         <div id="lejant-body" role="group" aria-label="Haritada gösterilen hat katmanları"></div>
@@ -1855,20 +1869,25 @@ const DURUM_CLASS = {
 
 // ──── HARİTA KATMANLARI ────
 // Sekme paneli (liste + kart) yönetir; haritada hangi durumun nasıl görüneceğini
-// haritanın lejant kutusu belirler. Etkin sekme her zaman TAM görünür; diğer iki durumun
-// görünümü kullanıcıya bırakılır: 'soluk' (varsayılan) → 'tam' → 'gizli'.
+// haritanın lejant kutusu ("Haritada göster") belirler. Etkin sekme her zaman TAM
+// görünür; diğer iki durum lejanttan işaretlenirse o da tam görünür. İşaretlenmeyen
+// durumlar tek bir ayara göre ya silik ('soluk', varsayılan) ya da gizli kalır.
 const KATMANLAR    = ['isletme', 'yapim', 'proje'];
 const KATMAN_AD    = { isletme:'İşletme', yapim:'Yapım', proje:'Proje' };
 const KATMAN_UZUN  = { isletme:'İşletmedeki hatlar', yapim:'Yapımı süren hatlar', proje:'Proje aşamasındaki hatlar' };
-const KATMAN_MOD_AD = { tam:'tam görünür', soluk:'soluk', gizli:'gizli' };
 // Çizgi biçimi: işletme ve yapım düz, proje noktalı. line-dasharray çizgi
 // kalınlığı birimindedir; null = düz.
 const KATMAN_DASH  = { isletme:null, yapim:null, proje:[0, 2.5] };
 const KATMAN_CAP   = { isletme:'round', yapim:'round', proje:'round' };
 const SOLUK_OPAK   = 0.32;   // soluk hatların opaklığı (kendi renginde)
 const TAM_EK_KALINLIK = 0.5; // tam görünen hatlar soluklardan biraz kalın çizilir (öne çıksın)
-const katmanMod    = { isletme:'soluk', yapim:'soluk', proje:'soluk' };
-function modOf(tab){ return tab === activeTab ? 'tam' : katmanMod[tab]; }
+const katmanSecili = { isletme:false, yapim:false, proje:false };   // lejantta işaretli olanlar
+let digerSilik     = true;   // işaretlenmeyen durumlar: true = silik, false = gizli
+// Haritadaki görünüm: 'tam' | 'soluk' | 'gizli'
+function modOf(tab){
+  if(tab === activeTab || katmanSecili[tab]) return 'tam';
+  return digerSilik ? 'soluk' : 'gizli';
+}
 // PR_DURUM → sekme anahtarı (eşleşmezse null)
 function tabOfDurum(durum){
   const d = String(durum ?? '');
@@ -2097,6 +2116,7 @@ function setIl(il, opts = {}){
     closeDetailPopup();
   }
   syncIlUI();
+  renderKatmanBar();
   if(opts.render === false) return;
   updateMetrics();
   renderSortBar();
@@ -4688,49 +4708,68 @@ function syncTabUI(){
 // Lejant yalnızca haritayı etkiler; liste ve detay paneli etkin sekmeye bağlı kalır.
 // Satırdaki çizgi örneği haritadaki çizgi biçimiyle aynıdır.
 const LEJANT_AD  = { isletme:'İşletmede', yapim:'Yapım aşamasında', proje:'Proje aşamasında' };
-const LEJANT_MOD = ['tam', 'soluk', 'gizli'];
-const LEJANT_MOD_AD = { tam:'Tam', soluk:'Soluk', gizli:'Gizli' };
 function katmanSampleSvg(t){
   const dash = t === 'proje' ? ' stroke-dasharray="0 4.6"' : '';
-  const cap  = 'round';
-  return `<svg class="lj-ornek" viewBox="0 0 24 6" aria-hidden="true"><line x1="2" y1="3" x2="22" y2="3" stroke="currentColor" stroke-width="2.6" stroke-linecap="${cap}"${dash}/></svg>`;
+  return `<svg class="lj-ornek" viewBox="0 0 24 6" aria-hidden="true"><line x1="2" y1="3" x2="22" y2="3" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"${dash}/></svg>`;
 }
+// Satır altı bilgi: etkin ildeki sayı (üst metriklerle aynı sayım)
+function katmanSayisi(t){
+  if(!allHatlar.length) return '';
+  if(t === 'isletme') return `${getIsletmeLines().filter(l => !l.off && l.own).length} hat`;
+  if(t === 'yapim')   return `${getHatlarForTab('yapim').filter(f => String(f.properties?.PR_DURUM) !== '0' && hatKendi(f.properties)).length} hat`;
+  return `${getProjeler().filter(x => hatKendi(x.rep)).length} proje`;
+}
+const LJ_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="5 12.5 10 17.5 19 7"/></svg>';
+const LJ_KILIT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
 function renderKatmanBar(){
   const body = document.getElementById('lejant-body');
   if(!body) return;
-  body.innerHTML = KATMANLAR.map(t => {
-    const mod = modOf(t);
-    const ctl = t === activeTab
-      ? `<span class="lj-etkin" title="Etkin sekmedeki hatlar haritada her zaman tam görünür">Sekmede</span>`
-      : `<div class="lj-seg" role="radiogroup" aria-label="${esc(KATMAN_UZUN[t])}: haritada görünüm">${LEJANT_MOD.map(m =>
-          `<button type="button" role="radio" data-katman="${t}" data-mod="${m}" aria-checked="${m === mod}"
-             title="Haritada ${esc(KATMAN_MOD_AD[m])}"
-             tabindex="${m === mod ? 0 : -1}">${LEJANT_MOD_AD[m]}</button>`).join('')}</div>`;
-    return `<div class="lj-row" data-katman="${t}" data-mod="${mod}">${katmanSampleSvg(t)}<span class="lj-ad">${esc(LEJANT_AD[t])}</span>${ctl}</div>`;
-  }).join('') + `<div class="lj-not">${window.matchMedia('(hover: none)').matches ? 'Hat bilgisi için hatta dokunun.' : 'Hat bilgisi için hattın üzerine gelin.'}</div>`;
+  const rows = KATMANLAR.map(t => {
+    const kilitli = t === activeTab;
+    const acik = kilitli || katmanSecili[t];
+    const alt = kilitli ? 'Seçili sekme · hep görünür' : katmanSayisi(t);
+    return `<button type="button" class="lj-row${acik ? ' acik' : ''}${kilitli ? ' kilitli' : ''}" data-katman="${t}"
+        role="checkbox" aria-checked="${acik}"${kilitli ? ' aria-disabled="true"' : ''}
+        title="${esc(kilitli ? `${KATMAN_UZUN[t]} seçili sekmede; haritada her zaman görünür`
+                            : `${KATMAN_UZUN[t]} haritada ${acik ? 'öne çıkarılıyor' : (digerSilik ? 'silik' : 'gizli')}`)}">
+        ${katmanSampleSvg(t)}
+        <span class="lj-metin"><span class="lj-ad">${esc(LEJANT_AD[t])}</span>${alt ? `<span class="lj-alt">${esc(alt)}</span>` : ''}</span>
+        <span class="lj-kutu">${kilitli ? LJ_KILIT : acik ? LJ_CHECK : ''}</span>
+      </button>`;
+  }).join('');
+  body.dataset.silik = digerSilik ? '1' : '0';
+  body.innerHTML = rows + `
+    <button type="button" class="lj-silik" role="switch" aria-checked="${digerSilik}">
+      <span class="lj-metin"><span class="lj-ad">Diğer hatları silik göster</span><span class="lj-alt">Kapalıysa yalnız işaretliler görünür</span></span>
+      <span class="lj-anahtar" aria-hidden="true"><i></i></span>
+    </button>`;
 }
-function setKatman(t, mod){
-  if(t === activeTab || !LEJANT_MOD.includes(mod) || katmanMod[t] === mod) return;
-  katmanMod[t] = mod;
+function toggleKatman(t){
+  if(t === activeTab) return;   // etkin sekme her zaman görünür
+  katmanSecili[t] = !katmanSecili[t];
   renderKatmanBar();
   renderMap();
   writeHash();
 }
-// Görünüm seçimi (tıklama + ok tuşlarıyla radyo grubu gezinmesi). #lejant-body kalıcı
-// olduğundan yeniden çizimde dinleyici kaybolmaz.
+function toggleDigerSilik(){
+  digerSilik = !digerSilik;
+  renderKatmanBar();
+  renderMap();
+  writeHash();
+}
+// #lejant-body kalıcı olduğundan yeniden çizimde dinleyici kaybolmaz.
+// Yeniden çizimden sonra klavye odağı aynı satırda kalsın diye odak geri verilir.
 document.getElementById('lejant-body').addEventListener('click', e => {
-  const b = e.target.closest('.lj-seg button');
-  if(b) setKatman(b.dataset.katman, b.dataset.mod);
-});
-document.getElementById('lejant-body').addEventListener('keydown', e => {
-  const b = e.target.closest('.lj-seg button');
-  if(!b || !['ArrowRight','ArrowLeft','ArrowDown','ArrowUp'].includes(e.key)) return;
-  e.preventDefault();
-  const i = LEJANT_MOD.indexOf(b.dataset.mod);
-  const d = (e.key === 'ArrowRight' || e.key === 'ArrowDown') ? 1 : -1;
-  const m = LEJANT_MOD[(i + d + LEJANT_MOD.length) % LEJANT_MOD.length];
-  setKatman(b.dataset.katman, m);
-  document.querySelector(`.lj-seg button[data-katman="${b.dataset.katman}"][data-mod="${m}"]`)?.focus();
+  const row = e.target.closest('.lj-row');
+  const sw  = e.target.closest('.lj-silik');
+  if(row){
+    const t = row.dataset.katman;
+    toggleKatman(t);
+    document.querySelector(`#lejant-body .lj-row[data-katman="${t}"]`)?.focus({ preventScroll:true });
+  } else if(sw){
+    toggleDigerSilik();
+    document.querySelector('#lejant-body .lj-silik')?.focus({ preventScroll:true });
+  }
 });
 // Katlama: tercih bu tarayıcıda hatırlanır; ilk açılışta mobilde katlı, masaüstünde açık
 (function initLejantToggle(){
@@ -4750,19 +4789,19 @@ document.getElementById('lejant-body').addEventListener('keydown', e => {
     try { localStorage.setItem(KEY, kapali ? '1' : '0'); } catch(_){}
   });
 })();
-// Adres biçimi: varsayılandan (soluk) farklı katmanlar; tam → "isletme", gizli → "-proje"
-//   #tab=yapim&sort=acilis&katman=isletme,-proje
+// Adres biçimi: lejantta işaretli durumlar; diğerleri gizliyse "-diger"
+//   #tab=yapim&sort=acilis&katman=isletme,-diger
 function katmanHashPart(){
-  const parts = KATMANLAR.filter(t => katmanMod[t] !== 'soluk')
-    .map(t => katmanMod[t] === 'gizli' ? '-' + t : t);
+  const parts = KATMANLAR.filter(t => katmanSecili[t]);
+  if(!digerSilik) parts.push('-diger');
   return parts.length ? 'katman=' + parts.join(',') : '';
 }
 function applyKatmanHash(raw){
-  KATMANLAR.forEach(t => { katmanMod[t] = 'soluk'; });
+  KATMANLAR.forEach(t => { katmanSecili[t] = false; });
+  digerSilik = true;
   String(raw || '').split(',').map(s => s.trim()).filter(Boolean).forEach(s => {
-    const gizli = s.startsWith('-');
-    const t = gizli ? s.slice(1) : s;
-    if(KATMANLAR.includes(t)) katmanMod[t] = gizli ? 'gizli' : 'tam';
+    if(s === '-diger') digerSilik = false;
+    else if(KATMANLAR.includes(s)) katmanSecili[s] = true;   // eski "-proje" biçimi yok sayılır
   });
   renderKatmanBar();
 }
