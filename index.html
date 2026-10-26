@@ -287,12 +287,6 @@ html, body {
 .card-tag  { font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 4px; }
 .card-chip { font-size: 10px; color: var(--text-muted); display: flex; align-items: center; gap: 2px; }
 .chip-sep  { color: var(--border-2); }
-/* Başka ilin ağından gelen (bağlantılı) hatlarda ana ilin adı */
-.card-il {
-  font-size: 9.5px; font-weight: 700; letter-spacing: .02em;
-  padding: 1px 6px; border-radius: 4px;
-  color: var(--text-muted); background: var(--surface-2); border: 1px solid var(--border);
-}
 
 /* Durum rozeti renkleri */
 .st-isletme { background: #ECFDF5; color: #065F46; }
@@ -1798,10 +1792,6 @@ function hatGorunur(f, il = activeIl){ return hatIlleri(f.properties).includes(i
 function hatKendi(p, il = activeIl){ return hatAnaIl(p) === il; }
 function durakGorunur(f, il = activeIl){ return (f.properties?._ILS || [VARSAYILAN_IL]).includes(il); }
 function durakKendi(f, il = activeIl){ return (f.properties?._OWN_ILS || [VARSAYILAN_IL]).includes(il); }
-// Bağlantılı (başka ilin ağından gelen) kayıtlarda kartta gösterilen il etiketi
-function ilChipHtml(p){
-  return hatKendi(p) ? '' : `<span class="card-il" title="${esc(hatAnaIl(p))} ağına ait bağlantılı hat">${esc(hatAnaIl(p))}</span>`;
-}
 
 // Nokta–doğru parçası uzaklığı (metre, yerel düzlem yaklaşımı)
 function pointSegDistM(p, a, b){
@@ -4105,7 +4095,7 @@ function renderIsletmeList(list){
         </div>
         <div class="card-info">
           <div class="card-name">${esc(l.ad)}</div>
-          <div class="card-meta">${tag}${ilChipHtml(l.rep)}${chips}</div>
+          <div class="card-meta">${tag}${chips}</div>
         </div>
         <div class="card-line-years" title="İlk açılış – son uzatma">
           ${y1 && y2 && y1 !== y2 ? `${y1}–${y2}` : esc(y1 || '—')}
@@ -4173,14 +4163,16 @@ function renderProjeList(list){
     const kurumLogo = p.PR_KURUM_LOGO
       ? `<img src="${esc(p.PR_KURUM_LOGO)}" alt="" onerror="this.style.display='none'" style="width:13px;height:13px;object-fit:contain">`
       : '';
+    // Bağlantılı grupta başlık ili söyler; normalde grup başlığının taşıdığı bilgi
+    // (Aşama sıralamasında aşama, Kurum sıralamasında kurum) kartta düz metin olarak yazılır.
     const meta = [projeTuru(pr), (key !== 'kurum' || inLinked) ? pr.kurum : null,
-                  !ortakAcilis && pr.acilis ? (fmtTRDate(pr.acilis) || pr.acilis) : null]
+                  !ortakAcilis && pr.acilis ? (fmtTRDate(pr.acilis) || pr.acilis) : null,
+                  (key === 'asama' && inLinked) ? pr.asama.ad : null]
       .filter(Boolean)
       .map((c,i,arr) => `<span class="card-chip">${esc(c)}</span>${i < arr.length-1 ? '<span class="chip-sep">·</span>' : ''}`)
       .join('');
-    // Aşama görünümünde başlık aşamayı zaten söyler; kartta tekrarlanmaz
-    // (bağlantılı grupta başlık il olduğundan aşama kartta gösterilir)
-    const stage = (key === 'asama' && !inLinked) ? ''
+    // Aşama görünümünde aşama çubuğu hiçbir kartta gösterilmez (başlık ya da meta söyler)
+    const stage = key === 'asama' ? ''
       : `<div class="proje-stage">${projeBarHtml(pr.asama)}<span>${esc(pr.asama.ad)}</span></div>`;
 
     const card = document.createElement('div');
@@ -4196,7 +4188,7 @@ function renderProjeList(list){
         </div>
         <div class="card-info">
           <div class="card-name">${esc(pr.ad || '—')}</div>
-          <div class="card-meta">${ilChipHtml(p)}${meta}</div>
+          <div class="card-meta">${meta}</div>
         </div>
         <div class="card-line-years">${esc(fmtKm(pr.km))}<small>${pr.ist ? `${Math.round(pr.ist)} istasyon` : ''}</small></div>
       </div>
@@ -4343,7 +4335,7 @@ function renderCards(){
           <div class="card-name">${esc(p.AD||'—')}</div>
           <div class="card-meta">
             <span class="card-tag ${esc(DURUM_CLASS[durum]||'')}">${esc(DURUM_LABEL[durum]||durum)}</span>
-            ${ilChipHtml(p)}${chips}
+            ${chips}
           </div>
         </div>
       </div>
