@@ -542,61 +542,85 @@ body.detail-open #tab-bar { right: 352px; }
 }
 .map-tool-btn.active:hover { background: var(--accent); color: #fff; }
 
-/* Uydu altlığı kaynak künyesi — yalnızca uydu görünümünde görünür */
+/* Uydu altlığı kaynak künyesi — yalnızca uydu görünümünde görünür.
+   Sol alt köşede lejant durduğu için sağ altta; detay paneli açıkken panelin solunda. */
 #map-credit {
-  position: absolute; left: 8px; bottom: 6px; z-index: 120;
+  position: absolute; right: 8px; bottom: 6px; z-index: 120;
   font-size: 9px; color: #fff; font-family: var(--font);
   background: rgba(0,0,0,.42); padding: 2px 7px; border-radius: 5px;
   pointer-events: none; letter-spacing: .01em;
-}
-#map-credit[hidden] { display: none; }
-
-/* ──── HARİTA KATMAN ÇİPLERİ (sekme çubuğunun altında) ──── */
-/* Etkin sekme haritada her zaman tam görünür; diğer iki durum soluk → tam → gizli
-   arasında döner. Çipteki çizgi örneği aynı zamanda haritanın lejantıdır. */
-#katman-bar {
-  position: absolute;
-  top: 64px; left: 0; right: 0;
-  display: flex; justify-content: center; align-items: center;
-  z-index: 110;
-  pointer-events: none;
   transition: right .3s cubic-bezier(.4,0,.2,1);
 }
-#map-container.detail-open #katman-bar { right: 352px; }
-.katman-group {
-  pointer-events: all;
-  display: flex; align-items: center; gap: 2px;
-  padding: 3px;
-  background: rgba(255,255,255,.88);
+#map-container.detail-open #map-credit { right: 360px; }
+#map-credit[hidden] { display: none; }
+
+/* ──── HARİTA LEJANTI + KATMAN KONTROLÜ (sol alt) ──── */
+/* Her satır bir durumu anlatır: çizgi biçimi örneği + ad + görünürlük seçimi.
+   Etkin sekmenin satırı her zaman tam görünür ("Sekmede"); diğer iki durum için
+   tam / soluk / gizli seçilir. Başlığa tıklayınca kutu katlanır. */
+#lejant {
+  position: absolute; left: 12px; bottom: 12px;
+  z-index: 110;
+  width: 276px;
+  background: rgba(255,255,255,.94);
   backdrop-filter: blur(6px);
-  border: 1px solid var(--border-2);
-  border-radius: 99px;
-  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  border: 1px solid rgba(0,0,0,.1);
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.08);
+  font-family: var(--font);
+  overflow: hidden;
 }
-.katman-lbl {
-  font-size: 10px; font-weight: 600; color: var(--text-dim);
-  padding: 0 6px 0 8px; letter-spacing: .02em;
+#lejant-toggle {
+  display: flex; align-items: center; gap: 7px;
+  width: 100%; height: 34px; padding: 0 10px 0 11px;
+  border: none; background: transparent; cursor: pointer;
+  font-family: var(--font); font-size: 11px; font-weight: 700; color: var(--text);
+  letter-spacing: .01em;
 }
-.katman-chip {
-  display: inline-flex; align-items: center; gap: 6px;
-  height: 24px; padding: 0 10px 0 8px;
-  border: 1px solid transparent; border-radius: 99px;
-  background: transparent;
-  font-family: var(--font); font-size: 11px; font-weight: 600;
-  color: var(--text-muted);
-  cursor: pointer; white-space: nowrap; user-select: none;
-  transition: background .12s, color .12s, border-color .12s;
+#lejant-toggle .lj-ikon { width: 14px; height: 14px; color: var(--text-muted); flex-shrink: 0; }
+#lejant-toggle .lj-baslik { flex: 1; text-align: left; }
+#lejant-toggle .lj-ok {
+  width: 6px; height: 6px; margin-right: 3px;
+  border-right: 1.8px solid var(--text-muted); border-bottom: 1.8px solid var(--text-muted);
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform .2s;
 }
-.katman-chip svg { width: 20px; height: 6px; flex-shrink: 0; overflow: visible; }
-.katman-chip:hover { background: var(--surface-2); color: var(--text); }
-.katman-chip[data-mod="soluk"] svg { opacity: .35; }
-.katman-chip[data-mod="tam"] { background: #fff; color: var(--text); border-color: var(--text); }
-.katman-chip[data-mod="gizli"] { color: var(--text-dim); }
-.katman-chip[data-mod="gizli"] .katman-ad { text-decoration: line-through; text-decoration-thickness: 1.5px; }
-.katman-chip[data-mod="gizli"] svg { opacity: .15; }
-/* Etkin sekmenin çipi: değiştirilemez, sekmeyle aynı vurgu */
-.katman-chip.etkin { border-color: var(--accent); color: var(--accent); cursor: default; }
-.katman-chip.etkin:hover { background: #fff; color: var(--accent); }
+#lejant.kapali #lejant-toggle .lj-ok { transform: translateY(2px) rotate(-135deg); }
+@media (hover: hover) { #lejant-toggle:hover .lj-baslik { color: var(--accent); } }
+#lejant-body { padding: 2px 6px 6px; border-top: 1px solid var(--border); }
+#lejant.kapali #lejant-body { display: none; }
+#lejant.kapali { width: auto; }
+.lj-row {
+  display: flex; align-items: center; gap: 8px;
+  height: 32px; padding: 0 2px 0 5px;
+}
+.lj-row + .lj-row { border-top: 1px solid var(--surface-2); }
+.lj-row svg.lj-ornek { width: 24px; height: 6px; flex-shrink: 0; overflow: visible; color: var(--text); transition: opacity .15s; }
+.lj-row[data-mod="soluk"] svg.lj-ornek { opacity: .35; }
+.lj-row[data-mod="gizli"] svg.lj-ornek { opacity: .12; }
+.lj-ad { flex: 1; min-width: 0; font-size: 11.5px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lj-row[data-mod="gizli"] .lj-ad { color: var(--text-dim); }
+.lj-etkin {
+  font-size: 9.5px; font-weight: 700; color: var(--accent);
+  background: #FEF2F2; border-radius: 4px; padding: 2px 6px;
+  letter-spacing: .02em;
+}
+/* Tam / soluk / gizli seçimi: üç bölmeli küçük seçici */
+.lj-seg {
+  display: flex; gap: 1px; padding: 2px;
+  background: var(--surface-2); border-radius: 7px;
+}
+.lj-seg button {
+  height: 22px; padding: 0 7px;
+  display: flex; align-items: center; justify-content: center;
+  border: none; border-radius: 5px; background: transparent;
+  font-family: var(--font); font-size: 10px; font-weight: 600;
+  color: var(--text-dim); cursor: pointer;
+  transition: background .12s, color .12s, box-shadow .12s;
+}
+.lj-seg button:hover { color: var(--text); }
+.lj-seg button[aria-checked="true"] { background: #fff; color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.14); }
+.lj-not { padding: 5px 5px 1px; font-size: 9.5px; font-weight: 500; color: var(--text-dim); line-height: 1.35; }
 
 /* ──── HAT BİLGİ KUTUCUĞU (hover / dokunma) ──── */
 #hat-tip {
@@ -1425,13 +1449,14 @@ a.src-badge:hover { border-color: currentColor; }
   #detail-head { padding-top: 4px; }        /* tutamaç zaten üstte boşluk bırakıyor */
   /* Mobilde araçlar sağ üstte kalır; sheet alttan geldiği için kaydırma yok */
   #map-container.detail-open #map-tools { right: 12px; }
-  /* Katman çipleri: mobilde sekme şeridi haritanın dışında; çipler haritanın sol üstünde */
-  #katman-bar, #map-container.detail-open #katman-bar { top: 12px; left: 12px; right: 68px; justify-content: flex-start; }
-  .katman-lbl { display: none; }
-  .katman-chip { height: 30px; padding: 0 9px 0 7px; font-size: 11px; gap: 5px; }
-  .katman-chip svg { width: 16px; }
-  #map-container:has(#detail-popup.expanded) #katman-bar { opacity: 0; pointer-events: none; }
-  #map-container:has(#detail-popup.expanded) .katman-group { pointer-events: none; }
+  /* Lejant: mobilde alttan açılan detay kartıyla çakışmasın diye sol üstte; varsayılan katlı */
+  #lejant { top: 12px; bottom: auto; width: 290px; max-width: calc(100% - 80px); }
+  #lejant.kapali { width: auto; }
+  #lejant-toggle { height: 36px; font-size: 12px; }
+  .lj-row { height: 38px; }
+  .lj-seg button { height: 28px; padding: 0 8px; font-size: 10.5px; }
+  #map-container.detail-open #map-credit { right: 8px; }
+  #map-container:has(#detail-popup.expanded) #lejant { opacity: 0; pointer-events: none; }
   #hat-tip { max-width: calc(100% - 24px); }
   /* Sheet tam ekrana genişleyince harita araçları haritayı zaten kapatan kartın
      üstünde asılı kalmasın; peek durumunda ise görünür kalırlar. */
@@ -1550,11 +1575,14 @@ a.src-badge:hover { border-color: currentColor; }
 
       <div id="map-credit" hidden>© Esri, Maxar, Earthstar Geographics</div>
 
-      <!-- Haritadaki hat katmanları: çipler JS ile çizilir (renderKatmanBar) -->
-      <div id="katman-bar">
-        <div class="katman-group" role="group" aria-label="Haritada gösterilen hat katmanları">
-          <span class="katman-lbl" aria-hidden="true">Haritada</span>
-        </div>
+      <!-- Harita lejantı + katman kontrolü: satırlar JS ile çizilir (renderKatmanBar) -->
+      <div id="lejant">
+        <button id="lejant-toggle" type="button" aria-expanded="true" aria-controls="lejant-body">
+          <svg class="lj-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+          <span class="lj-baslik">Hat katmanları</span>
+          <span class="lj-ok" aria-hidden="true"></span>
+        </button>
+        <div id="lejant-body" role="group" aria-label="Haritada gösterilen hat katmanları"></div>
       </div>
 
       <!-- Hat bilgi kutucuğu: hover (masaüstü) / dokunma (mobil) -->
@@ -1827,13 +1855,12 @@ const DURUM_CLASS = {
 
 // ──── HARİTA KATMANLARI ────
 // Sekme paneli (liste + kart) yönetir; haritada hangi durumun nasıl görüneceğini
-// katman çipleri belirler. Etkin sekme her zaman TAM görünür; diğer iki durumun
+// haritanın lejant kutusu belirler. Etkin sekme her zaman TAM görünür; diğer iki durumun
 // görünümü kullanıcıya bırakılır: 'soluk' (varsayılan) → 'tam' → 'gizli'.
 const KATMANLAR    = ['isletme', 'yapim', 'proje'];
 const KATMAN_AD    = { isletme:'İşletme', yapim:'Yapım', proje:'Proje' };
 const KATMAN_UZUN  = { isletme:'İşletmedeki hatlar', yapim:'Yapımı süren hatlar', proje:'Proje aşamasındaki hatlar' };
 const KATMAN_MOD_AD = { tam:'tam görünür', soluk:'soluk', gizli:'gizli' };
-const KATMAN_SIRA  = { soluk:'tam', tam:'gizli', gizli:'soluk' };   // çipe tıklayınca sonraki durum
 // Çizgi biçimi durumu kodlar (renkten bağımsız): işletme düz, yapım uzun kesikli,
 // proje noktalı. line-dasharray çizgi kalınlığı birimindedir; null = düz.
 const KATMAN_DASH  = { isletme:null, yapim:[5, 1.2], proje:[0, 2.5] };
@@ -2989,7 +3016,7 @@ function renderMap(){
 
   const activeHatlar   = getHatlarForTab(activeTab);
   const activeDuraklar = getDuraklarForTab(activeTab);
-  // Katman çiplerine göre: tam görünen durumlar (etkin sekme dahil) ve soluk olanlar.
+  // Lejanttaki seçime göre: tam görünen durumlar (etkin sekme dahil) ve soluk olanlar.
   // Gizli durumlar hiçbir kaynağa girmez.
   const tamTabs   = KATMANLAR.filter(t => modOf(t) === 'tam');
   const solukTabs = KATMANLAR.filter(t => modOf(t) === 'soluk');
@@ -3030,7 +3057,7 @@ function renderMap(){
   hideHatTip();
 
   // ──── Yapım hattı ikon etiketleri ────
-  // Yapım katmanı tam görünürken (etkin sekme ya da çiple tam'a alınmış), IKON_URL'i
+  // Yapım katmanı tam görünürken (etkin sekme ya da lejanttan tam'a alınmış), IKON_URL'i
   // olan her hat için TEK bir Point etiketi. Anchor, hattın orta bandında
   // istasyonlardan en uzak nokta olarak seçilir (istasyon noktası/adı etiketiyle
   // çakışmaz). Seçili hat da dahildir (kaynak seçimden bağımsız beslenir → seçimde
@@ -3075,13 +3102,13 @@ function renderMap(){
 function fitGlobalBounds(animated){
   const b = ilBounds.get(activeIl) || globalBounds;
   if(!b || !mapReady) return;
-  // Masaüstünde il seçici + sekme şeridi + katman çipleri haritanın üstünde yüzer (≈ 104 px);
-  // en kuzeydeki hat (ör. M11 havalimanı ucu) bunların altında kalmasın diye üstte o kadar pay
-  // bırakılır. Sağda harita araçları sütunu için de pay vardır. Mobilde sekme şeridi haritanın
-  // dışındadır; yalnızca katman çipleri için üstte pay bırakılır.
+  // Masaüstünde il seçici + sekme şeridi haritanın üstünde yüzer (≈ 92 px); en kuzeydeki
+  // hat (ör. M11 havalimanı ucu) şeridin altında kalmasın diye üstte o kadar pay bırakılır.
+  // Sağda harita araçları sütunu için de pay vardır. Mobilde sekme şeridi haritanın
+  // dışındadır; yalnızca sol üstteki lejant düğmesi için üstte pay bırakılır.
   const padding = isMobile()
     ? { top:54, bottom:40, left:30, right:64 }
-    : { top:104, bottom:40, left:40, right:64 };
+    : { top:92, bottom:40, left:40, right:64 };
   map.fitBounds(b, {
     padding,
     duration: animated === false ? 0 : 600,
@@ -3198,7 +3225,7 @@ function zoomToFeatures(features){
   // Mobilde sekme çubuğu haritanın üstünde ayrı şeritte durur, alttan açılan sheet için altta yer bırakılır.
   const padding = isMobile()
     ? { top:70, bottom:160, left:40, right:40 }
-    : { top:104, bottom:60, left:40, right:360 };
+    : { top:92, bottom:60, left:40, right:360 };
   map.fitBounds(bbox, {
     padding,
     maxZoom: 13,
@@ -4858,50 +4885,73 @@ function syncTabUI(){
 }
 
 // ═════════════════════════════════════════════════════
-//  HARİTA KATMAN ÇİPLERİ
+//  HARİTA LEJANTI + KATMAN KONTROLÜ
 // ═════════════════════════════════════════════════════
-// Çipler yalnızca haritayı etkiler; liste ve detay paneli etkin sekmeye bağlı kalır.
-// Çipteki çizgi örneği haritadaki çizgi biçimiyle aynıdır (lejant işlevi görür).
+// Lejant yalnızca haritayı etkiler; liste ve detay paneli etkin sekmeye bağlı kalır.
+// Satırdaki çizgi örneği haritadaki çizgi biçimiyle aynıdır.
+const LEJANT_AD  = { isletme:'İşletmede', yapim:'Yapım aşamasında', proje:'Proje aşamasında' };
+const LEJANT_MOD = ['tam', 'soluk', 'gizli'];
+const LEJANT_MOD_AD = { tam:'Tam', soluk:'Soluk', gizli:'Gizli' };
 function katmanSampleSvg(t){
   const dash = t === 'yapim' ? ' stroke-dasharray="6 2.2"' : t === 'proje' ? ' stroke-dasharray="0 4.6"' : '';
   const cap  = t === 'yapim' ? 'butt' : 'round';
-  return `<svg viewBox="0 0 20 6" aria-hidden="true"><line x1="2" y1="3" x2="18" y2="3" stroke="currentColor" stroke-width="2.6" stroke-linecap="${cap}"${dash}/></svg>`;
+  return `<svg class="lj-ornek" viewBox="0 0 24 6" aria-hidden="true"><line x1="2" y1="3" x2="22" y2="3" stroke="currentColor" stroke-width="2.6" stroke-linecap="${cap}"${dash}/></svg>`;
 }
 function renderKatmanBar(){
-  const group = document.querySelector('#katman-bar .katman-group');
-  if(!group) return;
-  if(!group.querySelector('.katman-chip')){
-    KATMANLAR.forEach(t => {
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'katman-chip';
-      b.dataset.katman = t;
-      b.innerHTML = `${katmanSampleSvg(t)}<span class="katman-ad">${esc(KATMAN_AD[t])}</span>`;
-      b.addEventListener('click', () => cycleKatman(t));
-      group.appendChild(b);
-    });
-  }
-  group.querySelectorAll('.katman-chip').forEach(b => {
-    const t = b.dataset.katman;
-    const etkin = t === activeTab;
+  const body = document.getElementById('lejant-body');
+  if(!body) return;
+  body.innerHTML = KATMANLAR.map(t => {
     const mod = modOf(t);
-    b.dataset.mod = mod;
-    b.classList.toggle('etkin', etkin);
-    b.setAttribute('aria-disabled', etkin ? 'true' : 'false');
-    const durum = `${KATMAN_UZUN[t]}: haritada ${KATMAN_MOD_AD[mod]}`;
-    b.title = etkin
-      ? `${durum} (etkin sekme)`
-      : `${durum} · tıklayınca ${KATMAN_MOD_AD[KATMAN_SIRA[mod]]}`;
-    b.setAttribute('aria-label', b.title);
-  });
+    const ctl = t === activeTab
+      ? `<span class="lj-etkin" title="Etkin sekmedeki hatlar haritada her zaman tam görünür">Sekmede</span>`
+      : `<div class="lj-seg" role="radiogroup" aria-label="${esc(KATMAN_UZUN[t])}: haritada görünüm">${LEJANT_MOD.map(m =>
+          `<button type="button" role="radio" data-katman="${t}" data-mod="${m}" aria-checked="${m === mod}"
+             title="Haritada ${esc(KATMAN_MOD_AD[m])}"
+             tabindex="${m === mod ? 0 : -1}">${LEJANT_MOD_AD[m]}</button>`).join('')}</div>`;
+    return `<div class="lj-row" data-katman="${t}" data-mod="${mod}">${katmanSampleSvg(t)}<span class="lj-ad">${esc(LEJANT_AD[t])}</span>${ctl}</div>`;
+  }).join('') + `<div class="lj-not">${window.matchMedia('(hover: none)').matches ? 'Hat bilgisi için hatta dokunun.' : 'Hat bilgisi için hattın üzerine gelin.'}</div>`;
 }
-function cycleKatman(t){
-  if(t === activeTab) return;   // etkin sekme her zaman tam görünür
-  katmanMod[t] = KATMAN_SIRA[katmanMod[t]] || 'soluk';
+function setKatman(t, mod){
+  if(t === activeTab || !LEJANT_MOD.includes(mod) || katmanMod[t] === mod) return;
+  katmanMod[t] = mod;
   renderKatmanBar();
   renderMap();
   writeHash();
 }
+// Görünüm seçimi (tıklama + ok tuşlarıyla radyo grubu gezinmesi). #lejant-body kalıcı
+// olduğundan yeniden çizimde dinleyici kaybolmaz.
+document.getElementById('lejant-body').addEventListener('click', e => {
+  const b = e.target.closest('.lj-seg button');
+  if(b) setKatman(b.dataset.katman, b.dataset.mod);
+});
+document.getElementById('lejant-body').addEventListener('keydown', e => {
+  const b = e.target.closest('.lj-seg button');
+  if(!b || !['ArrowRight','ArrowLeft','ArrowDown','ArrowUp'].includes(e.key)) return;
+  e.preventDefault();
+  const i = LEJANT_MOD.indexOf(b.dataset.mod);
+  const d = (e.key === 'ArrowRight' || e.key === 'ArrowDown') ? 1 : -1;
+  const m = LEJANT_MOD[(i + d + LEJANT_MOD.length) % LEJANT_MOD.length];
+  setKatman(b.dataset.katman, m);
+  document.querySelector(`.lj-seg button[data-katman="${b.dataset.katman}"][data-mod="${m}"]`)?.focus();
+});
+// Katlama: tercih bu tarayıcıda hatırlanır; ilk açılışta mobilde katlı, masaüstünde açık
+(function initLejantToggle(){
+  const box = document.getElementById('lejant');
+  const btn = document.getElementById('lejant-toggle');
+  const KEY = 'mm-lejant-kapali';
+  let kapali = window.matchMedia('(max-width: 768px)').matches;
+  try { const v = localStorage.getItem(KEY); if(v !== null) kapali = v === '1'; } catch(_){}
+  const apply = () => {
+    box.classList.toggle('kapali', kapali);
+    btn.setAttribute('aria-expanded', kapali ? 'false' : 'true');
+  };
+  apply();
+  btn.addEventListener('click', () => {
+    kapali = !kapali;
+    apply();
+    try { localStorage.setItem(KEY, kapali ? '1' : '0'); } catch(_){}
+  });
+})();
 // Adres biçimi: varsayılandan (soluk) farklı katmanlar; tam → "isletme", gizli → "-proje"
 //   #tab=yapim&sort=acilis&katman=isletme,-proje
 function katmanHashPart(){
@@ -4918,7 +4968,7 @@ function applyKatmanHash(raw){
   });
   renderKatmanBar();
 }
-renderKatmanBar();   // veri gelmeden de çipler görünsün
+renderKatmanBar();   // veri gelmeden de lejant görünsün
 
 const tabEls = Array.from(document.querySelectorAll('.tab'));
 tabEls.forEach((tab, i) => {
