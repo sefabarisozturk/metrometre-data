@@ -2903,8 +2903,14 @@ function renderMap(){
 function fitGlobalBounds(animated){
   const b = ilBounds.get(activeIl) || globalBounds;
   if(!b || !mapReady) return;
+  // Masaüstünde il seçici + sekme şeridi haritanın üstünde yüzer (≈ 92 px); en kuzeydeki
+  // hat (ör. M11 havalimanı ucu) şeridin altında kalmasın diye üstte o kadar pay bırakılır.
+  // Sağda harita araçları sütunu için de pay vardır. Mobilde şerit haritanın dışındadır.
+  const padding = isMobile()
+    ? { top:40, bottom:40, left:30, right:64 }
+    : { top:92, bottom:40, left:40, right:64 };
   map.fitBounds(b, {
-    padding: 40,
+    padding,
     duration: animated === false ? 0 : 600,
   });
 }
