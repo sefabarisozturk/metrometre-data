@@ -651,9 +651,22 @@ body.detail-open #tab-bar { right: 352px; }
   padding: 4px;
   pointer-events: none;
   font-family: var(--font);
+  /* Görünürlük sınıfla yönetilir: opaklık + hafif yukarı kayma ile belirir/kaybolur.
+     Konum transform ile verilir; görünürken imleci kısa bir yumuşatmayla izler. */
+  opacity: 0; visibility: hidden; translate: 0 4px;
+  transition: opacity .16s ease, translate .16s ease, visibility 0s linear .16s;
+  will-change: transform, opacity;
 }
-#hat-tip[hidden] { display: none; }
-#hat-tip.dokunma { pointer-events: all; }
+#hat-tip.gorunur {
+  opacity: 1; visibility: visible; translate: 0 0;
+  transition: opacity .16s ease, translate .16s ease, transform .1s ease-out;
+}
+/* İlk konumlandırmada imlece doğru kaymasın (yalnızca yerinde belirsin) */
+#hat-tip.gorunur.anlik { transition: opacity .16s ease, translate .16s ease; }
+#hat-tip.dokunma.gorunur { pointer-events: all; }
+@media (prefers-reduced-motion: reduce) {
+  #hat-tip, #hat-tip.gorunur { transition: none; translate: 0 0; }
+}
 .tip-row {
   display: flex; align-items: flex-start; gap: 9px;
   padding: 7px 8px;
@@ -1594,7 +1607,7 @@ a.src-badge:hover { border-color: currentColor; }
       </div>
 
       <!-- Hat bilgi kutucuğu: hover (masaüstü) / dokunma (mobil) -->
-      <div id="hat-tip" role="tooltip" hidden></div>
+      <div id="hat-tip" role="tooltip" aria-hidden="true"></div>
 
       <div id="search-panel">
         <input id="search-input" type="text" placeholder="Hat kodu veya adı ara…" autocomplete="off">
@@ -2739,13 +2752,14 @@ function initMapLayers(){
 
   // ──── Hover vurgusu ────
   // İmlecin altındaki hat (soluk olsa bile) hafif bir hale ve tam opak çizgiyle öne çıkar.
+  // Opaklık 0'dan başlar; hoverVurgu() geçişli olarak açıp kapatır (yumuşak belirme).
   add({ id:'hover-glow', type:'line', source:SRC_HAT_HOVER,
     paint:{
       'line-color': lineColor,
       'line-width':['+', lineWidth, 8],
-      'line-opacity':0.22, 'line-blur':4,
+      'line-opacity':0, 'line-blur':4,
     }, layout:{'line-cap':'round','line-join':'round'} });
-  durumLines('hover-lines', SRC_HAT_HOVER, { 'line-opacity':1 }, 1.5);
+  durumLines('hover-lines', SRC_HAT_HOVER, { 'line-opacity':0 }, 1.5);
 
   // ──── Görünmez dokunma alanı ────
   // İnce hatların rahat seçilebilmesi için görünür TÜM hatların (soluk dahil) üstünde
@@ -5123,7 +5137,8 @@ function showHatTip(groups, point, dokunma){
         features: shown.flatMap(g => g.features).filter(f => f.geometry && modOf(f.properties._TAB) !== 'gizli') });
     }
   }
-  hatTipEl.hidden = false;
+  clearTimeout(hatTipGizleT);
+  const ilkGorunme = !hatTipEl.classList.contains('gorunur');
   // Konum: imlecin sağ altı; kenara taşarsa ters tarafa döner
   const mc = document.getElementById('map-container');
   const W = mc.clientWidth - (mc.classList.contains('detail-open') && !isMobile() ? 352 : 0);
@@ -5135,14 +5150,54 @@ function showHatTip(groups, point, dokunma){
   if(y + h > H - 8) y = point.y - gap - h;
   x = Math.max(8, Math.min(x, W - w - 8));
   y = Math.max(8, Math.min(y, H - h - 8));
-  hatTipEl.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+  if(ilkGorunme){
+    // Yerinde belirsin: önce geçişsiz konumlandır, sonra görünür yap
+    hatTipEl.classList.add('anlik');
+    hatTipEl.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+    void hatTipEl.offsetWidth;
+    hatTipEl.classList.add('gorunur');
+    hatTipEl.setAttribute('aria-hidden', 'false');
+    requestAnimationFrame(() => hatTipEl.classList.remove('anlik'));
+    hoverVurgu(true);
+  } else {
+    hatTipEl.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+  }
 }
-function hideHatTip(){
+
+// Kutucuğu kapatır. opts.gecikme: imleç bir hattan yanındakine geçerken kutucuk
+// arada bir an kaybolup yeniden belirmesin diye kapanış kısa süre bekletilir.
+let hatTipGizleT = null, hoverTemizleT = null;
+function hideHatTip(opts = {}){
   if(!hatTipEl) return;
-  hatTipEl.hidden = true;
+  clearTimeout(hatTipGizleT);
+  if(opts.gecikme){
+    hatTipGizleT = setTimeout(() => hideHatTip(), 110);
+    return;
+  }
+  if(!hatTipEl.classList.contains('gorunur') && !hatTipKey) return;
+  hatTipEl.classList.remove('gorunur', 'anlik');
+  hatTipEl.setAttribute('aria-hidden', 'true');
   hatTipKey = '';
-  if(mapReady && map.getSource(SRC_HAT_HOVER)){
-    map.getSource(SRC_HAT_HOVER).setData({ type:'FeatureCollection', features:[] });
+  hoverVurgu(false);
+}
+
+// Hover vurgusunun opaklığını geçişli değiştirir; kapanış bitince kaynak boşaltılır.
+const HOVER_KATMANLAR = () => [['hover-glow', 0.22], ...KATMANLAR.map(t => [`hover-lines-${t}`, 1])];
+function hoverVurgu(acik){
+  if(!mapReady) return;
+  clearTimeout(hoverTemizleT);
+  const azHareket = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const sure = azHareket ? 0 : (acik ? 180 : 140);
+  HOVER_KATMANLAR().forEach(([id, hedef]) => {
+    if(!map.getLayer(id)) return;
+    map.setPaintProperty(id, 'line-opacity-transition', { duration: sure, delay: 0 });
+    map.setPaintProperty(id, 'line-opacity', acik ? hedef : 0);
+  });
+  if(!acik){
+    hoverTemizleT = setTimeout(() => {
+      if(hatTipKey) return;   // bu arada yeniden açıldıysa dokunma
+      map.getSource(SRC_HAT_HOVER)?.setData({ type:'FeatureCollection', features:[] });
+    }, sure + 40);
   }
 }
 
@@ -5176,16 +5231,16 @@ function attachMapClickHandlers(){
   map.on('mousemove', 'lines-hit', e => {
     if(HOVER_YOK.matches) return;
     const groups = hatGruplari(e.features);
-    if(!groups.length){ hideHatTip(); return; }
+    if(!groups.length){ hideHatTip({ gecikme:true }); return; }
     map.getCanvas().style.cursor = 'pointer';
     showHatTip(groups, e.point, false);
   });
   map.on('mouseleave', 'lines-hit', () => {
     map.getCanvas().style.cursor = '';
-    if(!HOVER_YOK.matches) hideHatTip();
+    if(!HOVER_YOK.matches) hideHatTip({ gecikme:true });
   });
-  map.on('dragstart', hideHatTip);
-  map.on('zoomstart', hideHatTip);
+  map.on('dragstart', () => hideHatTip());
+  map.on('zoomstart', () => hideHatTip());
 
   // Tıklama: etkin sekmedeki hat doğrudan seçilir (eski davranış). Başka sekmedeki
   // hat masaüstünde sekmesine geçirir; dokunmatik cihazda önce bilgi kutucuğu açılır,
