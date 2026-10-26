@@ -1104,7 +1104,13 @@ a.src-badge:hover { border-color: currentColor; }
 
   /* Üst başlık */
   #logo-tagline { display: none; }
-  #logo-img { height: 22px; }
+  /* Logo (≈8,35:1) + üç yuvarlak düğme dar ekranlarda sığsın diye kenar boşluğu ve
+     düğme aralığı daraltılır; logo, düğmelerden kalan genişliğe göre küçülür
+     (24 px kenar + 3×40 düğme + 2×6 aralık + 10 px güvenlik payı = 166 px). */
+  #header { padding: 0 12px; gap: 10px; }
+  #header-actions { gap: 6px; }
+  #logo-link { min-width: 0; flex-shrink: 1; }
+  #logo-img { height: auto; width: min(184px, calc(100vw - 166px)); }
 
   /* Yapışkan şerit (metrikler + sekme çubuğu): header altında her iki panel üzerinde sabit. */
   #metrics, #tab-bar {
@@ -1819,7 +1825,10 @@ function geomParts(g){
 //     Her kaydın ANA ili kendi IL değerinden gelir.
 //  2) Durakların göründüğü iller (_ILS) ve sayıldığı iller (_OWN_ILS): durak, üzerinde
 //     bulunduğu (aynı KOD, ≤150 m) hatların göründüğü her ilde görünür; o hatların ana
-//     illerinde sayılır. Hiçbir hatta oturmayan durak kendi IL değerine düşer.
+//     illerinde sayılır. Önce durakla AYNI aşamadaki (sekmedeki) hatlar aranır — ör. yapımı
+//     süren Çayırova durağı, proje aşamasındaki SGH–Çayırova hattının ucuna da değdiği
+//     için İstanbul'a sayılmasın. Aynı aşamada hat yoksa tüm aşamalara bakılır; hiçbir
+//     hatta oturmayan durak kendi IL değerine düşer.
 //  3) İl listesi (ILLER): hatların ana illerinden; varsayılan il başta.
 function prepareIller(){
   allHatlar.forEach(f => {
@@ -1857,21 +1866,28 @@ function prepareIller(){
     byKod.get(k).push({ f, parts: geomParts(f.geometry), bbox: featureBbox(f) });
   });
   const TOL = 0.003;   // bbox ön elemesi (~250 m)
+  const tabOf = durum => Object.keys(TAB_FILTERS).find(t => TAB_FILTERS[t].includes(String(durum ?? ''))) || null;
   allDuraklar.forEach(d => {
     const p = d.properties || (d.properties = {});
     const own = ilListOf(p.IL, p.KOD)[0];
     p._IL = [own];
     const c = d.geometry?.type === 'Point' ? d.geometry.coordinates : null;
     const ils = [], owns = [];
+    const adaylar = byKod.get(String(p.KOD ?? '').trim()) || [];
+    const ayniAsama = adaylar.filter(h => tabOf(h.f.properties.PR_DURUM) === tabOf(p.PR_DURUM));
+    const eslesen = hs => hs.filter(h => {
+      const b = h.bbox;
+      if(!c || !b || c[0] < b[0][0]-TOL || c[0] > b[1][0]+TOL || c[1] < b[0][1]-TOL || c[1] > b[1][1]+TOL) return false;
+      let mn = Infinity;
+      for(const part of h.parts){
+        for(let i = 1; i < part.length && mn > 150; i++) mn = Math.min(mn, pointSegDistM(c, part[i-1], part[i]));
+      }
+      return mn <= 150;
+    });
+    let hatlar = eslesen(ayniAsama);
+    if(!hatlar.length) hatlar = eslesen(adaylar);
     if(c){
-      for(const h of (byKod.get(String(p.KOD ?? '').trim()) || [])){
-        const b = h.bbox;
-        if(!b || c[0] < b[0][0]-TOL || c[0] > b[1][0]+TOL || c[1] < b[0][1]-TOL || c[1] > b[1][1]+TOL) continue;
-        let mn = Infinity;
-        for(const part of h.parts){
-          for(let i = 1; i < part.length && mn > 150; i++) mn = Math.min(mn, pointSegDistM(c, part[i-1], part[i]));
-        }
-        if(mn > 150) continue;
+      for(const h of hatlar){
         h.f.properties._IL.forEach(il => { if(!ils.includes(il)) ils.push(il); });
         const ana = h.f.properties._IL[0];
         if(!owns.includes(ana)) owns.push(ana);
