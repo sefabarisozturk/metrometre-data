@@ -4163,17 +4163,14 @@ function renderProjeList(list){
     const kurumLogo = p.PR_KURUM_LOGO
       ? `<img src="${esc(p.PR_KURUM_LOGO)}" alt="" onerror="this.style.display='none'" style="width:13px;height:13px;object-fit:contain">`
       : '';
-    // Bağlantılı grupta başlık ili söyler; normalde grup başlığının taşıdığı bilgi
-    // (Aşama sıralamasında aşama, Kurum sıralamasında kurum) kartta düz metin olarak yazılır.
+    // Bağlantılı grupta başlık ili söyler; Kurum sıralamasında kurum bu yüzden kartta yazılır.
     const meta = [projeTuru(pr), (key !== 'kurum' || inLinked) ? pr.kurum : null,
-                  !ortakAcilis && pr.acilis ? (fmtTRDate(pr.acilis) || pr.acilis) : null,
-                  (key === 'asama' && inLinked) ? pr.asama.ad : null]
+                  !ortakAcilis && pr.acilis ? (fmtTRDate(pr.acilis) || pr.acilis) : null]
       .filter(Boolean)
       .map((c,i,arr) => `<span class="card-chip">${esc(c)}</span>${i < arr.length-1 ? '<span class="chip-sep">·</span>' : ''}`)
       .join('');
-    // Aşama görünümünde aşama çubuğu hiçbir kartta gösterilmez (başlık ya da meta söyler)
-    const stage = key === 'asama' ? ''
-      : `<div class="proje-stage">${projeBarHtml(pr.asama)}<span>${esc(pr.asama.ad)}</span></div>`;
+    // Aşama çubuğu her sıralamada her kartta gösterilir (kart düzeni sıralamayla değişmez)
+    const stage = `<div class="proje-stage">${projeBarHtml(pr.asama)}<span>${esc(pr.asama.ad)}</span></div>`;
 
     const card = document.createElement('div');
     card.className = 'card card-proje';
