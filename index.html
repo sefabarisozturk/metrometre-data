@@ -590,7 +590,7 @@ body.detail-open #tab-bar { right: 352px; }
 #lejant-body { padding: 4px 5px 5px; border-top: 1px solid var(--border); }
 #lejant.kapali #lejant-body { display: none; }
 #lejant.kapali { width: auto; }
-.lj-row, .lj-silik {
+.lj-row, .lj-ayar {
   display: flex; align-items: center; gap: 10px;
   width: 100%; min-height: 40px; padding: 5px 8px 5px 7px;
   border: none; border-radius: 7px; background: transparent;
@@ -598,7 +598,7 @@ body.detail-open #tab-bar { right: 352px; }
   cursor: pointer;
   transition: background .12s;
 }
-.lj-row:hover, .lj-silik:hover { background: var(--surface-2); }
+.lj-row:hover, .lj-ayar:hover { background: var(--surface-2); }
 .lj-row.kilitli { cursor: default; }
 .lj-row.kilitli:hover { background: transparent; }
 .lj-row svg.lj-ornek { width: 24px; height: 6px; flex-shrink: 0; overflow: visible; color: var(--text); transition: opacity .15s; }
@@ -621,9 +621,10 @@ body.detail-open #tab-bar { right: 352px; }
 .lj-row.acik .lj-kutu { background: var(--accent); border-color: var(--accent); }
 .lj-row.kilitli .lj-kutu { background: var(--surface-2); border-color: var(--border); color: var(--text-dim); }
 .lj-row.kilitli .lj-kutu svg { width: 11px; height: 11px; }
-/* Silik gösterim anahtarı */
-.lj-silik { margin-top: 4px; border-top: 1px solid var(--border); border-radius: 0 0 7px 7px; padding-top: 8px; }
-.lj-silik .lj-ad { font-weight: 500; }
+/* Görünüm ayarları (silik gösterim, uydu görüntüsü): durum satırlarından çizgiyle ayrılır */
+.lj-ayarlar { margin-top: 4px; padding-top: 4px; border-top: 1px solid var(--border); }
+.lj-ayar { min-height: 36px; }
+.lj-ayar .lj-ad { font-weight: 500; }
 .lj-anahtar {
   position: relative; width: 30px; height: 17px; flex-shrink: 0;
   border-radius: 9px; background: var(--border-2);
@@ -634,8 +635,8 @@ body.detail-open #tab-bar { right: 352px; }
   border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.2);
   transition: left .15s;
 }
-.lj-silik[aria-checked="true"] .lj-anahtar { background: var(--accent); }
-.lj-silik[aria-checked="true"] .lj-anahtar i { left: 15px; }
+.lj-ayar[aria-checked="true"] .lj-anahtar { background: var(--accent); }
+.lj-ayar[aria-checked="true"] .lj-anahtar i { left: 15px; }
 
 /* ──── HAT BİLGİ KUTUCUĞU (hover / dokunma) ──── */
 #hat-tip {
@@ -1468,7 +1469,7 @@ a.src-badge:hover { border-color: currentColor; }
   #lejant { top: 12px; bottom: auto; width: 262px; max-width: calc(100% - 80px); }
   #lejant.kapali { width: auto; }
   #lejant-toggle { height: 36px; font-size: 12px; }
-  .lj-row, .lj-silik { min-height: 46px; }
+  .lj-row, .lj-ayar { min-height: 46px; }
   #map-container.detail-open #map-credit { right: 8px; }
   #map-container:has(#detail-popup.expanded) #lejant { opacity: 0; pointer-events: none; }
   #hat-tip { max-width: calc(100% - 24px); }
@@ -1576,13 +1577,6 @@ a.src-badge:hover { border-color: currentColor; }
       <div id="map-tools">
         <button class="map-tool-btn" id="btn-zoom-in"    title="Yakınlaştır">+</button>
         <button class="map-tool-btn" id="btn-zoom-out"   title="Uzaklaştır">−</button>
-        <button class="map-tool-btn" id="btn-basemap"    type="button" title="Uydu görünümü" aria-pressed="false">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-            <polyline points="2 17 12 22 22 17"></polyline>
-            <polyline points="2 12 12 17 22 12"></polyline>
-          </svg>
-        </button>
         <button class="map-tool-btn" id="btn-fullscreen" title="Tam ekran">⛶</button>
         <button class="map-tool-btn" id="btn-search"     title="Ara">⌕</button>
       </div>
@@ -2709,7 +2703,7 @@ function initMapLayers(){
 
   // ──── Uydu görüntüsü altlığı (Esri World Imagery) ────
   // Açık Carto altlığının üstüne, taşıt hatlarının/durakların ALTINA yerleştirilir.
-  // Varsayılan gizlidir; "uydu" düğmesiyle görünürlüğü açılıp kapanır.
+  // Varsayılan gizlidir; lejanttaki "Uydu görüntüsü" anahtarıyla açılıp kapanır.
   if(!map.getSource(SRC_SATELLITE)){
     map.addSource(SRC_SATELLITE, {
       type: 'raster',
@@ -4554,22 +4548,16 @@ document.getElementById('btn-fullscreen').addEventListener('click', () => {
   }
 });
 
-// ──── Altlık geçişi: açık harita ↔ uydu görüntüsü ────
+// ──── Altlık geçişi: açık harita ↔ uydu görüntüsü (lejanttaki anahtardan) ────
 function setBasemap(sat){
   satelliteOn = !!sat;
   if(map && map.getLayer('satellite')){
     map.setLayoutProperty('satellite', 'visibility', satelliteOn ? 'visible' : 'none');
   }
-  const b = document.getElementById('btn-basemap');
-  if(b){
-    b.classList.toggle('active', satelliteOn);
-    b.setAttribute('aria-pressed', satelliteOn ? 'true' : 'false');
-    b.title = satelliteOn ? 'Harita görünümü' : 'Uydu görünümü';
-  }
+  renderKatmanBar();   // lejanttaki "Uydu görüntüsü" anahtarı
   const credit = document.getElementById('map-credit');
   if(credit) credit.hidden = !satelliteOn;
 }
-document.getElementById('btn-basemap').addEventListener('click', () => setBasemap(!satelliteOn));
 
 // Harita karesini PNG blob olarak sakla ("Haritayı kaydet" bu kareyi indirir). idle
 // olayında çağrılır; böylece kaydet düğmesine basıldığında görsel gecikmesiz hazır olur.
@@ -4739,10 +4727,16 @@ function renderKatmanBar(){
   }).join('');
   body.dataset.silik = digerSilik ? '1' : '0';
   body.innerHTML = rows + `
-    <button type="button" class="lj-silik" role="switch" aria-checked="${digerSilik}">
-      <span class="lj-metin"><span class="lj-ad">Diğer hatları silik göster</span><span class="lj-alt">Kapalıysa yalnız işaretliler görünür</span></span>
-      <span class="lj-anahtar" aria-hidden="true"><i></i></span>
-    </button>`;
+    <div class="lj-ayarlar">
+      <button type="button" class="lj-ayar lj-silik" role="switch" aria-checked="${digerSilik}">
+        <span class="lj-metin"><span class="lj-ad">Diğer hatları silik göster</span><span class="lj-alt">Kapalıysa yalnız işaretliler görünür</span></span>
+        <span class="lj-anahtar" aria-hidden="true"><i></i></span>
+      </button>
+      <button type="button" class="lj-ayar lj-uydu" role="switch" aria-checked="${satelliteOn}">
+        <span class="lj-metin"><span class="lj-ad">Uydu görüntüsü</span></span>
+        <span class="lj-anahtar" aria-hidden="true"><i></i></span>
+      </button>
+    </div>`;
 }
 function toggleKatman(t){
   if(t === activeTab) return;   // etkin sekme her zaman görünür
@@ -4762,6 +4756,7 @@ function toggleDigerSilik(){
 document.getElementById('lejant-body').addEventListener('click', e => {
   const row = e.target.closest('.lj-row');
   const sw  = e.target.closest('.lj-silik');
+  const uy  = e.target.closest('.lj-uydu');
   if(row){
     const t = row.dataset.katman;
     toggleKatman(t);
@@ -4769,6 +4764,9 @@ document.getElementById('lejant-body').addEventListener('click', e => {
   } else if(sw){
     toggleDigerSilik();
     document.querySelector('#lejant-body .lj-silik')?.focus({ preventScroll:true });
+  } else if(uy){
+    setBasemap(!satelliteOn);
+    document.querySelector('#lejant-body .lj-uydu')?.focus({ preventScroll:true });
   }
 });
 // Katlama: tercih bu tarayıcıda hatırlanır; ilk açılışta mobilde katlı, masaüstünde açık
