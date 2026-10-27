@@ -1487,8 +1487,9 @@ def build_bulten_index(repo, hat, manifest):
         son = sayilar[0]
         tarih = f'{date_long(son["tarih"])} tarihinde yayımlandı' if son['tarih'] else ''
         govde = (f'<article class="panel feat" aria-labelledby="son-sayi">'
-                 f'<div class="feat-meta"><span class="tag">Son sayı</span><span class="feat-ay">{esc(ym_long(son["ay"]))}</span></div>'
-                 f'<h2 id="son-sayi"><a href="/bulten/{son["ay"]}">{esc(son.get("baslik", ""))}</a></h2>'
+                 f'<span class="tag">Son sayı</span>'
+                 f'<h2 id="son-sayi" class="feat-ay"><a href="/bulten/{son["ay"]}">{esc(ym_long(son["ay"]))}</a></h2>'
+                 f'<p class="feat-title">{esc(son.get("baslik", ""))}</p>'
                  f'<p class="feat-dek">{esc(son["dek"])}</p>'
                  f'<div class="feat-foot"><a class="cta" href="/bulten/{son["ay"]}">Bülteni oku<span aria-hidden="true">→</span></a>'
                  + (f'<span class="feat-date">{esc(tarih)}</span>' if tarih else '') + '</div></article>')
@@ -1551,13 +1552,12 @@ main { max-width:760px; margin:0 auto; padding:calc(var(--header-h) + 22px) 16px
 .follow a:hover { text-decoration:underline; }
 /* Son sayı: yalnızca tipografiyle öne çıkar */
 .feat { padding:24px 26px 22px; display:flex; flex-direction:column; gap:10px; }
-.feat-meta { display:flex; align-items:baseline; gap:10px; }
 .tag { font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--accent); }
-.feat-ay { font-size:14px; font-weight:600; color:var(--text); }
-.feat h2 { font-size:26px; line-height:1.22; letter-spacing:-0.03em; text-wrap:balance; }
-.feat h2 a { color:var(--text); }
-.feat h2 a:hover { color:var(--accent); }
-.feat-dek { font-size:15px; line-height:1.65; color:var(--text-muted); max-width:62ch; }
+.feat-ay { font-size:32px; font-weight:700; line-height:1.1; letter-spacing:-0.035em; margin-top:-2px; }
+.feat-ay a { color:var(--text); }
+.feat-ay a:hover { color:var(--accent); }
+.feat-title { font-size:16px; font-weight:600; line-height:1.4; color:var(--text); text-wrap:balance; }
+.feat-dek { font-size:14px; line-height:1.65; color:var(--text-muted); max-width:62ch; }
 .feat-foot { display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-top:6px; }
 .cta { display:inline-flex; align-items:center; gap:6px; font-size:14px; font-weight:700; color:var(--accent); }
 .cta:hover { text-decoration:underline; }
@@ -1580,8 +1580,8 @@ main { max-width:760px; margin:0 auto; padding:calc(var(--header-h) + 22px) 16px
   main { gap:18px; padding-top:calc(var(--header-h) + 16px); }
   .intro h1 { font-size:22px; }
   .feat { padding:18px 18px 18px; }
-  .feat h2 { font-size:21px; }
-  .feat-dek { font-size:14px; }
+  .feat-ay { font-size:26px; }
+  .feat-title { font-size:15px; }
   .row { grid-template-columns:minmax(0,1fr) auto; padding:12px 14px; gap:8px 10px; }
   .row-ay { grid-column:1 / -1; font-size:13px; color:var(--text-muted); }
 }
