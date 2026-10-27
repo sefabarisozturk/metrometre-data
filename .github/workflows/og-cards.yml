@@ -9,6 +9,7 @@ on:
       - RAYLI_SISTEM_DURAK_PT.geojson
       - scripts/og_cards.py
       - scripts/hat_sayfalari.py
+      - scripts/hakkinda_icerik.html
       - index.html
       - scripts/bulten_kart.py
       - bulten/bultenler.json
@@ -55,7 +56,7 @@ jobs:
 
       - name: Değişiklik varsa commit at
         run: |
-          git add og/ bulten/*.png bulten/kartlar.json hat-sayfalari/ sitemap.xml robots.txt 404.html hatlar/ hakkinda/
+          git add og/ bulten/*.png bulten/kartlar.json hat-sayfalari/ sitemap.xml robots.txt 404.html hatlar/ hakkinda/ bulten/*.html
           if git diff --cached --quiet; then
             echo "Kartlarda değişiklik yok."
             exit 0

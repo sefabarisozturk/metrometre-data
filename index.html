@@ -122,16 +122,22 @@ html, body {
   border-left: 1px solid var(--border);
 }
 
-#info-btn {
-  width: 32px; height: 32px;
-  border: 1px solid var(--border-2); border-radius: 50%;
-  background: transparent; color: var(--text-muted);
-  cursor: pointer; font-size: 15px;
-  display: flex; align-items: center; justify-content: center;
-  transition: border-color .15s, color .15s, background .15s;
-  flex-shrink: 0;
-}
-#info-btn:hover { border-color: var(--accent); color: var(--accent); background: #FEF2F2; }
+/* Ortak başlık düğmeleri — diğer sayfalarla aynı (kaynak: scripts/hat_sayfalari.py · HEADER_CSS) */
+.site-nav { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.nav-btn { position:relative; display:inline-flex; align-items:center; gap:7px; height:32px; padding:0 13px 0 11px;
+  border:1px solid var(--border-2); border-radius:99px; background:transparent; color:var(--text);
+  font-family:var(--font); font-size:12px; font-weight:600; letter-spacing:-0.01em; line-height:1; white-space:nowrap;
+  text-decoration:none; flex-shrink:0; transition:border-color .15s, color .15s, background .15s; }
+.nav-btn svg { width:15px; height:15px; flex-shrink:0; }
+.nav-btn:hover { border-color:var(--accent); color:var(--accent); background:#FEF2F2; text-decoration:none; }
+.nav-btn[aria-current="page"] { background:var(--accent); border-color:var(--accent); color:#fff; }
+.nav-btn[aria-current="page"]:hover { background:#9C1F18; border-color:#9C1F18; color:#fff; }
+.nav-btn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+.nav-btn.icon { width:32px; padding:0; justify-content:center; }
+.nav-btn.icon .lbl { display:none; }
+.nav-dot { position:absolute; top:-2px; right:-2px; width:9px; height:9px; border-radius:50%;
+  background:var(--accent); border:2px solid var(--surface); }
+.nav-dot[hidden] { display:none; }
 
 /* ──── UYGULAMA İSKELETİ ──── */
 #app {
@@ -903,10 +909,6 @@ a.src-badge:hover { border-color: currentColor; }
 .detail-trend-note .hollow { width: 8px; height: 8px; border-radius: 50%; border: 1.6px solid currentColor; flex-shrink: 0; }
 /* Trend ipucunda kaynak türü */
 #detail-trend-tip .tip-src { display: block; margin-top: 2px; font-size: 10px; color: var(--text-dim); font-weight: 500; }
-/* Bilgi modalı: kaynak türleri listesi */
-.src-legend { display: flex; flex-direction: column; gap: 7px; margin-top: 8px; }
-.src-legend-row { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; line-height: 1.5; }
-.src-legend-row .src-badge { flex-shrink: 0; margin-top: 1px; }
 
 /* ──── DETAY AYLIK İLERLEME (mini trend grafiği) ──── */
 #detail-trend-wrap { display: flex; flex-direction: column; align-items: stretch; gap: 10px; }
@@ -1077,85 +1079,8 @@ a.src-badge:hover { border-color: currentColor; }
 #empty-state.show { display: flex; }
 .empty-msg { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 18px; font-size: 12px; color: var(--text-dim); }
 
-/* ──── BİLGİ MODALİ ──── */
-#modal-backdrop {
-  display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,.3); z-index: 2000;
-  align-items: center; justify-content: center;
-}
-#modal-backdrop.show { display: flex; }
-#modal {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 14px; padding: 24px 26px;
-  width: 480px; max-width: 90vw; max-height: 80vh;
-  overflow-y: auto;
-  box-shadow: 0 8px 40px rgba(0,0,0,.18); position: relative;
-}
-.modal-title { font-size: 16px; font-weight: 700; margin-bottom: 14px; }
-.modal-section-title {
-  font-size: 12px; font-weight: 700; color: var(--text);
-  margin: 14px 0 5px; text-transform: uppercase; letter-spacing: .04em;
-}
-.modal-body { font-size: 13px; color: var(--text-muted); line-height: 1.7; }
-.modal-body a { color: var(--accent); text-decoration: none; }
-.modal-body a:hover { text-decoration: underline; }
-.modal-body strong { color: var(--text); font-weight: 700; }
-.modal-close {
-  position: absolute; top: 16px; right: 16px;
-  width: 28px; height: 28px;
-  border: 1px solid var(--border); border-radius: 50%;
-  background: transparent; color: var(--text-dim);
-  cursor: pointer; font-size: 13px;
-  display: flex; align-items: center; justify-content: center;
-  transition: all .12s;
-}
-.modal-close:hover { border-color: var(--text-muted); color: var(--text); }
-.modal-divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
-.modal-footer { font-size: 11px; color: var(--text-dim); display: flex; gap: 14px; flex-wrap: wrap; }
 
-/* ──── HATLAR BAĞLANTISI (/hatlar/ dizini) ──── */
-#hatlar-btn {
-  display: flex; align-items: center; gap: 7px;
-  height: 32px; padding: 0 13px 0 11px;
-  border: 1px solid var(--accent); border-radius: 99px;
-  background: var(--accent); color: #fff;
-  cursor: pointer;
-  font-family: var(--font); font-size: 12px; font-weight: 600;
-  letter-spacing: -0.01em; white-space: nowrap;
-  transition: background .15s, box-shadow .15s, transform .05s;
-  flex-shrink: 0; text-decoration: none;
-}
-#hatlar-btn:hover  { background: #9C1F18; box-shadow: 0 2px 8px rgba(180,39,31,.28); }
-#hatlar-btn:active { transform: translateY(.5px); }
-#hatlar-btn .hatlar-btn-icon { width: 15px; height: 15px; flex-shrink: 0; }
-#hatlar-btn .hatlar-btn-text { line-height: 1; }
-#hatlar-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-#header-actions { display: flex; align-items: center; gap: 10px; }
-/* Bülten bağlantısı: ikincil (çerçeveli) hap; yeni sayı okunmadıysa küçük nokta */
-#bulten-btn {
-  position: relative;
-  display: flex; align-items: center; gap: 7px;
-  height: 32px; padding: 0 13px 0 11px;
-  border: 1px solid var(--border-2); border-radius: 99px;
-  background: transparent; color: var(--text);
-  font-family: var(--font); font-size: 12px; font-weight: 600;
-  letter-spacing: -0.01em; white-space: nowrap; text-decoration: none;
-  transition: border-color .15s, color .15s, background .15s;
-  flex-shrink: 0;
-}
-#bulten-btn[hidden] { display: none; }
-#bulten-btn:hover { border-color: var(--accent); color: var(--accent); background: #FEF2F2; }
-#bulten-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-#bulten-btn .bulten-btn-icon { width: 15px; height: 15px; flex-shrink: 0; }
-#bulten-btn .bulten-btn-text { line-height: 1; }
-#bulten-btn .bulten-btn-dot {
-  position: absolute; top: -2px; right: -2px;
-  width: 9px; height: 9px; border-radius: 50%;
-  background: var(--accent); border: 2px solid var(--surface);
-}
-#bulten-btn .bulten-btn-dot[hidden] { display: none; }
 
-#modal.modal-wide { width: 820px; }
 
 /* ──── MOBİL TOGGLE (varsayılan: gizli) ──── */
 #mobile-toggle {
@@ -1176,13 +1101,13 @@ a.src-badge:hover { border-color: currentColor; }
 
   /* Üst başlık */
   #logo-tagline { display: none; }
-  /* Logo (≈8,35:1) + üç yuvarlak düğme dar ekranlarda sığsın diye kenar boşluğu ve
+  /* Logo (≈8,35:1) + dört yuvarlak düğme dar ekranlarda sığsın diye kenar boşluğu ve
      düğme aralığı daraltılır; logo, düğmelerden kalan genişliğe göre küçülür
-     (24 px kenar + 3×40 düğme + 2×6 aralık + 10 px güvenlik payı = 166 px). */
+     (24 px kenar + 4×40 düğme + 3×6 aralık + 10 px güvenlik payı = 212 px). */
   #header { padding: 0 12px; gap: 10px; }
-  #header-actions { gap: 6px; }
+  .site-nav { gap: 6px; }
   #logo-link { min-width: 0; flex-shrink: 1; }
-  #logo-img { height: auto; width: min(184px, calc(100vw - 166px)); }
+  #logo-img { height: auto; width: min(184px, calc(100vw - 212px)); }
 
   /* Yapışkan şerit (metrikler + sekme çubuğu): header altında her iki panel üzerinde sabit. */
   #metrics, #tab-bar {
@@ -1335,14 +1260,10 @@ a.src-badge:hover { border-color: currentColor; }
   /* Dokunma hedefleri */
   .map-tool-btn { width: 44px; height: 44px; font-size: 18px; }
   .sort-btn { padding: 6px 12px; font-size: 11px; }
-  #info-btn { width: 40px; height: 40px; }
-  /* Dar ekranda metin gizlenir, buton ikon-only daireye döner (yer kazanımı) */
-  #hatlar-btn { height: 40px; width: 40px; padding: 0; justify-content: center; gap: 0; border-radius: 50%; }
-  #hatlar-btn .hatlar-btn-text { display: none; }
-  #hatlar-btn .hatlar-btn-icon { width: 18px; height: 18px; }
-  #bulten-btn { height: 40px; width: 40px; padding: 0; justify-content: center; gap: 0; border-radius: 50%; }
-  #bulten-btn .bulten-btn-text { display: none; }
-  #bulten-btn .bulten-btn-icon { width: 18px; height: 18px; }
+  /* Başlık düğmeleri: metin gizlenir, simgeli yuvarlak düğme olur */
+  .nav-btn, .nav-btn.icon { width: 40px; height: 40px; padding: 0; justify-content: center; gap: 0; }
+  .nav-btn .lbl { display: none; }
+  .nav-btn svg { width: 18px; height: 18px; }
 
   /* Arama paneli: araçların altında tam genişlikte açılır */
   #search-panel {
@@ -1428,16 +1349,6 @@ a.src-badge:hover { border-color: currentColor; }
     max-width: none;
   }
 
-  /* Bilgi modali: bottom-sheet stili */
-  #modal-backdrop { align-items: flex-end; }
-  #modal {
-    border-radius: 16px 16px 0 0;
-    max-height: 88vh;
-    width: 100%;
-    max-width: 100%;
-    padding: 20px 18px;
-    padding-bottom: max(20px, env(safe-area-inset-bottom));
-  }
 }
 </style>
 </head>
@@ -1453,19 +1364,13 @@ a.src-badge:hover { border-color: currentColor; }
     <div id="logo-fallback"><span>metro</span>metre</div>
     <span id="logo-tagline">raylı sistem projeleri<br>takip paneli</span>
   </a>
-  <div id="header-actions">
-    <!-- En son bülten: href/metin bulten/bultenler.json'dan doldurulur; liste okunamazsa gizli kalır -->
-    <a id="bulten-btn" href="/bulten/" hidden aria-label="Aylık bülten" title="Aylık bülten">
-      <svg class="bulten-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h13v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M17 9h3v10a2 2 0 0 1-2 2"/><path d="M8 9h5M8 13h5M8 17h3"/></svg>
-      <span class="bulten-btn-text">Bülten</span>
-      <span class="bulten-btn-dot" hidden aria-hidden="true"></span>
-    </a>
-    <a id="hatlar-btn" href="/hatlar/" aria-label="Bütün hatlar" title="Bütün hatlar: ilerleme, tahmini açılış ve hat sayfaları">
-      <svg class="hatlar-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1.2"/><circle cx="4.5" cy="12" r="1.2"/><circle cx="4.5" cy="18" r="1.2"/></svg>
-      <span class="hatlar-btn-text">Hatlar</span>
-    </a>
-    <button id="info-btn" type="button" aria-label="metrometre hakkında" aria-haspopup="dialog" title="metrometre hakkında">ⓘ</button>
-  </div>
+  <!-- Ortak başlık: diğer sayfalardaki site_header (scripts/hat_sayfalari.py) ile aynı işaretleme -->
+  <nav class="site-nav" aria-label="Site bölümleri">
+    <a class="nav-btn" href="/" aria-current="page" title="Harita: bütün hatlar" aria-label="Harita"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg><span class="lbl">Harita</span></a>
+    <a class="nav-btn" href="/hatlar/" title="Bütün hatlar: ilerleme ve tahmini açılış" aria-label="Hatlar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1.2"/><circle cx="4.5" cy="12" r="1.2"/><circle cx="4.5" cy="18" r="1.2"/></svg><span class="lbl">Hatlar</span></a>
+    <a class="nav-btn" id="bulten-btn" href="/bulten/" title="Aylık bülten" aria-label="Bülten"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h13v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M17 9h3v10a2 2 0 0 1-2 2"/><path d="M8 9h5M8 13h5M8 17h3"/></svg><span class="lbl">Bülten</span><span class="nav-dot" hidden aria-hidden="true"></span></a>
+    <a class="nav-btn icon" href="/hakkinda/" title="metrometre hakkında" aria-label="Hakkında"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 7.5v.01"/></svg><span class="lbl">Hakkında</span></a>
+  </nav>
 </header>
 
 <!-- YAPIŞKAN ŞERİT: metrikler + sekme çubuğu
@@ -1681,38 +1586,7 @@ a.src-badge:hover { border-color: currentColor; }
 </div>
 
 <!-- BİLGİ MODALİ -->
-<div id="modal-backdrop">
-  <div id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-    <div class="modal-title" id="modal-title">metrometre hakkında</div>
-    <button class="modal-close" id="modal-close" type="button" aria-label="Pencereyi kapat">✕</button>
-    <div class="modal-body">
-      <p><strong>metrometre</strong>, <span class="kapsam-yer">İstanbul ve Kocaeli'de</span> inşası süren raylı sistem projelerinin fiziksel ilerleme durumunu kamuya açık ve bağımsız bir şekilde izleyen bir paneldir. Herhangi bir kurum veya şirketle bağlantılı değildir; bağımsız bir sivil girişim olarak yönetilmektedir.</p>
-      <div class="modal-section-title">Veri kaynakları</div>
-      <p>İlerleme yüzdeleri ve tahmini açılış tarihleri, kurumların kamuoyuyla paylaştığı en güncel resmî açıklamalar esas alınarak derlenmektedir. Resmî açıklamaların yanı sıra CİMER'e, İBB Çözüm Merkezi'ne ve ilgili belediyelere yapılan bilgi edinme başvurularından elde edilen veriler de kullanılmaktadır. Veriler; X, YouTube ve çeşitli sosyal medya platformlarındaki bağımsız saha paylaşımlarıyla çapraz kontrol edilmektedir.</p>
-      <p style="margin-top:8px">Her hattın detay panelinde, güncel ilerleme değerinin dayanağı aşağıdaki rozetlerden biriyle belirtilmektedir. Kaynağın bağlantısı varsa rozete tıklanarak açılabilmektedir.</p>
-      <div id="src-legend" class="src-legend"></div>
-      <div class="modal-section-title">Açık veri</div>
-      <p>Paneldeki hat ve istasyon geometrileri ile aylık ilerleme tablosu <a href="https://github.com/sefabarisozturk/metrometre-data" target="_blank" rel="noopener">GitHub'da herkese açık</a> olarak yayımlanmaktadır; her değişiklik sürüm geçmişinde izlenebilmektedir.</p>
-      <div class="modal-section-title">Takip et</div>
-      <p>Aylık veriler yayımlandığında haberdar olmak için <a href="/feed.xml" target="_blank" rel="noopener">RSS beslemesini</a> Feedly, Inoreader gibi bir okuyucuya ekleyebilir ya da <a href="https://x.com/sefabarisozturk" target="_blank" rel="noopener">X hesabını</a> takip edebilirsiniz.</p>
-      <div class="modal-section-title">Güncelleme sıklığı</div>
-      <p>Panel aylık olarak güncellenmektedir. Açılış, test başlangıcı veya takvim değişikliği gibi önemli gelişmeler tespit edildiğinde ara güncelleme yapılmaktadır.<span id="modal-asof"></span></p>
-      <div class="modal-section-title">Sınırlılıklar</div>
-      <p>Fiziksel ilerleme yüzdeleri, kurumların kamuoyuyla paylaştığı bilgileri yansıtmaktadır. Yerinde bağımsız denetim yapılmamaktadır. Tahmini açılış tarihleri resmî açıklamalara dayalıdır ve değişime tabidir. Resmî verinin açıklanmadığı aylar ya boş bırakılmakta ya da komşu aylardan hesaplanan ara değerle doldurularak "Tahmin" olarak işaretlenmektedir.</p>
-    </div>
-    <hr class="modal-divider">
-    <div class="modal-footer">
-      <span>© Barış Öztürk · <a href="mailto:sbarisozturk@gmail.com">sbarisozturk@gmail.com</a> ·
-        <a href="https://x.com/sefabarisozturk" target="_blank" rel="noopener">X</a> ·
-        <a href="https://www.linkedin.com/in/sefabarisozturk/" target="_blank" rel="noopener">LinkedIn</a> ·
-        <a href="/hatlar/">Hatlar</a> ·
-        <a href="/bulten/">Bültenler</a>
-      </span>
-    </div>
-  </div>
-</div>
 
-<!-- İLERLEME KARŞILAŞTIRMA MODALİ -->
 <div id="mobile-toggle">
   <button class="mtoggle-btn active" id="mtoggle-list">☰ Listele</button>
   <button class="mtoggle-btn" id="mtoggle-map"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg> Haritayı Gör</button>
@@ -2003,7 +1877,6 @@ function syncIlUI(){
     document.getElementById('il-select-sizer').textContent = activeIl;
     wrap.hidden = ILLER.length < 2;
   }
-  document.querySelectorAll('.kapsam-yer').forEach(el => { el.textContent = kapsamYer(); });
 }
 
 // İl değiştirir: seçimi temizler, liste/harita/metrikleri yeniden çizer, ilin hatlarına yakınlaşır
@@ -2441,22 +2314,19 @@ async function initBultenLink(){
       .filter(b => /^\d{4}-\d{2}$/.test(String(b?.ay || '')))
       .sort((a, b) => String(b.ay).localeCompare(String(a.ay)))[0];
     if(!latest) return;
-    const label = `${TR_MONTHS[parseInt(latest.ay.slice(5), 10) - 1]} bülteni`;
-    btn.href = `/bulten/${latest.ay}`;
-    btn.querySelector('.bulten-btn-text').textContent = label;
-    btn.setAttribute('aria-label', label + (latest.baslik ? `: ${latest.baslik}` : ''));
-    btn.title = latest.baslik ? `${label}: ${latest.baslik}` : label;
+    // Düğme her sayfada aynı ("Bülten" → /bulten/); son sayı yalnızca ipucunda ve noktada belirtilir
+    const label = `${TR_MONTHS[parseInt(latest.ay.slice(5), 10) - 1]} ${latest.ay.slice(0, 4)} bülteni`;
+    btn.title = latest.baslik ? `Son sayı · ${label}: ${latest.baslik}` : `Son sayı · ${label}`;
     // Okunmamış sayı göstergesi (yalnızca bu tarayıcıda hatırlanır)
     const KEY = 'mm-bulten-son-okunan';
     let seen = null;
     try { seen = localStorage.getItem(KEY); } catch(_){}
-    const dot = btn.querySelector('.bulten-btn-dot');
+    const dot = btn.querySelector('.nav-dot');
     if(seen !== latest.ay) dot.hidden = false;
     btn.addEventListener('click', () => {
       dot.hidden = true;
       try { localStorage.setItem(KEY, latest.ay); } catch(_){}
     });
-    btn.hidden = false;
   } catch(_){ /* sessiz geç */ }
 }
 initBultenLink();
@@ -4788,66 +4658,6 @@ document.getElementById('cards-list').addEventListener('focusin', e => {
   });
 });
 
-// ═════════════════════════════════════════════════════
-//  BİLGİ MODALİ
-// ═════════════════════════════════════════════════════
-const backdrop  = document.getElementById('modal-backdrop');
-const modalEl   = document.getElementById('modal');
-const infoBtn   = document.getElementById('info-btn');
-let modalLastFocused = null;   // modal açılmadan önceki odak — kapanınca geri verilir
-
-// Modal içindeki odaklanabilir öğeler (DOM sırasında)
-function getModalFocusables(){
-  return Array.from(modalEl.querySelectorAll(
-    'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
-  ));
-}
-
-function openModal(){
-  modalLastFocused = document.activeElement;
-  backdrop.classList.add('show');
-  // Odağı modalın içine al (ilk odaklanabilir öğe = kapat butonu)
-  const f = getModalFocusables();
-  (f[0] || modalEl).focus();
-}
-
-function closeModal(){
-  if(!backdrop.classList.contains('show')) return;
-  backdrop.classList.remove('show');
-  // Odağı modalı açan öğeye geri ver
-  if(modalLastFocused && typeof modalLastFocused.focus === 'function'){
-    modalLastFocused.focus();
-  }
-  modalLastFocused = null;
-}
-
-infoBtn.addEventListener('click', openModal);
-document.getElementById('modal-close').addEventListener('click', closeModal);
-backdrop.addEventListener('click', e => { if(e.target === backdrop) closeModal(); });
-
-// Esc kapatır; Tab odağı modal içinde döngüye sokar (focus trap)
-document.addEventListener('keydown', e => {
-  if(!backdrop.classList.contains('show')) return;
-
-  if(e.key === 'Escape'){
-    e.preventDefault();
-    closeModal();
-    return;
-  }
-
-  if(e.key === 'Tab'){
-    const f = getModalFocusables();
-    if(f.length === 0) return;
-    const first = f[0], last = f[f.length - 1];
-    if(e.shiftKey && document.activeElement === first){
-      e.preventDefault();
-      last.focus();
-    } else if(!e.shiftKey && document.activeElement === last){
-      e.preventDefault();
-      first.focus();
-    }
-  }
-});
 
 // ═════════════════════════════════════════════════════
 //  TEKRAR DENE
@@ -5576,10 +5386,7 @@ function progressForFeature(p){
 
 // Veri (yeniden) yüklenince açık panelleri tazeler.
 function syncProgressUI(){
-  // Bilgi modalındaki veri dönemi cümlesi
-  const masof = document.getElementById('modal-asof');
-  const ym = latestDataYM();
-  if(masof) masof.textContent = ym ? ` Paneldeki en güncel fiziki ilerleme verisi ${ymLong(ym)} dönemine aittir.` : '';
+  // Bilgi penceresi kaldırıldı; veri dönemi cümlesi artık /hakkinda/ sayfasında (scripts/hat_sayfalari.py).
 }
 
 // Yüzde değerini TR biçiminde metne çevirir (tam sayıysa düz, değilse virgüllü).
@@ -5590,14 +5397,6 @@ function pctText(v){
 // ═════════════════════════════════════════════════════
 //  BAŞLATMA
 // ═════════════════════════════════════════════════════
-// Bilgi modalındaki kaynak türleri listesi — SOURCE_TYPES tek doğruluk kaynağı
-(function renderSourceLegend(){
-  const el = document.getElementById('src-legend');
-  if(!el) return;
-  el.innerHTML = SOURCE_TYPES.map(t =>
-    `<div class="src-legend-row"><span class="src-badge src-${t.key}"><span class="src-dot"></span>${esc(t.label)}</span><span>${esc(t.desc)}</span></div>`
-  ).join('');
-})();
 
 document.getElementById('il-select').addEventListener('change', e => {
   setIl(e.target.value);

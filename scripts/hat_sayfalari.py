@@ -13,7 +13,8 @@ yalnızca istenen hat(lar) üretilir:
   hat-sayfalari/<OBJECTID>.html   hat sayfaları; worker /hat/<id>-<slug> adresinde sunar
   hat-sayfalari/manifest.json     id → slug, lastmod (içerik değişmedikçe tarih korunur)
   hatlar/index.html               /hatlar/ dizini; hatlar/sayfalar.json haritadaki "Hat sayfası" düğmesi için
-  hakkinda/index.html             /hakkinda/ — metin haritadaki "metrometre hakkında" penceresinden okunur
+  hakkinda/index.html             /hakkinda/ — metin scripts/hakkinda_icerik.html'den okunur
+  bulten/*.html                   yalnız başlık: ortak başlıkla (site_header) değiştirilir
   sitemap.xml, robots.txt, 404.html
 
 Girdi:
@@ -148,6 +149,91 @@ def icon(url, kod, color, size):
     return (f'<span class="line-icon" style="--s:{size}px"><img src="{esc(url)}" alt="{esc(kod)}" '
             f'width="{size}" height="{size}" loading="lazy" '
             f'onerror="this.style.display=\'none\';this.nextElementSibling.hidden=false">{fb}</span>')
+
+
+# ───────────────────────── ortak başlık ─────────────────────────
+# Bütün sayfalarda aynı başlık: logo + slogan, sağda sabit sırayla Harita · Hatlar · Bülten · Hakkında.
+# Bulunulan bölüm dolu (kırmızı) görünür; dar ekranda hepsi simgeli yuvarlak düğmeye döner.
+# index.html (harita) aynı işaretlemeyi elle taşır; burayı değiştirirseniz orayı da güncelleyin.
+NAV_IKON = {
+    'harita':   '<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/>',
+    'hatlar':   '<path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1.2"/><circle cx="4.5" cy="12" r="1.2"/><circle cx="4.5" cy="18" r="1.2"/>',
+    'bulten':   '<path d="M4 5h13v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M17 9h3v10a2 2 0 0 1-2 2"/><path d="M8 9h5M8 13h5M8 17h3"/>',
+    'hakkinda': '<circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 7.5v.01"/>',
+}
+NAV = [('harita', '/', 'Harita', 'Harita: bütün hatlar'),
+       ('hatlar', '/hatlar/', 'Hatlar', 'Bütün hatlar: ilerleme ve tahmini açılış'),
+       ('bulten', '/bulten/', 'Bülten', 'Aylık bülten'),
+       ('hakkinda', '/hakkinda/', 'Hakkında', 'metrometre hakkında')]
+
+def site_header(aktif=None):
+    items = []
+    for key, href, lbl, title in NAV:
+        cur = ' aria-current="page"' if key == aktif else ''
+        cls = 'nav-btn icon' if key == 'hakkinda' else 'nav-btn'
+        items.append(f'<a class="{cls}" href="{href}"{cur} title="{title}" aria-label="{lbl}">'
+                     f'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" '
+                     f'stroke-linejoin="round" aria-hidden="true">{NAV_IKON[key]}</svg><span class="lbl">{lbl}</span></a>')
+    return ('<header id="header">\n'
+            '  <a id="logo-link" href="/" aria-label="metrometre ana sayfa">\n'
+            '    <img id="logo-img" src="/metrometre_logotype.png" alt="metrometre" '
+            'onerror="this.style.display=\'none\';document.getElementById(\'logo-fallback\').style.display=\'block\'">\n'
+            '    <div id="logo-fallback"><span>metro</span>metre</div>\n'
+            '    <span id="logo-tagline">raylı sistem projeleri<br>takip paneli</span>\n'
+            '  </a>\n'
+            '  <nav class="site-nav" aria-label="Site bölümleri">\n    ' + '\n    '.join(items) + '\n  </nav>\n'
+            '</header>')
+
+HEADER_CSS = """/* ── Ortak başlık (scripts/hat_sayfalari.py · site_header) ── */
+#header { position:fixed; top:0; left:0; right:0; height:var(--header-h); background:var(--surface);
+  border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between;
+  gap:10px; padding:0 20px; z-index:1000; }
+#logo-link { display:flex; align-items:center; gap:12px; text-decoration:none; height:36px; min-width:0; }
+#logo-link:hover { text-decoration:none; }
+#logo-img { height:26px; width:auto; display:block; flex-shrink:0; }
+#logo-fallback { display:none; font-size:17px; font-weight:700; color:var(--text); letter-spacing:-0.03em; }
+#logo-fallback span { font-weight:400; color:var(--text-muted); }
+#logo-tagline { font-size:10px; font-weight:500; color:var(--text-dim); letter-spacing:.02em; line-height:1.35;
+  padding-left:12px; border-left:1px solid var(--border); }
+.site-nav { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.nav-btn { position:relative; display:inline-flex; align-items:center; gap:7px; height:32px; padding:0 13px 0 11px;
+  border:1px solid var(--border-2); border-radius:99px; background:transparent; color:var(--text);
+  font-family:var(--font); font-size:12px; font-weight:600; letter-spacing:-0.01em; line-height:1; white-space:nowrap;
+  text-decoration:none; flex-shrink:0; transition:border-color .15s, color .15s, background .15s; }
+.nav-btn svg { width:15px; height:15px; flex-shrink:0; }
+.nav-btn:hover { border-color:var(--accent); color:var(--accent); background:#FEF2F2; text-decoration:none; }
+.nav-btn[aria-current="page"] { background:var(--accent); border-color:var(--accent); color:#fff; }
+.nav-btn[aria-current="page"]:hover { background:#9C1F18; border-color:#9C1F18; color:#fff; }
+.nav-btn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+.nav-btn.icon { width:32px; padding:0; justify-content:center; }
+.nav-btn.icon .lbl { display:none; }
+.nav-dot { position:absolute; top:-2px; right:-2px; width:9px; height:9px; border-radius:50%;
+  background:var(--accent); border:2px solid var(--surface); }
+.nav-dot[hidden] { display:none; }
+@media (max-width:768px) {
+  #header { padding:0 12px; }
+  #logo-tagline { display:none; }
+  #logo-link { flex-shrink:1; }
+  #logo-img { height:auto; width:min(184px, calc(100vw - 212px)); }
+  .site-nav { gap:6px; }
+  .nav-btn, .nav-btn.icon { width:40px; height:40px; padding:0; justify-content:center; gap:0; }
+  .nav-btn .lbl { display:none; }
+  .nav-btn svg { width:18px; height:18px; }
+}"""
+
+def bulten_basliklari(repo):
+    """Elle hazırlanan bülten sayfalarının başlığını ortak başlıkla değiştirir (yeni sayılar dahil)."""
+    for f in sorted((repo / 'bulten').glob('*.html')):
+        s = f.read_text(encoding='utf-8')
+        a, b = s.find('<header id="header">'), s.find('</header>')
+        if a < 0 or b < 0:
+            continue
+        yeni = s[:a] + site_header('bulten') + s[b + len('</header>'):]
+        stil = f'<style id="site-header">\n{HEADER_CSS}\n</style>\n'
+        yeni = re.sub(r'<style id="site-header">.*?</style>\n', '', yeni, flags=re.S)
+        yeni = yeni.replace('</head>', stil + '</head>', 1)
+        if yeni != s:
+            f.write_text(yeni, encoding='utf-8')
 
 
 # ───────────────────────── geometri ─────────────────────────
@@ -861,6 +947,7 @@ def build_page(oid, hat, durak, overlay, cards, updated):
         seyir=seyir_html,
         map_svg=build_map(feat, stations, hat, durak), stations=''.join(st_items),
         faq=faq_html, others=oth_html, il=esc(il), il_hash=esc(il_hash), il_slug=slugify(il),
+        header_css=HEADER_CSS, site_header=site_header('hatlar'),
     )
 
 
@@ -914,27 +1001,17 @@ a:hover {{ text-decoration:underline; }}
 :focus-visible {{ outline:2px solid var(--accent); outline-offset:2px; }}
 :focus:not(:focus-visible) {{ outline:none; }}
 
-/* ── Üst başlık: sitedekiyle aynı ── */
-#header {{ position:fixed; top:0; left:0; right:0; height:var(--header-h); background:var(--surface);
-  border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between;
-  padding:0 20px; z-index:1000; }}
-#logo-link {{ display:flex; align-items:center; gap:12px; text-decoration:none; height:36px; }}
-#logo-link:hover {{ text-decoration:none; }}
-#logo-img {{ height:26px; width:auto; display:block; flex-shrink:0; }}
-#logo-fallback {{ display:none; font-size:17px; font-weight:700; color:var(--text); letter-spacing:-0.03em; }}
-#logo-fallback span {{ font-weight:400; color:var(--text-muted); }}
-#logo-tagline {{ font-size:10px; font-weight:500; color:var(--text-dim); letter-spacing:.02em; line-height:1.35;
-  padding-left:12px; border-left:1px solid var(--border); }}
-#header-actions {{ display:flex; align-items:center; gap:10px; }}
-.hdr-btn, .btn {{ display:inline-flex; align-items:center; gap:7px; height:32px; padding:0 13px 0 11px;
+{header_css}
+
+/* ── Sayfa içi düğmeler ── */
+.btn {{ display:inline-flex; align-items:center; gap:7px; height:32px; padding:0 13px 0 11px;
   border:1px solid var(--border-2); border-radius:99px; background:transparent; color:var(--text);
   font-family:var(--font); font-size:12px; font-weight:600; letter-spacing:-0.01em; white-space:nowrap; cursor:pointer;
   transition:border-color .15s, color .15s, background .15s, box-shadow .15s; flex-shrink:0; }}
-.hdr-btn:hover, .btn:hover {{ border-color:var(--accent); color:var(--accent); background:#FEF2F2; text-decoration:none; }}
-.hdr-btn.primary, .btn.primary {{ border-color:var(--accent); background:var(--accent); color:#fff; }}
-.hdr-btn.primary:hover, .btn.primary:hover {{ background:#9C1F18; color:#fff; box-shadow:0 2px 8px rgba(180,39,31,.28); }}
-.hdr-btn.info {{ width:32px; padding:0; justify-content:center; border-radius:50%; font-size:15px; font-weight:400; color:var(--text-muted); }}
-.hdr-btn svg, .btn svg {{ width:15px; height:15px; flex-shrink:0; }}
+.btn:hover {{ border-color:var(--accent); color:var(--accent); background:#FEF2F2; text-decoration:none; }}
+.btn.primary {{ border-color:var(--accent); background:var(--accent); color:#fff; }}
+.btn.primary:hover {{ background:#9C1F18; color:#fff; box-shadow:0 2px 8px rgba(180,39,31,.28); }}
+.btn svg {{ width:15px; height:15px; flex-shrink:0; }}
 
 /* ── Sayfa ── */
 .crumbs {{ font-size:11px; color:var(--text-dim); display:flex; gap:6px; flex-wrap:wrap; margin:0 2px -10px; }}
@@ -1121,11 +1198,6 @@ footer {{ max-width:1100px; margin:0 auto; padding:4px 16px 32px; font-size:11px
 }}
 /* ── Telefon ── */
 @media (max-width:640px) {{
-  #header {{ padding:0 12px; }}
-  #logo-tagline {{ display:none; }}
-  .hdr-btn {{ height:40px; width:40px; padding:0; justify-content:center; gap:0; border-radius:50%; }}
-  .hdr-btn span {{ display:none; }}
-  .hdr-btn svg {{ width:18px; height:18px; }}
   main {{ row-gap:14px; padding-top:calc(var(--header-h) + 10px); }}
   .hero-main {{ padding:14px 16px 12px; gap:8px; }}
   h1 {{ font-size:20px; }}
@@ -1160,19 +1232,7 @@ footer {{ max-width:1100px; margin:0 auto; padding:4px 16px 32px; font-size:11px
 </head>
 <body>
 
-<header id="header">
-  <a id="logo-link" href="/" aria-label="metrometre ana sayfa">
-    <img id="logo-img" src="/metrometre_logotype.png" alt="metrometre"
-      onerror="this.style.display='none';document.getElementById('logo-fallback').style.display='block'">
-    <div id="logo-fallback"><span>metro</span>metre</div>
-    <span id="logo-tagline">raylı sistem projeleri<br>takip paneli</span>
-  </a>
-  <nav id="header-actions" aria-label="Sayfa bağlantıları">
-    <a class="hdr-btn" href="/bulten/" title="Bültenler"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h13v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M17 9h3v10a2 2 0 0 1-2 2"/><path d="M8 9h5M8 13h5M8 17h3"/></svg><span>Bültenler</span></a>
-    <a class="hdr-btn primary" href="/" title="Haritada bütün hatlar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg><span>Harita</span></a>
-    <a class="hdr-btn info" href="/hakkinda/" aria-label="metrometre hakkında" title="metrometre hakkında">ⓘ</a>
-  </nav>
-</header>
+{site_header}
 
 <main>
 <nav class="crumbs" aria-label="Konum"><a href="/">metrometre</a><span aria-hidden="true">›</span><a href="/hatlar/#{il_slug}-{sekme}">{il} · {crumb_tab}</a><span aria-hidden="true">›</span><span aria-current="page">{crumb_kod}</span></nav>
@@ -1311,15 +1371,12 @@ def build_sitemap(repo, manifest):
     return SITEMAP_HEAD + body + '</urlset>\n'
 
 def build_hakkinda(repo, overlay):
-    """/hakkinda/ — içerik haritadaki "metrometre hakkında" penceresinden okunur (tek kaynak).
-    Pencerede JS ile doldurulan iki parça burada üretilir: kaynak rozetleri (SOURCE_TYPES)
+    """/hakkinda/ — metin scripts/hakkinda_icerik.html dosyasından okunur (tek kaynak; sitede
+    yayımlanmaz). İki parça burada üretilir: kaynak rozetleri (index.html'deki SOURCE_TYPES)
     ve veri dönemi cümlesi (overlay.csv'deki en son ilerleme ayı)."""
     src = (repo / 'index.html').read_text(encoding='utf-8')
-    a = src.index('<div class="modal-body">') + len('<div class="modal-body">')
-    b = src.index('<hr class="modal-divider">', a)
-    body = src[a:b].rstrip()
-    assert body.endswith('</div>'), 'Hakkında penceresinin yapısı değişmiş'
-    body = body[:-len('</div>')].strip()
+    body = (repo / 'scripts' / 'hakkinda_icerik.html').read_text(encoding='utf-8')
+    body = re.sub(r'<!--.*?-->', '', body, flags=re.S).strip()
     # kaynak rozetleri
     m = re.search(r'const SOURCE_TYPES = \[(.*?)\];', src, re.S)
     turler = re.findall(r"key:'(\w+)',\s*label:'([^']*)',\s*desc:'([^']*)'", m[1] if m else '')
@@ -1335,7 +1392,8 @@ def build_hakkinda(repo, overlay):
     body = body.replace(' target="_blank" rel="noopener"', '')
     body = re.sub(r'<p style="margin-top:8px">', '<p>', body)
     ozet = re.sub(r'<[^>]+>', '', re.search(r'<p>(.*?)</p>', body, re.S)[1]).strip()
-    return PAGE_HAKKINDA.replace('{{BODY}}', body).replace('{{DESC}}', esc(ozet[:300]))
+    return (PAGE_HAKKINDA.replace('{{BODY}}', body).replace('{{DESC}}', esc(ozet[:300]))
+            .replace('{{HEADER_CSS}}', HEADER_CSS).replace('{{HEADER}}', site_header('hakkinda')))
 
 ROBOTS = f"User-agent: *\nAllow: /\n\nSitemap: {SITE}/sitemap.xml\n"
 
@@ -1386,6 +1444,7 @@ def build_hatlar(hat, cards, manifest, overlay):
                             f'<span>{len(satirlar)}</span></h3><ul class="list">{"".join(rows)}</ul></section>')
         bolumler.append(f'<section class="il"><h2>{esc(il)}</h2>{"".join(parcalar)}</section>')
     return (PAGE_HATLAR.replace('{{BOLUMLER}}', ''.join(bolumler))
+            .replace('{{HEADER_CSS}}', HEADER_CSS).replace('{{HEADER}}', site_header('hatlar'))
             .replace('{{ILLER}}', esc(' ve '.join(iller)))
             .replace('{{ILLER_SIFAT}}', esc(' ve '.join(iller[:-1]) + (' ve ' if len(iller) > 1 else '') + iller[-1] + "'deki")
                      if iller else ''))
@@ -1405,7 +1464,8 @@ def build_404(hat, cards, manifest):
         f'<span class="oth-txt"><b>{esc(kod_goster(q["KOD"]))}</b> '
         f'{esc(tire(re.sub(r" (Metro|Tramvay) Hattı$", "", q["AD"])))}</span></a>'
         for _, _, q, oid in yapim)
-    return PAGE_404.replace('{{LINKS}}', links)
+    return (PAGE_404.replace('{{LINKS}}', links)
+            .replace('{{HEADER_CSS}}', HEADER_CSS).replace('{{HEADER}}', site_header(None)))
 
 PAGE_HATLAR = """<!DOCTYPE html>
 <html lang="tr">
@@ -1436,16 +1496,7 @@ PAGE_HATLAR = """<!DOCTYPE html>
   --font:'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
 body { background:var(--bg); color:var(--text); font-family:var(--font); font-size:13px; line-height:1.5; }
 a { color:var(--accent); text-decoration:none; }
-#header { position:fixed; top:0; left:0; right:0; height:var(--header-h); background:var(--surface); border-bottom:1px solid var(--border);
-  display:flex; align-items:center; justify-content:space-between; padding:0 20px; z-index:10; }
-#logo-img { height:26px; display:block; }
-#logo-fallback { display:none; font-size:17px; font-weight:700; letter-spacing:-0.03em; color:var(--text); }
-#logo-fallback span { font-weight:400; color:var(--text-muted); }
-.hdr { display:flex; gap:10px; }
-.hdr a { display:inline-flex; align-items:center; height:32px; padding:0 13px; border:1px solid var(--border-2); border-radius:99px;
-  color:var(--text); font-weight:600; font-size:12px; }
-.hdr a.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
-.hdr a.info { width:32px; padding:0; justify-content:center; border-radius:50%; font-size:15px; font-weight:400; color:var(--text-muted); }
+{{HEADER_CSS}}
 main { max-width:900px; margin:0 auto; padding:calc(var(--header-h) + 22px) 16px 40px; display:flex; flex-direction:column; gap:26px; }
 h1 { font-size:24px; letter-spacing:-0.03em; line-height:1.2; }
 .lead { font-size:14px; color:var(--text-muted); line-height:1.6; max-width:68ch; margin-top:8px; }
@@ -1468,14 +1519,11 @@ h1 { font-size:24px; letter-spacing:-0.03em; line-height:1.2; }
 .icon-fb { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:700; color:#fff; }
 .icon-fb[hidden] { display:none; }
 .method { font-size:12px; color:var(--text-dim); line-height:1.6; max-width:90ch; }
-@media (max-width:640px) { .list { grid-template-columns:minmax(0,1fr); } #header { padding:0 12px; } h1 { font-size:20px; }
-  #logo-img { height:20px; } .hdr { gap:6px; } .hdr a { height:30px; padding:0 10px; font-size:11.5px; } .hdr a.info { width:30px; padding:0; } }
+@media (max-width:640px) { .list { grid-template-columns:minmax(0,1fr); } h1 { font-size:20px; } }
 </style>
 </head>
 <body>
-<header id="header"><a href="/" aria-label="metrometre ana sayfa"><img id="logo-img" src="/metrometre_logotype.png" alt="metrometre"
-  onerror="this.style.display='none';document.getElementById('logo-fallback').style.display='block'"><div id="logo-fallback"><span>metro</span>metre</div></a>
-  <nav class="hdr" aria-label="Sayfa bağlantıları"><a href="/bulten/">Bültenler</a><a class="primary" href="/">Harita</a><a class="info" href="/hakkinda/" aria-label="metrometre hakkında" title="metrometre hakkında">ⓘ</a></nav></header>
+{{HEADER}}
 <main>
   <div>
     <h1>{{ILLER}} raylı sistem projeleri</h1>
@@ -1520,15 +1568,7 @@ PAGE_HAKKINDA = """<!DOCTYPE html>
 body { background:var(--bg); color:var(--text); font-family:var(--font); font-size:13px; line-height:1.5; }
 a { color:var(--accent); text-decoration:none; }
 a:hover { text-decoration:underline; }
-#header { position:fixed; top:0; left:0; right:0; height:var(--header-h); background:var(--surface); border-bottom:1px solid var(--border);
-  display:flex; align-items:center; justify-content:space-between; padding:0 20px; z-index:10; }
-#logo-img { height:26px; display:block; }
-#logo-fallback { display:none; font-size:17px; font-weight:700; letter-spacing:-0.03em; color:var(--text); }
-#logo-fallback span { font-weight:400; color:var(--text-muted); }
-.hdr { display:flex; gap:10px; }
-.hdr a { display:inline-flex; align-items:center; height:32px; padding:0 13px; border:1px solid var(--border-2); border-radius:99px;
-  color:var(--text); font-weight:600; font-size:12px; text-decoration:none; }
-.hdr a.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+{{HEADER_CSS}}
 main { max-width:680px; margin:0 auto; padding:calc(var(--header-h) + 22px) 16px 40px; }
 .panel { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:24px 26px; }
 h1 { font-size:22px; letter-spacing:-0.03em; margin-bottom:14px; }
@@ -1545,14 +1585,11 @@ strong { color:var(--text); }
 .src-saha { background:#FFFBEB; color:#92400E; } .src-tahmin { background:#F5F5F5; color:#525252; }
 .src-diger { background:#F5F3FF; color:#5B21B6; }
 footer { max-width:680px; margin:0 auto; padding:0 16px 32px; font-size:11px; color:var(--text-dim); }
-@media (max-width:640px) { #header { padding:0 12px; } #logo-img { height:20px; } .hdr { gap:6px; }
-  .hdr a { height:30px; padding:0 10px; font-size:11.5px; } .panel { padding:20px 18px; } .src-legend-row { flex-direction:column; gap:4px; } }
+@media (max-width:640px) { .panel { padding:20px 18px; } .src-legend-row { flex-direction:column; gap:4px; } }
 </style>
 </head>
 <body>
-<header id="header"><a href="/" aria-label="metrometre ana sayfa"><img id="logo-img" src="/metrometre_logotype.png" alt="metrometre"
-  onerror="this.style.display='none';document.getElementById('logo-fallback').style.display='block'"><div id="logo-fallback"><span>metro</span>metre</div></a>
-  <nav class="hdr" aria-label="Sayfa bağlantıları"><a href="/bulten/">Bültenler</a><a class="primary" href="/">Harita</a></nav></header>
+{{HEADER}}
 <main>
   <article class="panel">
     <h1>metrometre hakkında</h1>
@@ -1583,11 +1620,7 @@ PAGE_404 = """<!DOCTYPE html>
   --font:'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
 body { background:var(--bg); color:var(--text); font-family:var(--font); font-size:13px; line-height:1.5; }
 a { color:var(--accent); text-decoration:none; }
-#header { position:fixed; top:0; left:0; right:0; height:var(--header-h); background:var(--surface); border-bottom:1px solid var(--border);
-  display:flex; align-items:center; padding:0 20px; z-index:10; }
-#logo-img { height:26px; display:block; }
-#logo-fallback { display:none; font-size:17px; font-weight:700; letter-spacing:-0.03em; color:var(--text); }
-#logo-fallback span { font-weight:400; color:var(--text-muted); }
+{{HEADER_CSS}}
 main { max-width:760px; margin:0 auto; padding:calc(var(--header-h) + 28px) 16px 40px; display:flex; flex-direction:column; gap:22px; }
 .panel { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:26px 24px; }
 .code { font-size:12px; font-weight:700; color:var(--accent); letter-spacing:.06em; }
@@ -1611,8 +1644,7 @@ p { font-size:14px; color:var(--text-muted); line-height:1.6; max-width:60ch; }
 </style>
 </head>
 <body>
-<header id="header"><a href="/" aria-label="metrometre ana sayfa"><img id="logo-img" src="/metrometre_logotype.png" alt="metrometre"
-  onerror="this.style.display='none';document.getElementById('logo-fallback').style.display='block'"><div id="logo-fallback"><span>metro</span>metre</div></a></header>
+{{HEADER}}
 <main>
   <section class="panel">
     <div class="code">404</div>
@@ -1679,6 +1711,7 @@ if __name__ == '__main__':
     (repo / 'sitemap.xml').write_text(build_sitemap(repo, manifest), encoding='utf-8')
     (repo / 'robots.txt').write_text(ROBOTS, encoding='utf-8')
     (repo / '404.html').write_text(build_404(hat, cards, manifest), encoding='utf-8')
+    bulten_basliklari(repo)
     (repo / 'hakkinda').mkdir(exist_ok=True)
     (repo / 'hakkinda' / 'index.html').write_text(build_hakkinda(repo, overlay), encoding='utf-8')
     (repo / 'hatlar').mkdir(exist_ok=True)

@@ -48,27 +48,52 @@ a:hover { text-decoration:underline; }
 :focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
 :focus:not(:focus-visible) { outline:none; }
 
-/* ── Üst başlık: sitedekiyle aynı ── */
+/* ── Ortak başlık (scripts/hat_sayfalari.py · site_header) ── */
 #header { position:fixed; top:0; left:0; right:0; height:var(--header-h); background:var(--surface);
   border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between;
-  padding:0 20px; z-index:1000; }
-#logo-link { display:flex; align-items:center; gap:12px; text-decoration:none; height:36px; }
+  gap:10px; padding:0 20px; z-index:1000; }
+#logo-link { display:flex; align-items:center; gap:12px; text-decoration:none; height:36px; min-width:0; }
 #logo-link:hover { text-decoration:none; }
 #logo-img { height:26px; width:auto; display:block; flex-shrink:0; }
 #logo-fallback { display:none; font-size:17px; font-weight:700; color:var(--text); letter-spacing:-0.03em; }
 #logo-fallback span { font-weight:400; color:var(--text-muted); }
 #logo-tagline { font-size:10px; font-weight:500; color:var(--text-dim); letter-spacing:.02em; line-height:1.35;
   padding-left:12px; border-left:1px solid var(--border); }
-#header-actions { display:flex; align-items:center; gap:10px; }
-.hdr-btn, .btn { display:inline-flex; align-items:center; gap:7px; height:32px; padding:0 13px 0 11px;
+.site-nav { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.nav-btn { position:relative; display:inline-flex; align-items:center; gap:7px; height:32px; padding:0 13px 0 11px;
+  border:1px solid var(--border-2); border-radius:99px; background:transparent; color:var(--text);
+  font-family:var(--font); font-size:12px; font-weight:600; letter-spacing:-0.01em; line-height:1; white-space:nowrap;
+  text-decoration:none; flex-shrink:0; transition:border-color .15s, color .15s, background .15s; }
+.nav-btn svg { width:15px; height:15px; flex-shrink:0; }
+.nav-btn:hover { border-color:var(--accent); color:var(--accent); background:#FEF2F2; text-decoration:none; }
+.nav-btn[aria-current="page"] { background:var(--accent); border-color:var(--accent); color:#fff; }
+.nav-btn[aria-current="page"]:hover { background:#9C1F18; border-color:#9C1F18; color:#fff; }
+.nav-btn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+.nav-btn.icon { width:32px; padding:0; justify-content:center; }
+.nav-btn.icon .lbl { display:none; }
+.nav-dot { position:absolute; top:-2px; right:-2px; width:9px; height:9px; border-radius:50%;
+  background:var(--accent); border:2px solid var(--surface); }
+.nav-dot[hidden] { display:none; }
+@media (max-width:768px) {
+  #header { padding:0 12px; }
+  #logo-tagline { display:none; }
+  #logo-link { flex-shrink:1; }
+  #logo-img { height:auto; width:min(184px, calc(100vw - 212px)); }
+  .site-nav { gap:6px; }
+  .nav-btn, .nav-btn.icon { width:40px; height:40px; padding:0; justify-content:center; gap:0; }
+  .nav-btn .lbl { display:none; }
+  .nav-btn svg { width:18px; height:18px; }
+}
+
+/* ── Sayfa içi düğmeler ── */
+.btn { display:inline-flex; align-items:center; gap:7px; height:32px; padding:0 13px 0 11px;
   border:1px solid var(--border-2); border-radius:99px; background:transparent; color:var(--text);
   font-family:var(--font); font-size:12px; font-weight:600; letter-spacing:-0.01em; white-space:nowrap; cursor:pointer;
   transition:border-color .15s, color .15s, background .15s, box-shadow .15s; flex-shrink:0; }
-.hdr-btn:hover, .btn:hover { border-color:var(--accent); color:var(--accent); background:#FEF2F2; text-decoration:none; }
-.hdr-btn.primary, .btn.primary { border-color:var(--accent); background:var(--accent); color:#fff; }
-.hdr-btn.primary:hover, .btn.primary:hover { background:#9C1F18; color:#fff; box-shadow:0 2px 8px rgba(180,39,31,.28); }
-.hdr-btn.info { width:32px; padding:0; justify-content:center; border-radius:50%; font-size:15px; font-weight:400; color:var(--text-muted); }
-.hdr-btn svg, .btn svg { width:15px; height:15px; flex-shrink:0; }
+.btn:hover { border-color:var(--accent); color:var(--accent); background:#FEF2F2; text-decoration:none; }
+.btn.primary { border-color:var(--accent); background:var(--accent); color:#fff; }
+.btn.primary:hover { background:#9C1F18; color:#fff; box-shadow:0 2px 8px rgba(180,39,31,.28); }
+.btn svg { width:15px; height:15px; flex-shrink:0; }
 
 /* ── Sayfa ── */
 .crumbs { font-size:11px; color:var(--text-dim); display:flex; gap:6px; flex-wrap:wrap; margin:0 2px -10px; }
@@ -255,11 +280,6 @@ footer { max-width:1100px; margin:0 auto; padding:4px 16px 32px; font-size:11px;
 }
 /* ── Telefon ── */
 @media (max-width:640px) {
-  #header { padding:0 12px; }
-  #logo-tagline { display:none; }
-  .hdr-btn { height:40px; width:40px; padding:0; justify-content:center; gap:0; border-radius:50%; }
-  .hdr-btn span { display:none; }
-  .hdr-btn svg { width:18px; height:18px; }
   main { row-gap:14px; padding-top:calc(var(--header-h) + 10px); }
   .hero-main { padding:14px 16px 12px; gap:8px; }
   h1 { font-size:20px; }
@@ -296,15 +316,15 @@ footer { max-width:1100px; margin:0 auto; padding:4px 16px 32px; font-size:11px;
 
 <header id="header">
   <a id="logo-link" href="/" aria-label="metrometre ana sayfa">
-    <img id="logo-img" src="/metrometre_logotype.png" alt="metrometre"
-      onerror="this.style.display='none';document.getElementById('logo-fallback').style.display='block'">
+    <img id="logo-img" src="/metrometre_logotype.png" alt="metrometre" onerror="this.style.display='none';document.getElementById('logo-fallback').style.display='block'">
     <div id="logo-fallback"><span>metro</span>metre</div>
     <span id="logo-tagline">raylı sistem projeleri<br>takip paneli</span>
   </a>
-  <nav id="header-actions" aria-label="Sayfa bağlantıları">
-    <a class="hdr-btn" href="/bulten/" title="Bültenler"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h13v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M17 9h3v10a2 2 0 0 1-2 2"/><path d="M8 9h5M8 13h5M8 17h3"/></svg><span>Bültenler</span></a>
-    <a class="hdr-btn primary" href="/" title="Haritada bütün hatlar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg><span>Harita</span></a>
-    <a class="hdr-btn info" href="/hakkinda/" aria-label="metrometre hakkında" title="metrometre hakkında">ⓘ</a>
+  <nav class="site-nav" aria-label="Site bölümleri">
+    <a class="nav-btn" href="/" title="Harita: bütün hatlar" aria-label="Harita"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg><span class="lbl">Harita</span></a>
+    <a class="nav-btn" href="/hatlar/" aria-current="page" title="Bütün hatlar: ilerleme ve tahmini açılış" aria-label="Hatlar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1.2"/><circle cx="4.5" cy="12" r="1.2"/><circle cx="4.5" cy="18" r="1.2"/></svg><span class="lbl">Hatlar</span></a>
+    <a class="nav-btn" href="/bulten/" title="Aylık bülten" aria-label="Bülten"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h13v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M17 9h3v10a2 2 0 0 1-2 2"/><path d="M8 9h5M8 13h5M8 17h3"/></svg><span class="lbl">Bülten</span></a>
+    <a class="nav-btn icon" href="/hakkinda/" title="metrometre hakkında" aria-label="Hakkında"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 7.5v.01"/></svg><span class="lbl">Hakkında</span></a>
   </nav>
 </header>
 
