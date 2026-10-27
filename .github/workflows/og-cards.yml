@@ -49,12 +49,12 @@ jobs:
       # Kartlardan sonra: og/lines.json'daki kart sürümünü og:image için kullanır.
       # Yalnızca standart kütüphane; ek kurulum gerekmez. İçeriği değişmeyen sayfanın
       # tarihi (sitemap lastmod) korunur, günlük çalışma gereksiz commit üretmez.
-      - name: Hat sayfaları, sitemap ve 404
+      - name: Hat sayfaları, /hatlar/ dizini, sitemap ve 404
         run: python scripts/hat_sayfalari.py
 
       - name: Değişiklik varsa commit at
         run: |
-          git add og/ bulten/*.png bulten/kartlar.json hat-sayfalari/ sitemap.xml robots.txt 404.html
+          git add og/ bulten/*.png bulten/kartlar.json hat-sayfalari/ sitemap.xml robots.txt 404.html hatlar/
           if git diff --cached --quiet; then
             echo "Kartlarda değişiklik yok."
             exit 0

@@ -963,6 +963,13 @@ a.src-badge:hover { border-color: currentColor; }
   border-color: var(--text-muted);
   color: var(--text);
 }
+/* Hattın ayrıntılı sayfasına bağlantı (yalnız sayfası olan hatlarda görünür) */
+.detail-page-link {
+  display: inline-block; margin-top: 7px;
+  font-size: 11.5px; font-weight: 600; color: var(--accent); text-decoration: none; line-height: 1.35;
+}
+.detail-page-link:hover { text-decoration: underline; }
+.detail-page-link[hidden] { display: none; }
 #detail-share:hover {
   border-color: var(--accent);
   color: var(--accent);
@@ -1634,6 +1641,7 @@ a.src-badge:hover { border-color: currentColor; }
               <span id="detail-status" class="card-tag" hidden></span>
               <span id="detail-stats"></span>
             </div>
+            <a id="detail-page" class="detail-page-link" href="/hatlar/" hidden>Hat sayfasını aç →</a>
           </div>
           <div id="detail-actions">
             <button id="detail-share" class="detail-action-btn" type="button" aria-label="Hattı paylaş" aria-haspopup="dialog" title="Paylaş">
@@ -1785,6 +1793,7 @@ a.src-badge:hover { border-color: currentColor; }
       <span>© Barış Öztürk · <a href="mailto:sbarisozturk@gmail.com">sbarisozturk@gmail.com</a> ·
         <a href="https://x.com/sefabarisozturk" target="_blank" rel="noopener">X</a> ·
         <a href="https://www.linkedin.com/in/sefabarisozturk/" target="_blank" rel="noopener">LinkedIn</a> ·
+        <a href="/hatlar/">Hatlar</a> ·
         <a href="/bulten/">Bültenler</a>
       </span>
     </div>
@@ -2503,6 +2512,37 @@ function initMap(){
 //  VERİ YÜKLEME
 // ═════════════════════════════════════════════════════
 // ═════════════════════════════════════════════════════
+//  HAT SAYFALARI — hatlar/sayfalar.json (scripts/hat_sayfalari.py üretir).
+//  Detay kartındaki "Hat sayfası" bağlantısı yalnızca sayfası olan hatlarda görünür.
+//  Liste okunamazsa bağlantı gizli kalır; harita bundan etkilenmez.
+// ═════════════════════════════════════════════════════
+let HAT_SAYFALARI = null;      // { sayfalar: {id: slug}, takma: {id: id} }
+let detailPageId = null;       // açık detay kartının hat id'si (liste geç gelirse yeniden uygulamak için)
+async function initHatSayfalari(){
+  try {
+    const r = await fetch('/hatlar/sayfalar.json', { cache: 'no-cache' });
+    if(!r.ok) return;
+    HAT_SAYFALARI = await r.json();
+    if(detailPageId) setDetailPageLink(detailPageId);
+  } catch(_){}
+}
+function hatSayfasiUrl(id){
+  if(!HAT_SAYFALARI || id == null || id === '') return null;
+  const k = String(id);
+  const hedef = HAT_SAYFALARI.sayfalar?.[k] ? k : HAT_SAYFALARI.takma?.[k];
+  const slug = hedef && HAT_SAYFALARI.sayfalar?.[hedef];
+  return slug ? `/hat/${hedef}-${slug}` : null;
+}
+function setDetailPageLink(id){
+  detailPageId = id;
+  const a = document.getElementById('detail-page');
+  if(!a) return;
+  const url = hatSayfasiUrl(id);
+  a.hidden = !url;
+  if(url) a.href = url;
+}
+
+// ═════════════════════════════════════════════════════
 //  BÜLTEN BAĞLANTISI — bulten/bultenler.json'daki en yeni sayıyı başlığa koyar.
 //  Harita verisinden bağımsızdır; liste okunamazsa düğme gizli kalır.
 // ═════════════════════════════════════════════════════
@@ -2537,6 +2577,7 @@ async function initBultenLink(){
   } catch(_){ /* sessiz geç */ }
 }
 initBultenLink();
+initHatSayfalari();
 
 async function loadData(){
   // Her loadData çağrısında ilk fit'i tekrar tetiklenir hâle getir (Retry de bunu kullanır).
@@ -3071,6 +3112,7 @@ function openDetailPopup(p){
   const proje = (activeTab === 'proje' && selectedFeature) ? projeOfFeature(selectedFeature) : null;
   if(proje) p = { ...proje.rep, MESAFE: proje.km, ISTASYON: proje.ist || null,
                   PR_DETAY: proje.text, PR_ACIKLAMA: proje.text };
+  setDetailPageLink(line ? null : p.OBJECTID);
   const renk  = normHex(p.RENK_HEX) || '#9B9B9B';
   const imgEl = document.getElementById('detail-icon-img');
   const fbEl  = document.getElementById('detail-icon-fallback');

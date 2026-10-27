@@ -12,6 +12,7 @@ yalnızca istenen hat(lar) üretilir:
 Çıktı (repo kökünde):
   hat-sayfalari/<OBJECTID>.html   hat sayfaları; worker /hat/<id>-<slug> adresinde sunar
   hat-sayfalari/manifest.json     id → slug, lastmod (içerik değişmedikçe tarih korunur)
+  hatlar/index.html               /hatlar/ dizini; hatlar/sayfalar.json haritadaki "Hat sayfası" düğmesi için
   sitemap.xml, robots.txt, 404.html
 
 Girdi:
@@ -858,7 +859,7 @@ def build_page(oid, hat, durak, overlay, cards, updated):
         share_url=esc(url),
         seyir=seyir_html,
         map_svg=build_map(feat, stations, hat, durak), stations=''.join(st_items),
-        faq=faq_html, others=oth_html, il=esc(il), il_hash=esc(il_hash),
+        faq=faq_html, others=oth_html, il=esc(il), il_hash=esc(il_hash), il_slug=slugify(il),
     )
 
 
@@ -1166,12 +1167,12 @@ footer {{ max-width:1100px; margin:0 auto; padding:4px 16px 32px; font-size:11px
   </a>
   <nav id="header-actions" aria-label="Sayfa bağlantıları">
     <a class="hdr-btn" href="/bulten/" title="Bültenler"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h13v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M17 9h3v10a2 2 0 0 1-2 2"/><path d="M8 9h5M8 13h5M8 17h3"/></svg><span>Bültenler</span></a>
-    <a class="hdr-btn primary" href="/" title="Tüm hatlar haritada"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg><span>Tüm hatlar</span></a>
+    <a class="hdr-btn primary" href="/" title="Haritada bütün hatlar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg><span>Harita</span></a>
   </nav>
 </header>
 
 <main>
-<nav class="crumbs" aria-label="Konum"><a href="/">metrometre</a><span aria-hidden="true">›</span><a href="/#{il_hash}tab={sekme}">{il} · {crumb_tab}</a><span aria-hidden="true">›</span><span aria-current="page">{crumb_kod}</span></nav>
+<nav class="crumbs" aria-label="Konum"><a href="/">metrometre</a><span aria-hidden="true">›</span><a href="/hatlar/#{il_slug}-{sekme}">{il} · {crumb_tab}</a><span aria-hidden="true">›</span><span aria-current="page">{crumb_kod}</span></nav>
 
 <article class="panel hero{hero_cls}" aria-labelledby="h1">
   <div class="hero-main">
@@ -1210,7 +1211,7 @@ footer {{ max-width:1100px; margin:0 auto; padding:4px 16px 32px; font-size:11px
 </section>
 
 <section id="s-ot" aria-labelledby="h-ot">
-  <h2 class="sec-lbl" id="h-ot">Yapımı süren diğer hatlar</h2>
+  <h2 class="sec-lbl" id="h-ot">Yapımı süren diğer hatlar <span class="sec-note">· <a href="/hatlar/">bütün hatlar</a></span></h2>
   <div class="others">{others}</div>
 </section>
 
@@ -1291,6 +1292,7 @@ def build_sitemap(repo, manifest):
     urls = []
     son = max((v['lastmod'] for v in manifest['sayfalar'].values()), default=BUGUN.isoformat())
     urls.append((SITE + '/', son))
+    urls.append((SITE + '/hatlar/', son))
     urls.append((SITE + '/bulten/', None))
     try:
         bl = json.loads((repo / 'bulten' / 'bultenler.json').read_text(encoding='utf-8'))['bultenler']
@@ -1305,6 +1307,57 @@ def build_sitemap(repo, manifest):
     return SITEMAP_HEAD + body + '</urlset>\n'
 
 ROBOTS = f"User-agent: *\nAllow: /\n\nSitemap: {SITE}/sitemap.xml\n"
+
+ASAMA_BASLIK = {'yapim': 'Yapımı süren hatlar', 'isletme': 'Yakın zamanda açılan hatlar',
+                'proje': 'Proje aşamasındaki hatlar'}
+
+def build_hatlar(hat, cards, manifest, overlay):
+    """/hatlar/ — bütün hat sayfalarının il ve aşamaya göre dizini."""
+    by_id = {str(f['properties']['OBJECTID']): f['properties'] for f in hat}
+    gruplar = {}
+    for oid in manifest['sayfalar']:
+        q = by_id[oid]
+        il = (q.get('IL') or '').split(',')[0].strip() or VARSAYILAN_IL
+        gruplar.setdefault((il, asama_of(str(q.get('PR_DURUM')))), []).append(q)
+    iller = sorted({k[0] for k in gruplar}, key=lambda x: (x != VARSAYILAN_IL, x))
+    bolumler, toplam = [], 0
+    for il in iller:
+        parcalar = []
+        for asama in ('yapim', 'isletme', 'proje'):
+            satirlar = gruplar.get((il, asama), [])
+            if not satirlar:
+                continue
+            if asama == 'yapim':
+                satirlar.sort(key=lambda q: -(cards.get(str(q['OBJECTID']), {}).get('pct') or 0))
+            else:
+                satirlar.sort(key=lambda q: (len(kod_goster(q['KOD'])) < 2, kod_goster(q['KOD']), q['AD']))
+            rows = []
+            for q in satirlar:
+                oid = str(q['OBJECTID'])
+                c = cards.get(oid, {})
+                kod = kod_goster(q['KOD'])
+                ad = tire(re.sub(r" (Metro|Tramvay) Hattı$", "", q['AD']))
+                if asama == 'yapim':
+                    alt = ' · '.join(x for x in [f"%{fmt_pct(c['pct'])}" if c.get('pct') is not None else '',
+                                                 f"Tahmini açılış: {c['acilis']}" if c.get('acilis') else ''] if x)
+                elif asama == 'isletme':
+                    alt = f"Açılış: {c['acilis']}" if c.get('acilis') else 'İşletmede'
+                else:
+                    alt = DURUM_LABEL.get(str(q.get('PR_DURUM')), '')
+                bar = (f'<span class="bar"><i style="width:{c["pct"]:.0f}%"></i></span>'
+                       if asama == 'yapim' and c.get('pct') is not None else '')
+                rows.append(f'<li><a href="/hat/{oid}-{manifest["sayfalar"][oid]["slug"]}">'
+                            f'{icon(q.get("IKON_URL"), kod if len(kod) > 1 else (kod or "•"), q.get("RENK_HEX"), 26)}'
+                            f'<span class="t"><b>{esc(kod + " " if len(kod) > 1 else "")}</b>{esc(ad)}'
+                            f'<span class="s">{esc(alt)}</span></span>{bar}</a></li>')
+                toplam += 1
+            parcalar.append(f'<section id="{slugify(il)}-{asama}"><h3 class="grp">{ASAMA_BASLIK[asama]} '
+                            f'<span>{len(satirlar)}</span></h3><ul class="list">{"".join(rows)}</ul></section>')
+        bolumler.append(f'<section class="il"><h2>{esc(il)}</h2>{"".join(parcalar)}</section>')
+    return (PAGE_HATLAR.replace('{{BOLUMLER}}', ''.join(bolumler))
+            .replace('{{ILLER}}', esc(' ve '.join(iller)))
+            .replace('{{ILLER_SIFAT}}', esc(' ve '.join(iller[:-1]) + (' ve ' if len(iller) > 1 else '') + iller[-1] + "'deki")
+                     if iller else ''))
 
 def build_404(hat, cards, manifest):
     yapim = []
@@ -1322,6 +1375,86 @@ def build_404(hat, cards, manifest):
         f'{esc(tire(re.sub(r" (Metro|Tramvay) Hattı$", "", q["AD"])))}</span></a>'
         for _, _, q, oid in yapim)
     return PAGE_404.replace('{{LINKS}}', links)
+
+PAGE_HATLAR = """<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ILLER}} raylı sistem projeleri: yapımı süren ve planlanan hatlar | metrometre</title>
+<meta name="description" content="{{ILLER}}'de yapımı süren, proje aşamasındaki ve yakın zamanda açılan metro, tramvay ve banliyö hatları; fiziki ilerleme, tahmini açılış tarihleri ve hat sayfaları.">
+<link rel="canonical" href="https://metrometre.com/hatlar/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="metrometre">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:url" content="https://metrometre.com/hatlar/">
+<meta property="og:title" content="{{ILLER}} raylı sistem projeleri">
+<meta property="og:image" content="https://metrometre.com/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#B4271F">
+<link rel="icon" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="alternate" type="application/rss+xml" title="metrometre — aylık ilerleme güncellemeleri" href="/feed.xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+:root { --bg:#F0F0F0; --surface:#FFFFFF; --surface-2:#F7F7F7; --border:#E4E4E4; --border-2:#D1D1D1; --text:#111111;
+  --text-muted:#6B6B6B; --text-dim:#757575; --accent:#B4271F; --header-h:52px;
+  --font:'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+body { background:var(--bg); color:var(--text); font-family:var(--font); font-size:13px; line-height:1.5; }
+a { color:var(--accent); text-decoration:none; }
+#header { position:fixed; top:0; left:0; right:0; height:var(--header-h); background:var(--surface); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between; padding:0 20px; z-index:10; }
+#logo-img { height:26px; display:block; }
+#logo-fallback { display:none; font-size:17px; font-weight:700; letter-spacing:-0.03em; color:var(--text); }
+#logo-fallback span { font-weight:400; color:var(--text-muted); }
+.hdr { display:flex; gap:10px; }
+.hdr a { display:inline-flex; align-items:center; height:32px; padding:0 13px; border:1px solid var(--border-2); border-radius:99px;
+  color:var(--text); font-weight:600; font-size:12px; }
+.hdr a.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+main { max-width:900px; margin:0 auto; padding:calc(var(--header-h) + 22px) 16px 40px; display:flex; flex-direction:column; gap:26px; }
+h1 { font-size:24px; letter-spacing:-0.03em; line-height:1.2; }
+.lead { font-size:14px; color:var(--text-muted); line-height:1.6; max-width:68ch; margin-top:8px; }
+.il > h2 { font-size:18px; letter-spacing:-0.02em; margin:0 2px 10px; }
+.il section + section { margin-top:16px; }
+.grp { font-size:10px; font-weight:700; color:var(--text-dim); letter-spacing:.05em; text-transform:uppercase; margin:0 2px 8px; }
+.grp span { font-weight:500; margin-left:4px; }
+.list { list-style:none; display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:8px; }
+.list a { display:grid; grid-template-columns:auto minmax(0,1fr); grid-template-rows:auto auto; column-gap:10px; align-items:center;
+  background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:10px 12px; color:var(--text); height:100%; }
+.list a:hover { border-color:var(--border-2); }
+.list .line-icon { grid-row:1 / 3; }
+.t { font-size:12.5px; line-height:1.35; min-width:0; }
+.s { display:block; font-size:11px; color:var(--text-dim); }
+.bar { grid-column:2; height:4px; border-radius:2px; background:#EDEDED; margin-top:6px; overflow:hidden; }
+.bar i { display:block; height:100%; background:var(--text-muted); border-radius:2px; }
+.line-icon { width:var(--s); height:var(--s); border-radius:50%; overflow:hidden; flex-shrink:0; display:inline-flex;
+  align-items:center; justify-content:center; background:#F0F0F0; border:1.5px solid var(--border); }
+.line-icon img { width:100%; height:100%; object-fit:cover; display:block; }
+.icon-fb { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:700; color:#fff; }
+.icon-fb[hidden] { display:none; }
+.method { font-size:12px; color:var(--text-dim); line-height:1.6; max-width:90ch; }
+@media (max-width:640px) { .list { grid-template-columns:minmax(0,1fr); } #header { padding:0 12px; } h1 { font-size:20px; }
+  #logo-img { height:20px; } .hdr { gap:6px; } .hdr a { height:30px; padding:0 10px; font-size:11.5px; } }
+</style>
+</head>
+<body>
+<header id="header"><a href="/" aria-label="metrometre ana sayfa"><img id="logo-img" src="/metrometre_logotype.png" alt="metrometre"
+  onerror="this.style.display='none';document.getElementById('logo-fallback').style.display='block'"><div id="logo-fallback"><span>metro</span>metre</div></a>
+  <nav class="hdr" aria-label="Sayfa bağlantıları"><a href="/bulten/">Bültenler</a><a class="primary" href="/">Harita</a></nav></header>
+<main>
+  <div>
+    <h1>{{ILLER}} raylı sistem projeleri</h1>
+    <p class="lead">{{ILLER_SIFAT}} yapımı süren, proje aşamasındaki ve yakın zamanda açılan raylı sistem hatları. Her hattın sayfasında aylık fiziki ilerleme, tahmini açılış tarihinin seyri, güzergâh ve istasyonlar yer almaktadır.</p>
+  </div>
+  {{BOLUMLER}}
+  <p class="method">metrometre, raylı sistem projelerinin fiziki ilerlemesini bağımsız olarak izleyen bir sivil girişimdir; herhangi bir kurumla bağlantısı bulunmamaktadır. Veriler aylık olarak güncellenmekte ve <a href="https://github.com/sefabarisozturk/metrometre-data">GitHub'da açık veri</a> olarak yayımlanmaktadır.</p>
+</main>
+</body>
+</html>
+"""
 
 PAGE_404 = """<!DOCTYPE html>
 <html lang="tr">
@@ -1377,7 +1510,7 @@ p { font-size:14px; color:var(--text-muted); line-height:1.6; max-width:60ch; }
     <div class="code">404</div>
     <h1>Aradığınız sayfa bulunamadı</h1>
     <p>Bağlantı eskimiş ya da adres hatalı yazılmış olabilir. Bütün hatları haritada inceleyebilir ya da aşağıdaki yapımı süren hatlardan birine geçebilirsiniz.</p>
-    <div class="actions"><a class="btn primary" href="/">Haritaya git</a><a class="btn" href="/bulten/">Aylık bültenler</a></div>
+    <div class="actions"><a class="btn primary" href="/">Haritaya git</a><a class="btn" href="/hatlar/">Bütün hatlar</a><a class="btn" href="/bulten/">Aylık bültenler</a></div>
   </section>
   <section>
     <h2 class="sec-lbl">Yapımı süren hatlar</h2>
@@ -1438,5 +1571,12 @@ if __name__ == '__main__':
     (repo / 'sitemap.xml').write_text(build_sitemap(repo, manifest), encoding='utf-8')
     (repo / 'robots.txt').write_text(ROBOTS, encoding='utf-8')
     (repo / '404.html').write_text(build_404(hat, cards, manifest), encoding='utf-8')
+    (repo / 'hatlar').mkdir(exist_ok=True)
+    (repo / 'hatlar' / 'index.html').write_text(build_hatlar(hat, cards, manifest, overlay), encoding='utf-8')
+    # haritadaki "Hat sayfası" düğmesi için hafif liste (id → slug; parçalı geometri id'leri → sayfa id'si)
+    (repo / 'hatlar' / 'sayfalar.json').write_text(json.dumps(
+        {'sayfalar': {k: v['slug'] for k, v in manifest['sayfalar'].items()}, 'takma': manifest['takma']},
+        ensure_ascii=False, separators=(',', ':')) + '\n', encoding='utf-8')
     degisen = sum(1 for k, v in manifest['sayfalar'].items() if eski.get(k, {}).get('ozet') != v['ozet'])
-    print(f"{len(ids)} hat sayfası ({degisen} değişen), {len(takma)} yönlendirme; sitemap.xml, robots.txt, 404.html yazıldı.")
+    print(f"{len(ids)} hat sayfası ({degisen} değişen), {len(takma)} yönlendirme; "
+          "hatlar/, sitemap.xml, robots.txt, 404.html yazıldı.")
