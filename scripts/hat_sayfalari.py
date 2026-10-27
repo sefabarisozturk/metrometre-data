@@ -14,7 +14,8 @@ yalnızca istenen hat(lar) üretilir:
   hat-sayfalari/manifest.json     id → slug, lastmod (içerik değişmedikçe tarih korunur)
   hatlar/index.html               /hatlar/ dizini; hatlar/sayfalar.json haritadaki "Hat sayfası" düğmesi için
   hakkinda/index.html             /hakkinda/ — metin scripts/hakkinda_icerik.html'den okunur
-  bulten/*.html                   yalnız başlık: ortak başlıkla (site_header) değiştirilir
+  bulten/index.html               /bulten/ listesi — bulten/bultenler.json'dan (son sayı öne çıkar)
+  bulten/<YYYY-AA>.html           yalnız başlık: ortak başlıkla (site_header) değiştirilir
   sitemap.xml, robots.txt, 404.html
 
 Girdi:
@@ -222,8 +223,11 @@ HEADER_CSS = """/* ── Ortak başlık (scripts/hat_sayfalari.py · site_heade
 }"""
 
 def bulten_basliklari(repo):
-    """Elle hazırlanan bülten sayfalarının başlığını ortak başlıkla değiştirir (yeni sayılar dahil)."""
+    """Elle hazırlanan bülten sayfalarının başlığını ortak başlıkla değiştirir (yeni sayılar dahil).
+    bulten/index.html (liste) betikle üretildiği için atlanır."""
     for f in sorted((repo / 'bulten').glob('*.html')):
+        if f.name == 'index.html':
+            continue
         s = f.read_text(encoding='utf-8')
         a, b = s.find('<header id="header">'), s.find('</header>')
         if a < 0 or b < 0:
@@ -1449,6 +1453,199 @@ def build_hatlar(hat, cards, manifest, overlay):
             .replace('{{ILLER_SIFAT}}', esc(' ve '.join(iller[:-1]) + (' ve ' if len(iller) > 1 else '') + iller[-1] + "'deki")
                      if iller else ''))
 
+def bulten_meta(repo, ay):
+    """Bir bülten sayısının sayfasından özet, yayım tarihi ve kart görselini okur."""
+    f = repo / 'bulten' / f'{ay}.html'
+    if not f.exists():
+        return None
+    s = f.read_text(encoding='utf-8')
+    dek = re.search(r'<p class="dek">(.*?)</p>', s, re.S)
+    if dek:
+        dek = html.unescape(re.sub(r'<[^>]+>', '', dek[1])).strip()
+    else:
+        m = re.search(r'<meta name="description" content="([^"]*)"', s)
+        dek = html.unescape(m[1]) if m else ''
+    tarih = re.search(r'<meta property="article:published_time"\s+content="(\d{4}-\d{2}-\d{2})', s)
+    return {'dek': dek, 'tarih': tarih[1] if tarih else '',
+            'kart': (repo / 'bulten' / f'{ay}.png').exists()}
+
+def build_bulten_index(repo, hat, manifest):
+    """/bulten/ — sayı listesi bulten/bultenler.json'dan üretilir: son sayı öne çıkar, eskiler arşivde."""
+    try:
+        liste = json.loads((repo / 'bulten' / 'bultenler.json').read_text(encoding='utf-8'))['bultenler']
+    except Exception:
+        liste = []
+    sayilar = []
+    for b in sorted(liste, key=lambda b: b.get('ay', ''), reverse=True):
+        ay = b.get('ay', '')
+        meta = bulten_meta(repo, ay) if re.match(r'^\d{4}-\d{2}$', ay) else None
+        if meta:
+            sayilar.append({**b, **meta})
+    by_id = {str(f['properties']['OBJECTID']): f['properties'] for f in hat}
+
+    def hat_cipleri(ids):
+        out = []
+        for oid in ids or []:
+            q = by_id.get(str(oid))
+            if not q:
+                continue
+            kod = kod_goster(q['KOD'])
+            ad = tire(re.sub(r" (Metro|Tramvay) Hattı$", "", q['AD']))
+            sayfa = manifest['sayfalar'].get(str(oid))
+            ic = f'{icon(q.get("IKON_URL"), kod, q.get("RENK_HEX"), 22)}<span><b>{esc(kod)}</b><span class="hn"> {esc(ad)}</span></span>'
+            out.append(f'<a class="hc" href="/hat/{oid}-{sayfa["slug"]}">{ic}</a>' if sayfa
+                       else f'<span class="hc">{ic}</span>')
+        return ''.join(out)
+
+    if not sayilar:
+        govde = '<section class="panel empty"><p>Henüz yayımlanmış bülten bulunmamaktadır.</p></section>'
+    else:
+        son = sayilar[0]
+        tarih = f'{date_long(son["tarih"])} tarihinde yayımlandı' if son['tarih'] else ''
+        gorsel = (f'<a class="feat-img" href="/bulten/{son["ay"]}" tabindex="-1" aria-hidden="true">'
+                  f'<img src="/bulten/{son["ay"]}.png" alt="" width="1200" height="630" loading="eager"></a>'
+                  if son['kart'] else '')
+        cips = hat_cipleri(son.get('hatlar'))
+        govde = (f'<article class="panel feat" aria-labelledby="son-sayi">{gorsel}<div class="feat-body">'
+                 f'<div class="feat-meta"><span class="tag">Son sayı</span><span class="feat-ay">{esc(ym_long(son["ay"]))}</span>'
+                 + (f'<span class="feat-date">{esc(tarih)}</span>' if tarih else '') + '</div>'
+                 f'<h2 id="son-sayi"><a href="/bulten/{son["ay"]}">{esc(son.get("baslik", ""))}</a></h2>'
+                 f'<p class="feat-dek">{esc(son["dek"])}</p>'
+                 + (f'<div class="feat-lines"><span class="fl-lbl">Bu sayıda</span>{cips}</div>' if cips else '')
+                 + f'<a class="cta" href="/bulten/{son["ay"]}">Bülteni oku<span aria-hidden="true">→</span></a>'
+                 f'</div></article>')
+        eskiler = sayilar[1:]
+        if eskiler:
+            yillar = {}
+            for b in eskiler:
+                yillar.setdefault(b['ay'][:4], []).append(b)
+            arsiv = ''
+            for yil, bs in yillar.items():
+                rows = ''.join(
+                    f'<li><a class="row" href="/bulten/{b["ay"]}">'
+                    f'<span class="row-ay">{esc(TR_MONTHS[int(b["ay"][5:]) - 1])}</span>'
+                    f'<span class="row-txt"><span class="row-title">{esc(b.get("baslik", ""))}</span>'
+                    f'<span class="row-dek">{esc(sentences(b["dek"], 1) if b["dek"] else "")}</span></span>'
+                    f'<span class="row-arrow" aria-hidden="true">›</span></a></li>' for b in bs)
+                arsiv += f'<div class="yil"><h3>{yil}</h3><ul class="panel rows">{rows}</ul></div>'
+            govde += f'<section aria-labelledby="h-arsiv"><h2 class="sec-lbl" id="h-arsiv">Önceki sayılar</h2>{arsiv}</section>'
+    return (PAGE_BULTEN_INDEX.replace('{{GOVDE}}', govde)
+            .replace('{{HEADER_CSS}}', HEADER_CSS).replace('{{HEADER}}', site_header('bulten')))
+
+PAGE_BULTEN_INDEX = """<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aylık bülten | metrometre</title>
+<meta name="description" content="metrometre aylık bülteni: İstanbul ve Kocaeli'de yapımı süren raylı sistem hatlarında her ay öne çıkan gelişmeler, takvimi kayan ve eşik aşan projeler.">
+<link rel="canonical" href="https://metrometre.com/bulten/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="metrometre">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:url" content="https://metrometre.com/bulten/">
+<meta property="og:title" content="metrometre aylık bülteni">
+<meta property="og:description" content="İstanbul ve Kocaeli'de yapımı süren raylı sistem hatlarında her ay öne çıkan gelişmeler.">
+<meta property="og:image" content="https://metrometre.com/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@sefabarisozturk">
+<link rel="alternate" type="application/rss+xml" title="metrometre — aylık ilerleme güncellemeleri" href="/feed.xml">
+<meta name="theme-color" content="#B4271F">
+<link rel="icon" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+:root { --bg:#F0F0F0; --surface:#FFFFFF; --surface-2:#F7F7F7; --border:#E4E4E4; --border-2:#D1D1D1; --text:#111111;
+  --text-muted:#6B6B6B; --text-dim:#757575; --accent:#B4271F; --header-h:52px;
+  --font:'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+body { background:var(--bg); color:var(--text); font-family:var(--font); font-size:13px; line-height:1.5; }
+a { color:var(--accent); text-decoration:none; }
+:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+{{HEADER_CSS}}
+main { max-width:760px; margin:0 auto; padding:calc(var(--header-h) + 22px) 16px 40px; display:flex; flex-direction:column; gap:24px; }
+.panel { background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+.intro h1 { font-size:26px; letter-spacing:-0.03em; line-height:1.15; }
+.intro p { font-size:14px; color:var(--text-muted); line-height:1.6; margin-top:6px; max-width:60ch; }
+.follow { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+.follow a { display:inline-flex; align-items:center; gap:6px; height:30px; padding:0 12px; border:1px solid var(--border-2);
+  border-radius:99px; color:var(--text); font-size:12px; font-weight:600; background:var(--surface); }
+.follow a:hover { border-color:var(--accent); color:var(--accent); }
+.follow svg { width:14px; height:14px; }
+/* Son sayı */
+.feat-img { display:block; background:var(--surface-2); border-bottom:1px solid var(--border); }
+.feat-img img { display:block; width:100%; height:auto; aspect-ratio:1200 / 630; object-fit:cover; }
+.feat-body { padding:20px 24px 22px; display:flex; flex-direction:column; gap:10px; }
+.feat-meta { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.tag { font-size:10.5px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; padding:3px 8px; border-radius:99px;
+  background:var(--accent); color:#fff; }
+.feat-ay { font-size:15px; font-weight:700; color:var(--text); }
+.feat-date { font-size:12.5px; color:var(--text-dim); }
+.feat-date::before { content:"·"; margin-right:6px; }
+.feat h2 { font-size:26px; line-height:1.2; letter-spacing:-0.03em; text-wrap:balance; }
+.feat h2 a { color:var(--text); }
+.feat h2 a:hover { color:var(--accent); }
+.feat-dek { font-size:15px; line-height:1.65; color:var(--text-muted); max-width:62ch; }
+.feat-lines { display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:2px; }
+.fl-lbl { font-size:10px; font-weight:700; color:var(--text-dim); letter-spacing:.05em; text-transform:uppercase; margin-right:4px; }
+.hc { display:inline-flex; align-items:center; gap:6px; padding:2px 10px 2px 2px; border:1px solid var(--border); border-radius:99px;
+  color:var(--text); font-size:12px; background:var(--surface); }
+a.hc:hover { border-color:var(--border-2); }
+.cta { align-self:flex-start; display:inline-flex; align-items:center; gap:7px; height:38px; padding:0 18px; margin-top:6px; border-radius:99px;
+  background:var(--accent); color:#fff; font-size:13.5px; font-weight:700; }
+.cta:hover { background:#9C1F18; }
+/* Önceki sayılar */
+.sec-lbl { font-size:11px; font-weight:700; color:var(--text-dim); letter-spacing:.05em; text-transform:uppercase; margin:0 2px 10px; }
+.yil + .yil { margin-top:16px; }
+.yil h3 { font-size:13px; font-weight:700; color:var(--text-muted); margin:0 2px 8px; }
+.rows { list-style:none; }
+.rows li + li { border-top:1px solid var(--border); }
+.row { display:grid; grid-template-columns:96px minmax(0,1fr) auto; gap:14px; align-items:center; padding:14px 18px; color:var(--text); }
+.row:hover { background:var(--surface-2); }
+.row-ay { font-size:15px; font-weight:700; }
+.row-title { display:block; font-size:14.5px; font-weight:600; line-height:1.35; }
+.row-dek { display:block; font-size:12.5px; color:var(--text-dim); line-height:1.45; margin-top:3px;
+  overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+.row-arrow { font-size:20px; color:var(--text-dim); }
+.empty { padding:22px 24px; color:var(--text-muted); font-size:14px; }
+.line-icon { width:var(--s); height:var(--s); border-radius:50%; overflow:hidden; flex-shrink:0; display:inline-flex;
+  align-items:center; justify-content:center; background:#F0F0F0; border:1.5px solid var(--border); }
+.line-icon img { width:100%; height:100%; object-fit:cover; display:block; }
+.icon-fb { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:8px; font-weight:700; color:#fff; }
+.icon-fb[hidden] { display:none; }
+@media (max-width:640px) {
+  main { gap:18px; padding-top:calc(var(--header-h) + 16px); }
+  .intro h1 { font-size:22px; }
+  .feat-body { padding:16px 16px 18px; }
+  .feat h2 { font-size:21px; }
+  .feat-dek { font-size:14px; }
+  .feat-date { flex-basis:100%; }
+  .feat-date::before { content:none; }
+  .hc .hn { display:none; }
+  .row { grid-template-columns:minmax(0,1fr) auto; padding:12px 14px; gap:8px 10px; }
+  .row-ay { grid-column:1 / -1; font-size:13px; color:var(--text-muted); }
+}
+</style>
+</head>
+<body>
+{{HEADER}}
+<main>
+  <div class="intro">
+    <h1>Aylık bülten</h1>
+    <p>İstanbul ve Kocaeli'de yapımı süren raylı sistem hatlarında her ay öne çıkan gelişmeler: geri sayımdaki hatlar, takvimi kayan ve eşik aşan projeler.</p>
+    <div class="follow">
+      <a href="/feed.xml"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 11a8 8 0 0 1 8 8"/><path d="M5 5a14 14 0 0 1 14 14"/><circle cx="6" cy="18" r="1"/></svg>RSS ile takip et</a>
+      <a href="https://x.com/sefabarisozturk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 4l16 16M20 4 4 20"/></svg>X'te takip et</a>
+    </div>
+  </div>
+  {{GOVDE}}
+</main>
+</body>
+</html>
+"""
+
 def build_404(hat, cards, manifest):
     yapim = []
     for f in hat:
@@ -1712,6 +1909,7 @@ if __name__ == '__main__':
     (repo / 'robots.txt').write_text(ROBOTS, encoding='utf-8')
     (repo / '404.html').write_text(build_404(hat, cards, manifest), encoding='utf-8')
     bulten_basliklari(repo)
+    (repo / 'bulten' / 'index.html').write_text(build_bulten_index(repo, hat, manifest), encoding='utf-8')
     (repo / 'hakkinda').mkdir(exist_ok=True)
     (repo / 'hakkinda' / 'index.html').write_text(build_hakkinda(repo, overlay), encoding='utf-8')
     (repo / 'hatlar').mkdir(exist_ok=True)
