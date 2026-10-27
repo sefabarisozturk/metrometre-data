@@ -13,6 +13,7 @@ yalnızca istenen hat(lar) üretilir:
   hat-sayfalari/<OBJECTID>.html   hat sayfaları; worker /hat/<id>-<slug> adresinde sunar
   hat-sayfalari/manifest.json     id → slug, lastmod (içerik değişmedikçe tarih korunur)
   hatlar/index.html               /hatlar/ dizini; hatlar/sayfalar.json haritadaki "Hat sayfası" düğmesi için
+  hakkinda/index.html             /hakkinda/ — metin haritadaki "metrometre hakkında" penceresinden okunur
   sitemap.xml, robots.txt, 404.html
 
 Girdi:
@@ -932,6 +933,7 @@ a:hover {{ text-decoration:underline; }}
 .hdr-btn:hover, .btn:hover {{ border-color:var(--accent); color:var(--accent); background:#FEF2F2; text-decoration:none; }}
 .hdr-btn.primary, .btn.primary {{ border-color:var(--accent); background:var(--accent); color:#fff; }}
 .hdr-btn.primary:hover, .btn.primary:hover {{ background:#9C1F18; color:#fff; box-shadow:0 2px 8px rgba(180,39,31,.28); }}
+.hdr-btn.info {{ width:32px; padding:0; justify-content:center; border-radius:50%; font-size:15px; font-weight:400; color:var(--text-muted); }}
 .hdr-btn svg, .btn svg {{ width:15px; height:15px; flex-shrink:0; }}
 
 /* ── Sayfa ── */
@@ -1168,6 +1170,7 @@ footer {{ max-width:1100px; margin:0 auto; padding:4px 16px 32px; font-size:11px
   <nav id="header-actions" aria-label="Sayfa bağlantıları">
     <a class="hdr-btn" href="/bulten/" title="Bültenler"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h13v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M17 9h3v10a2 2 0 0 1-2 2"/><path d="M8 9h5M8 13h5M8 17h3"/></svg><span>Bültenler</span></a>
     <a class="hdr-btn primary" href="/" title="Haritada bütün hatlar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg><span>Harita</span></a>
+    <a class="hdr-btn info" href="/hakkinda/" aria-label="metrometre hakkında" title="metrometre hakkında">ⓘ</a>
   </nav>
 </header>
 
@@ -1215,7 +1218,7 @@ footer {{ max-width:1100px; margin:0 auto; padding:4px 16px 32px; font-size:11px
   <div class="others">{others}</div>
 </section>
 
-<p class="method">metrometre, raylı sistem projelerinin fiziki ilerlemesini bağımsız olarak izleyen bir sivil girişimdir; herhangi bir kurumla bağlantısı bulunmamaktadır. İlerleme değerleri kurumların resmî açıklamalarına ve bilgi edinme başvurularına verilen yanıtlara dayanmakta, yerinde bağımsız denetim yapılmamaktadır. Aylık veriler <a href="https://github.com/sefabarisozturk/metrometre-data">GitHub'da açık veri</a> olarak yayımlanmaktadır; güncellemeleri <a href="/feed.xml">RSS</a> ya da <a href="https://x.com/sefabarisozturk">X</a> üzerinden takip edebilirsiniz.</p>
+<p class="method">metrometre, raylı sistem projelerinin fiziki ilerlemesini bağımsız olarak izleyen bir sivil girişimdir; herhangi bir kurumla bağlantısı bulunmamaktadır. İlerleme değerleri kurumların resmî açıklamalarına ve bilgi edinme başvurularına verilen yanıtlara dayanmakta, yerinde bağımsız denetim yapılmamaktadır. Aylık veriler <a href="https://github.com/sefabarisozturk/metrometre-data">GitHub'da açık veri</a> olarak yayımlanmaktadır; güncellemeleri <a href="/feed.xml">RSS</a> ya da <a href="https://x.com/sefabarisozturk">X</a> üzerinden takip edebilirsiniz. Veri kaynakları ve yöntem için: <a href="/hakkinda/">metrometre hakkında</a>.</p>
 </main>
 
 <footer>© Barış Öztürk · sbarisozturk@gmail.com · <a href="https://x.com/sefabarisozturk">X</a> · <a href="https://www.linkedin.com/in/sefabarisozturk/">LinkedIn</a> · <a href="/bulten/">Bültenler</a></footer>
@@ -1293,6 +1296,7 @@ def build_sitemap(repo, manifest):
     son = max((v['lastmod'] for v in manifest['sayfalar'].values()), default=BUGUN.isoformat())
     urls.append((SITE + '/', son))
     urls.append((SITE + '/hatlar/', son))
+    urls.append((SITE + '/hakkinda/', None))
     urls.append((SITE + '/bulten/', None))
     try:
         bl = json.loads((repo / 'bulten' / 'bultenler.json').read_text(encoding='utf-8'))['bultenler']
@@ -1305,6 +1309,33 @@ def build_sitemap(repo, manifest):
         urls.append((f"{SITE}/hat/{oid}-{v['slug']}", v['lastmod']))
     body = ''.join(f"  <url><loc>{esc(u)}</loc>{f'<lastmod>{lm}</lastmod>' if lm else ''}</url>\n" for u, lm in urls)
     return SITEMAP_HEAD + body + '</urlset>\n'
+
+def build_hakkinda(repo, overlay):
+    """/hakkinda/ — içerik haritadaki "metrometre hakkında" penceresinden okunur (tek kaynak).
+    Pencerede JS ile doldurulan iki parça burada üretilir: kaynak rozetleri (SOURCE_TYPES)
+    ve veri dönemi cümlesi (overlay.csv'deki en son ilerleme ayı)."""
+    src = (repo / 'index.html').read_text(encoding='utf-8')
+    a = src.index('<div class="modal-body">') + len('<div class="modal-body">')
+    b = src.index('<hr class="modal-divider">', a)
+    body = src[a:b].rstrip()
+    assert body.endswith('</div>'), 'Hakkında penceresinin yapısı değişmiş'
+    body = body[:-len('</div>')].strip()
+    # kaynak rozetleri
+    m = re.search(r'const SOURCE_TYPES = \[(.*?)\];', src, re.S)
+    turler = re.findall(r"key:'(\w+)',\s*label:'([^']*)',\s*desc:'([^']*)'", m[1] if m else '')
+    legend = ''.join(f'<div class="src-legend-row"><span class="src-badge src-{k}"><span class="src-dot"></span>{esc(l)}</span>'
+                     f'<span>{esc(d)}</span></div>' for k, l, d in turler)
+    body = body.replace('<div id="src-legend" class="src-legend"></div>', f'<div class="src-legend">{legend}</div>')
+    # veri dönemi
+    yms = sorted({r['YilAy'].strip() for r in overlay if parse_pct(r.get('Ilerleme')) is not None})
+    asof = f" Paneldeki en güncel fiziki ilerleme verisi {ym_long(yms[-1])} dönemine aittir." if yms else ''
+    body = body.replace('<span id="modal-asof"></span>', esc(asof))
+    # bölüm başlıkları sayfada gerçek başlık olsun; yeni sekme açtırmayalım
+    body = re.sub(r'<div class="modal-section-title">(.*?)</div>', r'<h2>\1</h2>', body)
+    body = body.replace(' target="_blank" rel="noopener"', '')
+    body = re.sub(r'<p style="margin-top:8px">', '<p>', body)
+    ozet = re.sub(r'<[^>]+>', '', re.search(r'<p>(.*?)</p>', body, re.S)[1]).strip()
+    return PAGE_HAKKINDA.replace('{{BODY}}', body).replace('{{DESC}}', esc(ozet[:300]))
 
 ROBOTS = f"User-agent: *\nAllow: /\n\nSitemap: {SITE}/sitemap.xml\n"
 
@@ -1414,6 +1445,7 @@ a { color:var(--accent); text-decoration:none; }
 .hdr a { display:inline-flex; align-items:center; height:32px; padding:0 13px; border:1px solid var(--border-2); border-radius:99px;
   color:var(--text); font-weight:600; font-size:12px; }
 .hdr a.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+.hdr a.info { width:32px; padding:0; justify-content:center; border-radius:50%; font-size:15px; font-weight:400; color:var(--text-muted); }
 main { max-width:900px; margin:0 auto; padding:calc(var(--header-h) + 22px) 16px 40px; display:flex; flex-direction:column; gap:26px; }
 h1 { font-size:24px; letter-spacing:-0.03em; line-height:1.2; }
 .lead { font-size:14px; color:var(--text-muted); line-height:1.6; max-width:68ch; margin-top:8px; }
@@ -1437,13 +1469,13 @@ h1 { font-size:24px; letter-spacing:-0.03em; line-height:1.2; }
 .icon-fb[hidden] { display:none; }
 .method { font-size:12px; color:var(--text-dim); line-height:1.6; max-width:90ch; }
 @media (max-width:640px) { .list { grid-template-columns:minmax(0,1fr); } #header { padding:0 12px; } h1 { font-size:20px; }
-  #logo-img { height:20px; } .hdr { gap:6px; } .hdr a { height:30px; padding:0 10px; font-size:11.5px; } }
+  #logo-img { height:20px; } .hdr { gap:6px; } .hdr a { height:30px; padding:0 10px; font-size:11.5px; } .hdr a.info { width:30px; padding:0; } }
 </style>
 </head>
 <body>
 <header id="header"><a href="/" aria-label="metrometre ana sayfa"><img id="logo-img" src="/metrometre_logotype.png" alt="metrometre"
   onerror="this.style.display='none';document.getElementById('logo-fallback').style.display='block'"><div id="logo-fallback"><span>metro</span>metre</div></a>
-  <nav class="hdr" aria-label="Sayfa bağlantıları"><a href="/bulten/">Bültenler</a><a class="primary" href="/">Harita</a></nav></header>
+  <nav class="hdr" aria-label="Sayfa bağlantıları"><a href="/bulten/">Bültenler</a><a class="primary" href="/">Harita</a><a class="info" href="/hakkinda/" aria-label="metrometre hakkında" title="metrometre hakkında">ⓘ</a></nav></header>
 <main>
   <div>
     <h1>{{ILLER}} raylı sistem projeleri</h1>
@@ -1452,6 +1484,82 @@ h1 { font-size:24px; letter-spacing:-0.03em; line-height:1.2; }
   {{BOLUMLER}}
   <p class="method">metrometre, raylı sistem projelerinin fiziki ilerlemesini bağımsız olarak izleyen bir sivil girişimdir; herhangi bir kurumla bağlantısı bulunmamaktadır. Veriler aylık olarak güncellenmekte ve <a href="https://github.com/sefabarisozturk/metrometre-data">GitHub'da açık veri</a> olarak yayımlanmaktadır.</p>
 </main>
+</body>
+</html>
+"""
+
+PAGE_HAKKINDA = """<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>metrometre hakkında: veri kaynakları ve yöntem | metrometre</title>
+<meta name="description" content="{{DESC}}">
+<link rel="canonical" href="https://metrometre.com/hakkinda/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="metrometre">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:url" content="https://metrometre.com/hakkinda/">
+<meta property="og:title" content="metrometre hakkında">
+<meta property="og:description" content="{{DESC}}">
+<meta property="og:image" content="https://metrometre.com/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#B4271F">
+<link rel="icon" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="alternate" type="application/rss+xml" title="metrometre — aylık ilerleme güncellemeleri" href="/feed.xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"AboutPage","url":"https://metrometre.com/hakkinda/","inLanguage":"tr-TR","name":"metrometre hakkında","isPartOf":{"@type":"WebSite","name":"metrometre","url":"https://metrometre.com/"},"author":{"@type":"Person","name":"Barış Öztürk","url":"https://x.com/sefabarisozturk","sameAs":["https://www.linkedin.com/in/sefabarisozturk/","https://github.com/sefabarisozturk"]}}</script>
+<style>
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+:root { --bg:#F0F0F0; --surface:#FFFFFF; --border:#E4E4E4; --border-2:#D1D1D1; --text:#111111;
+  --text-muted:#6B6B6B; --text-dim:#757575; --accent:#B4271F; --header-h:52px;
+  --font:'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+body { background:var(--bg); color:var(--text); font-family:var(--font); font-size:13px; line-height:1.5; }
+a { color:var(--accent); text-decoration:none; }
+a:hover { text-decoration:underline; }
+#header { position:fixed; top:0; left:0; right:0; height:var(--header-h); background:var(--surface); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between; padding:0 20px; z-index:10; }
+#logo-img { height:26px; display:block; }
+#logo-fallback { display:none; font-size:17px; font-weight:700; letter-spacing:-0.03em; color:var(--text); }
+#logo-fallback span { font-weight:400; color:var(--text-muted); }
+.hdr { display:flex; gap:10px; }
+.hdr a { display:inline-flex; align-items:center; height:32px; padding:0 13px; border:1px solid var(--border-2); border-radius:99px;
+  color:var(--text); font-weight:600; font-size:12px; text-decoration:none; }
+.hdr a.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+main { max-width:680px; margin:0 auto; padding:calc(var(--header-h) + 22px) 16px 40px; }
+.panel { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:24px 26px; }
+h1 { font-size:22px; letter-spacing:-0.03em; margin-bottom:14px; }
+h2 { font-size:12px; font-weight:700; color:var(--text); margin:20px 0 6px; text-transform:uppercase; letter-spacing:.04em; }
+p { font-size:14px; color:var(--text-muted); line-height:1.7; }
+p + p { margin-top:8px; }
+strong { color:var(--text); }
+.src-legend { display:flex; flex-direction:column; gap:7px; margin-top:10px; }
+.src-legend-row { display:flex; align-items:flex-start; gap:8px; font-size:12.5px; line-height:1.5; color:var(--text-muted); }
+.src-badge { display:inline-flex; align-items:center; gap:5px; font-size:10.5px; font-weight:600; line-height:1; padding:4px 8px;
+  border-radius:99px; white-space:nowrap; flex-shrink:0; margin-top:1px; }
+.src-dot { width:6px; height:6px; border-radius:50%; background:currentColor; flex-shrink:0; }
+.src-bilgi { background:#ECFDF5; color:#065F46; } .src-resmi { background:#EFF6FF; color:#1E40AF; }
+.src-saha { background:#FFFBEB; color:#92400E; } .src-tahmin { background:#F5F5F5; color:#525252; }
+.src-diger { background:#F5F3FF; color:#5B21B6; }
+footer { max-width:680px; margin:0 auto; padding:0 16px 32px; font-size:11px; color:var(--text-dim); }
+@media (max-width:640px) { #header { padding:0 12px; } #logo-img { height:20px; } .hdr { gap:6px; }
+  .hdr a { height:30px; padding:0 10px; font-size:11.5px; } .panel { padding:20px 18px; } .src-legend-row { flex-direction:column; gap:4px; } }
+</style>
+</head>
+<body>
+<header id="header"><a href="/" aria-label="metrometre ana sayfa"><img id="logo-img" src="/metrometre_logotype.png" alt="metrometre"
+  onerror="this.style.display='none';document.getElementById('logo-fallback').style.display='block'"><div id="logo-fallback"><span>metro</span>metre</div></a>
+  <nav class="hdr" aria-label="Sayfa bağlantıları"><a href="/bulten/">Bültenler</a><a class="primary" href="/">Harita</a></nav></header>
+<main>
+  <article class="panel">
+    <h1>metrometre hakkında</h1>
+    {{BODY}}
+  </article>
+</main>
+<footer>© Barış Öztürk · <a href="mailto:sbarisozturk@gmail.com">sbarisozturk@gmail.com</a> · <a href="https://x.com/sefabarisozturk">X</a> · <a href="https://www.linkedin.com/in/sefabarisozturk/">LinkedIn</a> · <a href="/hatlar/">Hatlar</a> · <a href="/bulten/">Bültenler</a></footer>
 </body>
 </html>
 """
@@ -1510,7 +1618,7 @@ p { font-size:14px; color:var(--text-muted); line-height:1.6; max-width:60ch; }
     <div class="code">404</div>
     <h1>Aradığınız sayfa bulunamadı</h1>
     <p>Bağlantı eskimiş ya da adres hatalı yazılmış olabilir. Bütün hatları haritada inceleyebilir ya da aşağıdaki yapımı süren hatlardan birine geçebilirsiniz.</p>
-    <div class="actions"><a class="btn primary" href="/">Haritaya git</a><a class="btn" href="/hatlar/">Bütün hatlar</a><a class="btn" href="/bulten/">Aylık bültenler</a></div>
+    <div class="actions"><a class="btn primary" href="/">Haritaya git</a><a class="btn" href="/hatlar/">Bütün hatlar</a><a class="btn" href="/bulten/">Aylık bültenler</a><a class="btn" href="/hakkinda/">Hakkında</a></div>
   </section>
   <section>
     <h2 class="sec-lbl">Yapımı süren hatlar</h2>
@@ -1571,6 +1679,8 @@ if __name__ == '__main__':
     (repo / 'sitemap.xml').write_text(build_sitemap(repo, manifest), encoding='utf-8')
     (repo / 'robots.txt').write_text(ROBOTS, encoding='utf-8')
     (repo / '404.html').write_text(build_404(hat, cards, manifest), encoding='utf-8')
+    (repo / 'hakkinda').mkdir(exist_ok=True)
+    (repo / 'hakkinda' / 'index.html').write_text(build_hakkinda(repo, overlay), encoding='utf-8')
     (repo / 'hatlar').mkdir(exist_ok=True)
     (repo / 'hatlar' / 'index.html').write_text(build_hatlar(hat, cards, manifest, overlay), encoding='utf-8')
     # haritadaki "Hat sayfası" düğmesi için hafif liste (id → slug; parçalı geometri id'leri → sayfa id'si)
@@ -1579,4 +1689,4 @@ if __name__ == '__main__':
         ensure_ascii=False, separators=(',', ':')) + '\n', encoding='utf-8')
     degisen = sum(1 for k, v in manifest['sayfalar'].items() if eski.get(k, {}).get('ozet') != v['ozet'])
     print(f"{len(ids)} hat sayfası ({degisen} değişen), {len(takma)} yönlendirme; "
-          "hatlar/, sitemap.xml, robots.txt, 404.html yazıldı.")
+          "hatlar/, hakkinda/, sitemap.xml, robots.txt, 404.html yazıldı.")

@@ -9,6 +9,7 @@ on:
       - RAYLI_SISTEM_DURAK_PT.geojson
       - scripts/og_cards.py
       - scripts/hat_sayfalari.py
+      - index.html
       - scripts/bulten_kart.py
       - bulten/bultenler.json
       - .github/workflows/og-cards.yml
@@ -49,12 +50,12 @@ jobs:
       # Kartlardan sonra: og/lines.json'daki kart sürümünü og:image için kullanır.
       # Yalnızca standart kütüphane; ek kurulum gerekmez. İçeriği değişmeyen sayfanın
       # tarihi (sitemap lastmod) korunur, günlük çalışma gereksiz commit üretmez.
-      - name: Hat sayfaları, /hatlar/ dizini, sitemap ve 404
+      - name: Hat sayfaları, /hatlar/, /hakkinda/, sitemap ve 404
         run: python scripts/hat_sayfalari.py
 
       - name: Değişiklik varsa commit at
         run: |
-          git add og/ bulten/*.png bulten/kartlar.json hat-sayfalari/ sitemap.xml robots.txt 404.html hatlar/
+          git add og/ bulten/*.png bulten/kartlar.json hat-sayfalari/ sitemap.xml robots.txt 404.html hatlar/ hakkinda/
           if git diff --cached --quiet; then
             echo "Kartlarda değişiklik yok."
             exit 0
