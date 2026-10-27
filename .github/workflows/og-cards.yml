@@ -1,4 +1,4 @@
-name: Paylaşım kartları
+name: Paylaşım kartları ve hat sayfaları
 
 on:
   push:
@@ -6,7 +6,9 @@ on:
     paths:
       - overlay.csv
       - RAYLI_SISTEM_HAT_LN.geojson
+      - RAYLI_SISTEM_DURAK_PT.geojson
       - scripts/og_cards.py
+      - scripts/hat_sayfalari.py
       - scripts/bulten_kart.py
       - bulten/bultenler.json
       - .github/workflows/og-cards.yml
@@ -44,14 +46,20 @@ jobs:
         env:
           FONT_DIR: ${{ github.workspace }}/node_modules/@fontsource/inter/files
         run: python scripts/bulten_kart.py
+      # Kartlardan sonra: og/lines.json'daki kart sürümünü og:image için kullanır.
+      # Yalnızca standart kütüphane; ek kurulum gerekmez. İçeriği değişmeyen sayfanın
+      # tarihi (sitemap lastmod) korunur, günlük çalışma gereksiz commit üretmez.
+      - name: Hat sayfaları, sitemap ve 404
+        run: python scripts/hat_sayfalari.py
+
       - name: Değişiklik varsa commit at
         run: |
-          git add og/ bulten/*.png bulten/kartlar.json
+          git add og/ bulten/*.png bulten/kartlar.json hat-sayfalari/ sitemap.xml robots.txt 404.html
           if git diff --cached --quiet; then
             echo "Kartlarda değişiklik yok."
             exit 0
           fi
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "Paylaşım kartlarını güncelle"
+          git commit -m "Paylaşım kartlarını ve hat sayfalarını güncelle"
           git push

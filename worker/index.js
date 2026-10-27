@@ -7,8 +7,13 @@
 //  Worker YALNIZCA şu iki yolda devreye girer, diğer her şey (index.html,
 //  görseller, GeoJSON…) doğrudan statik dosya olarak sunulur:
 //
-//    /hat/<OBJECTID>[-slug]  → index.html, <head> etiketleri o hatta göre
-//                              yeniden yazılmış olarak (X/WhatsApp önizlemesi)
+//    /hat/<OBJECTID>[-slug]  → hat sayfası varsa (hat-sayfalari/<id>.html, GitHub Actions
+//                              üretir) onu sunar; adres kanonik değilse 301 ile
+//                              /hat/<id>-<slug> adresine yönlendirir. Sayfası olmayan
+//                              hatlarda (işletmedeki etaplar) index.html, <head> etiketleri
+//                              o hatta göre yeniden yazılmış olarak (X/WhatsApp önizlemesi).
+//                              Hiç tanınmayan id → 404 sayfası.
+//    /hat-sayfalari/*        → doğrudan erişim kanonik /hat/… adresine yönlendirilir
 //    /feed.xml               → overlay.csv'den üretilen RSS beslemesi; o ayın
 //                              bülteni (bulten/<YYYY-AA>.html) varsa öğe ona bağlanır
 //
@@ -27,6 +32,7 @@ export default {
     try {
       if(url.pathname === '/feed.xml') return await handleFeed(url, dataBase, env);
       if(url.pathname === '/hat' || url.pathname.startsWith('/hat/')) return await handleHat(request, env, url, dataBase);
+      if(url.pathname.startsWith('/hat-sayfalari/')) return await handleRawPage(request, env, url);
     } catch(err){
       console.warn('worker hatası:', err);
       // Her durumda site açılsın: hat yolunda genel index.html'e düş
@@ -87,16 +93,65 @@ function buildMeta(id, rec, origin, dataBase){
   };
 }
 
+// ── Statik hat sayfaları (hat-sayfalari/, scripts/hat_sayfalari.py üretir)
+async function loadManifest(env, origin){
+  try {
+    const r = await env.ASSETS.fetch(new Request(`${origin}/hat-sayfalari/manifest.json`));
+    if(!r.ok) return null;
+    return await r.json();
+  } catch(_){ return null; }
+}
+function canonicalPath(man, id){
+  const p = man?.sayfalar?.[id];
+  return p ? `/hat/${id}-${p.slug}` : null;
+}
+function redirect(url, path){
+  return new Response(null, { status: 301, headers: { Location: path + url.search, 'Cache-Control': 'public, max-age=3600' } });
+}
+async function notFound(env, origin){
+  const r = await env.ASSETS.fetch(new Request(`${origin}/404.html`));
+  return new Response(r.body, { status: 404, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=300' } });
+}
+async function servePage(env, origin, id){
+  // html_handling varsayılanı (auto-trailing-slash) uzantısız yolu <id>.html'e eşler
+  const r = await env.ASSETS.fetch(new Request(`${origin}/hat-sayfalari/${id}`));
+  if(!r.ok) return null;
+  const headers = new Headers(r.headers);
+  headers.set('Content-Type', 'text/html; charset=utf-8');
+  headers.set('Cache-Control', 'public, max-age=300');
+  return new Response(r.body, { status: 200, headers });
+}
+async function handleRawPage(request, env, url){
+  const id = (/^\/hat-sayfalari\/(\d+)(?:\.html)?$/.exec(url.pathname) || [])[1];
+  const man = id ? await loadManifest(env, url.origin) : null;
+  const canon = canonicalPath(man, id);
+  return canon ? redirect(url, canon) : notFound(env, url.origin);
+}
+
 async function handleHat(request, env, url, dataBase){
+  const id = (/^\/hat\/(\d+)/.exec(url.pathname) || [])[1];
+  // /hat ve /hat/ → harita
+  if(!id) return url.pathname === '/hat' || url.pathname === '/hat/' ? redirect(url, '/') : notFound(env, url.origin);
+
+  const man = await loadManifest(env, url.origin);
+  const alias = man?.takma?.[id];
+  if(alias) return redirect(url, canonicalPath(man, alias) || '/');
+  const canon = canonicalPath(man, id);
+  if(canon){
+    if(decodeURIComponent(url.pathname) !== canon) return redirect(url, canon);
+    const out = await servePage(env, url.origin, id);
+    if(out) return out;
+    // dosya okunamadıysa aşağıdaki eski davranışa düş
+  }
+
   // Sitenin kök index.html'i
   const page = await env.ASSETS.fetch(new URL('/', request.url).toString());
-  const id = (/^\/hat\/(\d+)/.exec(url.pathname) || [])[1];
-  if(!id || !page.ok) return page;
+  if(!page.ok) return page;
 
   const r = await fetch(`${dataBase}/og/lines.json`, { cf: { cacheTtl: 300, cacheEverything: true } });
   if(!r.ok) return page;
   const rec = (await r.json())?.lines?.[id];
-  if(!rec) return page;
+  if(!rec) return notFound(env, url.origin);
 
   const m = buildMeta(id, rec, url.origin, dataBase);
   const setContent = v => ({ element(el){ el.setAttribute('content', v); } });

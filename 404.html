@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sayfa bulunamadı | metrometre</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#B4271F">
+<link rel="icon" href="/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+:root { --bg:#F0F0F0; --surface:#FFFFFF; --border:#E4E4E4; --border-2:#D1D1D1; --text:#111111;
+  --text-muted:#6B6B6B; --text-dim:#757575; --accent:#B4271F; --header-h:52px;
+  --font:'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+body { background:var(--bg); color:var(--text); font-family:var(--font); font-size:13px; line-height:1.5; }
+a { color:var(--accent); text-decoration:none; }
+#header { position:fixed; top:0; left:0; right:0; height:var(--header-h); background:var(--surface); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; padding:0 20px; z-index:10; }
+#logo-img { height:26px; display:block; }
+#logo-fallback { display:none; font-size:17px; font-weight:700; letter-spacing:-0.03em; color:var(--text); }
+#logo-fallback span { font-weight:400; color:var(--text-muted); }
+main { max-width:760px; margin:0 auto; padding:calc(var(--header-h) + 28px) 16px 40px; display:flex; flex-direction:column; gap:22px; }
+.panel { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:26px 24px; }
+.code { font-size:12px; font-weight:700; color:var(--accent); letter-spacing:.06em; }
+h1 { font-size:24px; letter-spacing:-0.03em; margin:6px 0 8px; }
+p { font-size:14px; color:var(--text-muted); line-height:1.6; max-width:60ch; }
+.actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:16px; }
+.btn { display:inline-flex; align-items:center; height:34px; padding:0 14px; border:1px solid var(--border-2); border-radius:99px;
+  color:var(--text); font-weight:600; font-size:12.5px; }
+.btn.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+.sec-lbl { font-size:10px; font-weight:700; color:var(--text-dim); letter-spacing:.05em; text-transform:uppercase; margin:0 2px 8px; }
+.others { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:8px; }
+.oth { display:flex; align-items:center; gap:10px; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:10px 12px; color:var(--text); }
+.oth:hover { border-color:var(--border-2); }
+.oth-txt { font-size:12.5px; line-height:1.35; }
+.line-icon { width:var(--s); height:var(--s); border-radius:50%; overflow:hidden; flex-shrink:0; display:inline-flex;
+  align-items:center; justify-content:center; background:#F0F0F0; border:1.5px solid var(--border); }
+.line-icon img { width:100%; height:100%; object-fit:cover; display:block; }
+.icon-fb { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:700; color:#fff; }
+.icon-fb[hidden] { display:none; }
+@media (max-width:640px) { .others { grid-template-columns:minmax(0,1fr); } }
+</style>
+</head>
+<body>
+<header id="header"><a href="/" aria-label="metrometre ana sayfa"><img id="logo-img" src="/metrometre_logotype.png" alt="metrometre"
+  onerror="this.style.display='none';document.getElementById('logo-fallback').style.display='block'"><div id="logo-fallback"><span>metro</span>metre</div></a></header>
+<main>
+  <section class="panel">
+    <div class="code">404</div>
+    <h1>Aradığınız sayfa bulunamadı</h1>
+    <p>Bağlantı eskimiş ya da adres hatalı yazılmış olabilir. Bütün hatları haritada inceleyebilir ya da aşağıdaki yapımı süren hatlardan birine geçebilirsiniz.</p>
+    <div class="actions"><a class="btn primary" href="/">Haritaya git</a><a class="btn" href="/bulten/">Aylık bültenler</a></div>
+  </section>
+  <section>
+    <h2 class="sec-lbl">Yapımı süren hatlar</h2>
+    <div class="others"><a class="oth" href="/hat/6-m12-goztepe-umraniye-metro-hatti"><span class="line-icon" style="--s:26px"><img src="https://upload.wikimedia.org/wikipedia/commons/d/d4/Istanbul_M12_Line_Symbol.svg" alt="M12" width="26" height="26" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.hidden=false"><span class="icon-fb" hidden style="background:#C9D200">M12</span></span><span class="oth-txt"><b>M12</b> Göztepe–Ümraniye</span></a><a class="oth" href="/hat/49-m10-pendik-merkez-fevzi-cakmak"><span class="line-icon" style="--s:26px"><img src="https://upload.wikimedia.org/wikipedia/commons/1/1d/Istanbul_M10_Line_Symbol.svg" alt="M10" width="26" height="26" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.hidden=false"><span class="icon-fb" hidden style="background:#4DA93E">M10</span></span><span class="oth-txt"><b>M10</b> Pendik Merkez–Fevzi Çakmak</span></a><a class="oth" href="/hat/70-m4-tavsantepe-kaynarca-merkez"><span class="line-icon" style="--s:26px"><img src="https://upload.wikimedia.org/wikipedia/commons/f/f9/Istanbul_M4_Line_Symbol.svg" alt="M4" width="26" height="26" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.hidden=false"><span class="icon-fb" hidden style="background:#E81F76">M4</span></span><span class="oth-txt"><b>M4</b> Tavşantepe–Kaynarca Merkez</span></a><a class="oth" href="/hat/64-m14-altunizade-bosna-bulvari-metro-hatti"><span class="line-icon" style="--s:26px"><img src="https://upload.wikimedia.org/wikipedia/commons/1/19/Istanbul_M14_Line_Symbol.svg" alt="M14" width="26" height="26" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.hidden=false"><span class="icon-fb" hidden style="background:#B16400">M14</span></span><span class="oth-txt"><b>M14</b> Altunizade–Bosna Bulvarı</span></a><a class="oth" href="/hat/3-m7-yildiz-kabatas"><span class="line-icon" style="--s:26px"><img src="https://upload.wikimedia.org/wikipedia/commons/6/6d/Istanbul_M7_Line_Symbol.svg" alt="M7" width="26" height="26" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.hidden=false"><span class="icon-fb" hidden style="background:#F29EBF">M7</span></span><span class="oth-txt"><b>M7</b> Yıldız–Kabataş</span></a><a class="oth" href="/hat/69-m7-mahmutbey-hastane"><span class="line-icon" style="--s:26px"><img src="https://upload.wikimedia.org/wikipedia/commons/6/6d/Istanbul_M7_Line_Symbol.svg" alt="M7" width="26" height="26" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.hidden=false"><span class="icon-fb" hidden style="background:#F29EBF">M7</span></span><span class="oth-txt"><b>M7</b> Mahmutbey–Hastane</span></a><a class="oth" href="/hat/38-t7-feshane-bayrampasa-tramvay-hatti"><span class="line-icon" style="--s:26px"><img src="https://upload.wikimedia.org/wikipedia/commons/0/02/Istanbul_T7_Line_Symbol.svg" alt="T7" width="26" height="26" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.hidden=false"><span class="icon-fb" hidden style="background:#C6D6A9">T7</span></span><span class="oth-txt"><b>T7</b> Feshane–Bayrampaşa</span></a><a class="oth" href="/hat/1-m1b-kirazli-halkali-universite"><span class="line-icon" style="--s:26px"><img src="https://upload.wikimedia.org/wikipedia/commons/6/62/Istanbul_M1B_Line_Symbol.svg" alt="M1B" width="26" height="26" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.hidden=false"><span class="icon-fb" hidden style="background:#E1251B">M1B</span></span><span class="oth-txt"><b>M1B</b> Kirazlı–Halkalı Üniversite</span></a><a class="oth" href="/hat/66-m13-yenidogan-emek-metro-hatti"><span class="line-icon" style="--s:26px"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a1/Istanbul_M13_Line_Symbol.svg" alt="M13" width="26" height="26" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.hidden=false"><span class="icon-fb" hidden style="background:#FF4B58">M13</span></span><span class="oth-txt"><b>M13</b> Yenidoğan–Emek</span></a><a class="oth" href="/hat/61-m1-kocaeli-darica-sahil-gebze-osb-metro-hatti"><span class="line-icon" style="--s:26px"><img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Kocaeli_Metro_logo.svg" alt="M1" width="26" height="26" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.hidden=false"><span class="icon-fb" hidden style="background:#E1251B">M1</span></span><span class="oth-txt"><b>M1</b> Darıca Sahil–Gebze OSB</span></a><a class="oth" href="/hat/259-m2-kocaeli-kocaeli-kuzey-hrs-hatti-1-asama"><span class="line-icon" style="--s:26px"><img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Kocaeli_Metro_logo.svg" alt="M2" width="26" height="26" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.hidden=false"><span class="icon-fb" hidden style="background:#009845">M2</span></span><span class="oth-txt"><b>M2</b> Kocaeli Kuzey HRS Hattı 1. Aşama</span></a><a class="oth" href="/hat/193-m3-kocaeli-gebze-adliye-birlik-osb-metro-hatti"><span class="line-icon" style="--s:26px"><img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Kocaeli_Metro_logo.svg" alt="M3" width="26" height="26" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.hidden=false"><span class="icon-fb" hidden style="background:#00A7E1">M3</span></span><span class="oth-txt"><b>M3</b> Gebze Adliye–Birlik OSB</span></a></div>
+  </section>
+</main>
+</body>
+</html>

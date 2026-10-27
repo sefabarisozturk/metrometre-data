@@ -1,9 +1,11 @@
 // metrometre — Cloudflare Workers yapılandırması
 // Site "Workers + statik dosyalar" olarak yayınlanıyor. Bu dosya:
 //  • reponun kökünü statik site olarak sunar (eskisi gibi),
-//  • tanınmayan sayfa yollarında index.html döner (SPA davranışı) — /hat/6 gibi
-//    paylaşım bağlantıları 404 vermez,
-//  • yalnızca /hat/* ve /feed.xml isteklerinde worker/index.js'i çalıştırır.
+//  • tanınmayan yollarda 404.html'i 404 durum koduyla döner (eskiden index.html
+//    dönüyordu; arama motorları bunu "soft 404" sayıyordu). Harita hash ile
+//    yönlendirdiği için SPA geri dönüşüne ihtiyacı yoktur,
+//  • yalnızca /hat/*, /hat-sayfalari/* ve /feed.xml isteklerinde worker/index.js'i
+//    çalıştırır (hat sayfaları, kanonik yönlendirme, RSS).
 // "name", Cloudflare panelindeki Worker adıyla aynı olmalıdır.
 {
   "$schema": "node_modules/wrangler/config-schema.json",
@@ -14,7 +16,7 @@
   "assets": {
     "directory": ".",
     "binding": "ASSETS",
-    "not_found_handling": "single-page-application",
-    "run_worker_first": ["/hat", "/hat/*", "/feed.xml"]
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/hat", "/hat/*", "/hat-sayfalari/*", "/feed.xml"]
   }
 }
