@@ -1084,19 +1084,6 @@ a.src-badge:hover { border-color: currentColor; }
   align-items: center; justify-content: center;
 }
 #modal-backdrop.show { display: flex; }
-#cmp-backdrop {
-  display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,.3); z-index: 2000;
-  align-items: center; justify-content: center;
-}
-#cmp-backdrop.show { display: flex; }
-#cmp-modal {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 14px; padding: 24px 26px;
-  width: 820px; max-width: 92vw; max-height: 86vh;
-  overflow-y: auto;
-  box-shadow: 0 8px 40px rgba(0,0,0,.18); position: relative;
-}
 #modal {
   background: var(--surface); border: 1px solid var(--border);
   border-radius: 14px; padding: 24px 26px;
@@ -1126,8 +1113,8 @@ a.src-badge:hover { border-color: currentColor; }
 .modal-divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
 .modal-footer { font-size: 11px; color: var(--text-dim); display: flex; gap: 14px; flex-wrap: wrap; }
 
-/* ──── İLERLEME KARŞILAŞTIRMA MODALİ (büyük grafik) ──── */
-#chart-btn {
+/* ──── HATLAR BAĞLANTISI (/hatlar/ dizini) ──── */
+#hatlar-btn {
   display: flex; align-items: center; gap: 7px;
   height: 32px; padding: 0 13px 0 11px;
   border: 1px solid var(--accent); border-radius: 99px;
@@ -1136,12 +1123,13 @@ a.src-badge:hover { border-color: currentColor; }
   font-family: var(--font); font-size: 12px; font-weight: 600;
   letter-spacing: -0.01em; white-space: nowrap;
   transition: background .15s, box-shadow .15s, transform .05s;
-  flex-shrink: 0;
+  flex-shrink: 0; text-decoration: none;
 }
-#chart-btn:hover  { background: #9C1F18; box-shadow: 0 2px 8px rgba(180,39,31,.28); }
-#chart-btn:active { transform: translateY(.5px); }
-#chart-btn .chart-btn-icon { width: 15px; height: 15px; flex-shrink: 0; }
-#chart-btn .chart-btn-text { line-height: 1; }
+#hatlar-btn:hover  { background: #9C1F18; box-shadow: 0 2px 8px rgba(180,39,31,.28); }
+#hatlar-btn:active { transform: translateY(.5px); }
+#hatlar-btn .hatlar-btn-icon { width: 15px; height: 15px; flex-shrink: 0; }
+#hatlar-btn .hatlar-btn-text { line-height: 1; }
+#hatlar-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 #header-actions { display: flex; align-items: center; gap: 10px; }
 /* Bülten bağlantısı: ikincil (çerçeveli) hap; yeni sayı okunmadıysa küçük nokta */
 #bulten-btn {
@@ -1168,82 +1156,6 @@ a.src-badge:hover { border-color: currentColor; }
 #bulten-btn .bulten-btn-dot[hidden] { display: none; }
 
 #modal.modal-wide { width: 820px; }
-#cmp-empty { font-size: 13px; color: var(--text-muted); padding: 30px 0; text-align: center; }
-#cmp-chart-wrap { margin: 6px 0 14px; position: relative; }
-#cmp-chart-svg { width: 100%; height: 340px; display: block; overflow: visible; }
-#cmp-chart-svg .grid-line { stroke: var(--border); stroke-width: 1; }
-#cmp-chart-svg .grid-line.zero { stroke: var(--border-2); }
-#cmp-chart-svg .axis-lbl  { fill: var(--text-dim); font-size: 10px; font-family: var(--font); }
-#cmp-chart-svg .cmp-line  { fill: none; stroke-width: 2; }
-#cmp-chart-svg .cmp-dot   { stroke: #fff; stroke-width: 1.5; }
-#cmp-chart-svg .cmp-line.dim { opacity: .12; }
-#cmp-chart-svg .cmp-dot.dim  { opacity: .12; }
-#cmp-chart-svg #cmp-guide { stroke: var(--text-dim); stroke-width: 1; stroke-dasharray: 4 3; opacity: .55; pointer-events: none; }
-#cmp-chart-svg #cmp-hover-dots circle { pointer-events: none; }
-
-/* Grafik hover tooltip'i (ay başlığı + tüm görünür hatların yüzdeleri) */
-#cmp-tooltip {
-  position: absolute; z-index: 5;
-  display: none;
-  min-width: 152px; max-width: 264px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0,0,0,.13);
-  padding: 8px 10px;
-  pointer-events: none;
-  font-family: var(--font);
-}
-.cmp-tip-title {
-  font-size: 11px; font-weight: 700; color: var(--text);
-  padding-bottom: 6px; margin-bottom: 6px;
-  border-bottom: 1px solid var(--border);
-}
-.cmp-tip-line {
-  display: grid; grid-template-columns: auto 1fr auto;
-  align-items: center; gap: 8px;
-  padding: 2px 0; font-size: 11.5px;
-}
-.cmp-tip-line .sw { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.cmp-tip-line .nm { color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-.cmp-tip-line .pc { color: var(--text); font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
-#cmp-legend {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(232px, 1fr));
-  gap: 1px 16px; margin-top: 10px;
-}
-.cmp-leg-item {
-  display: grid; grid-template-columns: auto 1fr auto;
-  align-items: center; gap: 9px;
-  padding: 6px 8px; border-radius: 7px;
-  font-size: 12px; font-weight: 500; color: var(--text-muted);
-  cursor: pointer; transition: background .12s, opacity .12s; user-select: none;
-}
-.cmp-leg-item:hover { background: var(--surface-2); }
-.cmp-leg-item.off { opacity: .4; }
-.cmp-leg-item.off .cmp-leg-label { text-decoration: line-through; }
-.cmp-leg-swatch { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-.cmp-leg-label  { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.cmp-leg-pct {
-  color: var(--text); font-weight: 700;
-  font-variant-numeric: tabular-nums; text-align: right;
-}
-#cmp-note { font-size: 11px; color: var(--text-dim); margin-top: 10px; line-height: 1.6; }
-
-/* Aylık özet kutusu (karşılaştırma modalı) */
-#cmp-summary {
-  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
-  background: var(--surface-2); border: 1px solid var(--border);
-  border-radius: 10px; padding: 10px 12px; margin: 2px 0 12px;
-}
-#cmp-summary[hidden] { display: none; }
-#cmp-summary-text {
-  flex: 1 1 300px; min-width: 0;
-  font-size: 12px; line-height: 1.55; color: var(--text-muted); white-space: pre-line;
-}
-#cmp-summary-text b { color: var(--text); }
-#cmp-summary-actions { display: flex; gap: 6px; flex-shrink: 0; }
-#cmp-summary-actions .share-btn { min-width: 0; flex: 0 0 auto; }
 
 /* ──── MOBİL TOGGLE (varsayılan: gizli) ──── */
 #mobile-toggle {
@@ -1425,9 +1337,9 @@ a.src-badge:hover { border-color: currentColor; }
   .sort-btn { padding: 6px 12px; font-size: 11px; }
   #info-btn { width: 40px; height: 40px; }
   /* Dar ekranda metin gizlenir, buton ikon-only daireye döner (yer kazanımı) */
-  #chart-btn { height: 40px; width: 40px; padding: 0; justify-content: center; gap: 0; border-radius: 50%; }
-  #chart-btn .chart-btn-text { display: none; }
-  #chart-btn .chart-btn-icon { width: 18px; height: 18px; }
+  #hatlar-btn { height: 40px; width: 40px; padding: 0; justify-content: center; gap: 0; border-radius: 50%; }
+  #hatlar-btn .hatlar-btn-text { display: none; }
+  #hatlar-btn .hatlar-btn-icon { width: 18px; height: 18px; }
   #bulten-btn { height: 40px; width: 40px; padding: 0; justify-content: center; gap: 0; border-radius: 50%; }
   #bulten-btn .bulten-btn-text { display: none; }
   #bulten-btn .bulten-btn-icon { width: 18px; height: 18px; }
@@ -1517,8 +1429,8 @@ a.src-badge:hover { border-color: currentColor; }
   }
 
   /* Bilgi modali: bottom-sheet stili */
-  #modal-backdrop, #cmp-backdrop { align-items: flex-end; }
-  #modal, #cmp-modal {
+  #modal-backdrop { align-items: flex-end; }
+  #modal {
     border-radius: 16px 16px 0 0;
     max-height: 88vh;
     width: 100%;
@@ -1548,10 +1460,10 @@ a.src-badge:hover { border-color: currentColor; }
       <span class="bulten-btn-text">Bülten</span>
       <span class="bulten-btn-dot" hidden aria-hidden="true"></span>
     </a>
-    <button id="chart-btn" type="button" style="display:none" aria-label="Aylık ilerleme karşılaştırması" aria-haspopup="dialog" title="Aylık ilerleme karşılaştırması">
-      <svg class="chart-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 17 9 11 13 15 21 6"/><polyline points="15 6 21 6 21 12"/></svg>
-      <span class="chart-btn-text">Aylık ilerleme</span>
-    </button>
+    <a id="hatlar-btn" href="/hatlar/" aria-label="Bütün hatlar" title="Bütün hatlar: ilerleme, tahmini açılış ve hat sayfaları">
+      <svg class="hatlar-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1.2"/><circle cx="4.5" cy="12" r="1.2"/><circle cx="4.5" cy="18" r="1.2"/></svg>
+      <span class="hatlar-btn-text">Hatlar</span>
+    </a>
     <button id="info-btn" type="button" aria-label="metrometre hakkında" aria-haspopup="dialog" title="metrometre hakkında">ⓘ</button>
   </div>
 </header>
@@ -1801,32 +1713,6 @@ a.src-badge:hover { border-color: currentColor; }
 </div>
 
 <!-- İLERLEME KARŞILAŞTIRMA MODALİ -->
-<div id="cmp-backdrop" class="modal-backdrop-shared">
-  <div id="cmp-modal" role="dialog" aria-modal="true" aria-labelledby="cmp-title">
-    <div class="modal-title" id="cmp-title">Aylık İlerleme Tablosu</div>
-    <button class="modal-close" id="cmp-close" type="button" aria-label="Pencereyi kapat">✕</button>
-    <div id="cmp-empty" hidden>Henüz aylık ilerleme verisi yüklenmedi.</div>
-    <div id="cmp-content">
-      <!-- Son veri ayının paylaşılabilir özeti (en çok ilerleyen hatlar) -->
-      <div id="cmp-summary" hidden>
-        <div id="cmp-summary-text"></div>
-        <div id="cmp-summary-actions">
-          <button class="share-btn" id="cmp-summary-copy" type="button"><span>Özeti kopyala</span></button>
-          <button class="share-btn primary" id="cmp-summary-x" type="button">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-            <span>X'te paylaş</span>
-          </button>
-        </div>
-      </div>
-      <div id="cmp-chart-wrap">
-        <svg id="cmp-chart-svg" role="img" aria-label="Aylık ilerleme karşılaştırma grafiği"></svg>
-        <div id="cmp-tooltip"></div>
-      </div>
-      <div id="cmp-legend"></div>
-      <div id="cmp-note">Yüzde değerleri her ayın sonundaki fiziki ilerlemeyi gösterir. Bir hattı gizlemek/göstermek için etiketine tıklayın.</div>
-    </div>
-  </div>
-</div>
 <div id="mobile-toggle">
   <button class="mtoggle-btn active" id="mtoggle-list">☰ Listele</button>
   <button class="mtoggle-btn" id="mtoggle-map"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg> Haritayı Gör</button>
@@ -2118,8 +2004,6 @@ function syncIlUI(){
     wrap.hidden = ILLER.length < 2;
   }
   document.querySelectorAll('.kapsam-yer').forEach(el => { el.textContent = kapsamYer(); });
-  const cmpTitle = document.getElementById('cmp-title');
-  if(cmpTitle) cmpTitle.textContent = 'Aylık İlerleme Tablosu' + (ILLER.length > 1 ? ` · ${activeIl}` : '');
 }
 
 // İl değiştirir: seçimi temizler, liste/harita/metrikleri yeniden çizer, ilin hatlarına yakınlaşır
@@ -2140,7 +2024,6 @@ function setIl(il, opts = {}){
   renderMap();
   if(opts.fit !== false) fitGlobalBounds();
   writeHash();
-  if(document.getElementById('cmp-backdrop').classList.contains('show')) renderCompareChart();
 }
 
 // ═════════════════════════════════════════════════════
@@ -5693,350 +5576,16 @@ function progressForFeature(p){
 
 // Veri (yeniden) yüklenince açık panelleri tazeler.
 function syncProgressUI(){
-  // Buton görünürlüğü: veri yoksa karşılaştırma butonu gizli
-  const cbtn = document.getElementById('chart-btn');
-  if(cbtn) cbtn.style.display = progressByOid.size > 0 ? '' : 'none';
   // Bilgi modalındaki veri dönemi cümlesi
   const masof = document.getElementById('modal-asof');
   const ym = latestDataYM();
   if(masof) masof.textContent = ym ? ` Paneldeki en güncel fiziki ilerleme verisi ${ymLong(ym)} dönemine aittir.` : '';
-  // Karşılaştırma modalı açıksa yeniden çiz
-  if(document.getElementById('cmp-backdrop').classList.contains('show')) renderCompareChart();
-}
-
-// ──── KARŞILAŞTIRMA MODALİ — ÇOKLU ÇİZGİ ────
-const cmpBackdrop = document.getElementById('cmp-backdrop');
-const cmpModal    = document.getElementById('cmp-modal');
-const chartBtn    = document.getElementById('chart-btn');
-const cmpChartSvg = document.getElementById('cmp-chart-svg');
-let cmpLastFocused = null;
-const cmpHidden    = new Set();   // legend ile gizlenen kayıt anahtarları (OBJECTID)
-let cmpMonthsX     = [];          // ay x konumları (hover'da ay yakalama): [{ym, x}]
-let cmpByMonth     = new Map();   // ym -> [{label, renk, pct, y}] görünür hatların o aydaki değerleri
-
-// Çoklu çizgi için ayırt edici palet (GeoJSON'da renk eşleşmezse sırayla atanır)
-const CMP_PALETTE = ['#B4271F','#1E6FD9','#2E9E5B','#E0840B','#7C3AED','#0EA5A5',
-                     '#D6336C','#5B6770','#8A6D00','#0F766E','#9333EA','#C2410C'];
-
-function getCmpFocusables(){
-  return Array.from(cmpModal.querySelectorAll(
-    'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
-  ));
 }
 
 // Yüzde değerini TR biçiminde metne çevirir (tam sayıysa düz, değilse virgüllü).
 function pctText(v){
   return Number.isInteger(v) ? String(v) : (Math.round(v*100)/100).toFixed(2).replace(/0$/,'').replace('.', ',');
 }
-
-// Karşılaştırma serileri: tablodaki her kayıt (OBJECTID anahtarlı).
-// Renk/ad önce GeoJSON'dan OBJECTID ile, sonra tablodaki 'hat' adından alınır.
-function getCompareSeries(){
-  // GeoJSON meta'sını OBJECTID ile indeksle (renk için)
-  const metaByOid = new Map();
-  allHatlar.forEach(f => {
-    const pp = f.properties || {};
-    const oid = String(pp.OBJECTID ?? '');
-    if(oid && !metaByOid.has(oid)) metaByOid.set(oid, pp);
-  });
-
-  const out = [];
-  let pi = 0;
-  for(const [key, rec] of progressByOid){
-    if(!rec.series.length) continue;
-    const meta = rec.oid ? metaByOid.get(rec.oid) : null;
-    // Etkin ilde görünen hatlar (kendi + bağlantılı); geometrisi bulunmayan kayıt varsayılan ilde
-    if(meta ? !hatIlleri(meta).includes(activeIl) : activeIl !== VARSAYILAN_IL) continue;
-    const renk = (meta && normHex(meta.RENK_HEX)) || CMP_PALETTE[pi % CMP_PALETTE.length];
-    pi++;
-    out.push({
-      key,
-      kod: rec.kod || (meta && meta.KOD) || '',
-      ad:  rec.hat || (meta && meta.AD) || rec.kod || key,
-      durum: rec.durum || '',
-      kendi: meta ? hatKendi(meta) : true,
-      renk,
-      series: rec.series,
-      last: rec.series[rec.series.length-1].pct,
-    });
-  }
-  // En yüksek güncel ilerleme üstte
-  out.sort((a,b) => b.last - a.last);
-  return out;
-}
-
-function renderCompareChart(){
-  const data = getCompareSeries();
-  const emptyEl = document.getElementById('cmp-empty');
-  const contentEl = document.getElementById('cmp-content');
-
-  if(!data.length || progressMonths.length < 1){
-    emptyEl.hidden = false;
-    contentEl.style.display = 'none';
-    return;
-  }
-  emptyEl.hidden = true;
-  contentEl.style.display = '';
-
-  const months = progressMonths;
-  const W = 760, H = 340, padL = 34, padR = 44, padT = 14, padB = 34;
-  const ix = W - padL - padR, iy = H - padT - padB;
-  const n = months.length;
-  const xIndex = new Map(months.map((m,i) => [m, i]));
-  const xAt = i => padL + (n === 1 ? ix/2 : (i/(n-1)) * ix);
-  const yAt = v => padT + iy - (v/100) * iy;   // sabit 0–100 ölçek
-
-  // Y ızgara çizgileri (0,25,50,75,100)
-  let grid = '';
-  [0,25,50,75,100].forEach(v => {
-    const y = yAt(v).toFixed(1);
-    grid += `<line class="grid-line${v===0?' zero':''}" x1="${padL}" y1="${y}" x2="${padL+ix}" y2="${y}"></line>`;
-    grid += `<text class="axis-lbl" x="${padL-6}" y="${(+y+3).toFixed(1)}" text-anchor="end">${v}</text>`;
-  });
-
-  // X ay etiketleri — kalabalıksa atlamalı göster (en çok ~10 etiket)
-  const step = Math.max(1, Math.ceil(n / 10));
-  let xLabels = '';
-  months.forEach((m,i) => {
-    if(i % step !== 0 && i !== n-1) return;
-    xLabels += `<text class="axis-lbl" x="${xAt(i).toFixed(1)}" y="${H-12}" text-anchor="middle">${esc(ymLabel(m))}</text>`;
-  });
-
-  // Görünür kayıtların son-etiket y konumlarını topla (çakışma ötelemesi için)
-  const lastLabels = [];
-  cmpByMonth = new Map();                              // hover: her ayın görünür hat değerleri
-  cmpMonthsX = months.map((m,i) => ({ ym:m, x: xAt(i) }));
-
-  let lines = '';
-  let cmpHasEst = false;
-  data.forEach(d => {
-    const off = cmpHidden.has(d.key);
-    const cls = off ? ' dim' : '';
-    const visPts = d.series.filter(s => xIndex.has(s.ym));
-    if(!visPts.length) return;
-    const pts = visPts.map(s => `${xAt(xIndex.get(s.ym)).toFixed(1)},${yAt(s.pct).toFixed(1)}`);
-    lines += `<polyline class="cmp-line${cls}" points="${pts.join(' ')}" stroke="${d.renk}"></polyline>`;
-    visPts.forEach((s,k) => {
-      const isLast = k === visPts.length-1;
-      // Kaynağı "Tahmin" olan aylar içi boş nokta (detay grafiğiyle aynı dil)
-      const est = sourceInfo(s.src)?.key === 'tahmin';
-      if(est) cmpHasEst = true;
-      const fill = est ? `fill="#fff" stroke="${d.renk}" style="stroke-width:1.5"` : `fill="${d.renk}"`;
-      lines += `<circle class="cmp-dot${cls}" cx="${xAt(xIndex.get(s.ym)).toFixed(1)}" cy="${yAt(s.pct).toFixed(1)}" r="${isLast?3.5:2.5}" ${fill}></circle>`;
-    });
-    if(!off){
-      const lbl = (d.kod ? `${d.kod} · ${d.ad}` : d.ad) + (d.kendi ? '' : ` (bağlantılı)`);
-      visPts.forEach(s => {
-        if(!cmpByMonth.has(s.ym)) cmpByMonth.set(s.ym, []);
-        cmpByMonth.get(s.ym).push({ label: lbl, renk: d.renk, pct: s.pct, y: yAt(s.pct) });
-      });
-      const lp = visPts[visPts.length-1];
-      lastLabels.push({ x: xAt(xIndex.get(lp.ym)), y: yAt(lp.pct), renk: d.renk, txt: pctText(lp.pct) });
-    }
-  });
-
-  // Son-değer etiketlerini dikeyde çakışmayacak şekilde ötele
-  lastLabels.sort((a,b) => a.y - b.y);
-  for(let i=1;i<lastLabels.length;i++){
-    if(lastLabels[i].y - lastLabels[i-1].y < 11) lastLabels[i].y = lastLabels[i-1].y + 11;
-  }
-  lastLabels.forEach(l => {
-    lines += `<text class="axis-lbl" x="${(l.x+6).toFixed(1)}" y="${(l.y+3).toFixed(1)}" text-anchor="start" style="fill:${l.renk};font-weight:700">%${l.txt}</text>`;
-  });
-
-  const svg = document.getElementById('cmp-chart-svg');
-  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-  const hoverLayer = `<line id="cmp-guide" x1="0" x2="0" y1="${padT.toFixed(1)}" y2="${(padT+iy).toFixed(1)}" style="display:none"></line><g id="cmp-hover-dots"></g>`;
-  svg.innerHTML = grid + xLabels + lines + hoverLayer;
-
-  renderMonthlySummary();
-
-  // Not satırı: tahmini noktalar varsa açıklama eklenir
-  document.getElementById('cmp-note').textContent =
-    'Yüzde değerleri her ayın sonundaki fiziki ilerlemeyi gösterir. Bir hattı gizlemek/göstermek için etiketine tıklayın.'
-    + (cmpHasEst ? ' İçi boş noktalar resmî veri bulunmayan aylar için hesaplanan ara değerlerdir.' : '');
-
-  // Legend (tıklanabilir aç/kapa)
-  const legend = document.getElementById('cmp-legend');
-  legend.innerHTML = data.map(d => {
-    const off = cmpHidden.has(d.key);
-    const label = d.kod ? `${d.kod} · ${d.ad}` : d.ad;
-    return `<span class="cmp-leg-item${off?' off':''}" data-key="${esc(d.key)}" role="button" tabindex="0" aria-pressed="${off?'false':'true'}" title="${esc(label)}">
-      <span class="cmp-leg-swatch" style="background:${d.renk}"></span>
-      <span class="cmp-leg-label">${esc(label)}</span>
-      <span class="cmp-leg-pct">%${Math.round(d.last)}</span>
-    </span>`;
-  }).join('');
-}
-
-// Legend tıklama / klavye ile hat aç-kapa (event delegation)
-document.getElementById('cmp-legend').addEventListener('click', e => {
-  const item = e.target.closest('.cmp-leg-item');
-  if(!item) return;
-  toggleCmpKey(item.dataset.key);
-});
-document.getElementById('cmp-legend').addEventListener('keydown', e => {
-  if(e.key !== 'Enter' && e.key !== ' ') return;
-  const item = e.target.closest('.cmp-leg-item');
-  if(!item) return;
-  e.preventDefault();
-  toggleCmpKey(item.dataset.key);
-});
-function toggleCmpKey(key){
-  if(cmpHidden.has(key)) cmpHidden.delete(key);
-  else cmpHidden.add(key);
-  renderCompareChart();
-}
-
-// ──── AYLIK ÖZET (paylaşılabilir) ────
-// Son veri ayında bir önceki aya göre en çok ilerleyen hatlar. X sınırına
-// (280 karakter, bağlantı 23 sayılır) sığacak kadar hat alınır.
-const shortLineName = s => String(s || '').replace(/\s+(Metro|Tramvay|Füniküler|Teleferik)\s+Hattı$/i, '').trim();
-function buildMonthlySummary(){
-  const ym = latestDataYM();
-  if(!ym) return null;
-  // Yalnızca etkin ilin kendi hatları (bağlantılı hatlar komşu ilin özetinde yer alır)
-  const metaByOid = new Map(allHatlar.map(f => [String(f.properties?.OBJECTID ?? ''), f.properties]));
-  const movers = [];
-  for(const rec of progressByOid.values()){
-    const meta = rec.oid ? metaByOid.get(String(rec.oid)) : null;
-    if(meta ? !hatKendi(meta) : activeIl !== VARSAYILAN_IL) continue;
-    const ser = rec.series;
-    const n = ser.length;
-    if(n < 2 || ser[n-1].ym !== ym) continue;
-    const delta = ser[n-1].pct - ser[n-2].pct;
-    if(delta > 0.004) movers.push({ name: shortLineName([rec.kod, rec.hat].filter(Boolean).join(' ')), pct: ser[n-1].pct, delta });
-  }
-  if(!movers.length) return null;
-  movers.sort((a, b) => b.delta - a.delta);
-  const head = `${ymLong(ym)} itibarıyla ${ilAyar(activeIl).yerSifat} raylı sistem projelerinde en çok ilerleyenler:`;
-  const line = m => `▲ ${m.name} %${pctText(Math.round(m.pct*100)/100)} (+${pctText(Math.round(m.delta*10)/10)} puan)`;
-  let picked = movers.slice(0, 3);
-  const fit = arr => `${head}\n\n${arr.map(line).join('\n')}\n\nTüm hatlar:`;
-  while(picked.length > 1 && fit(picked).length > 250) picked = picked.slice(0, -1);
-  return { text: fit(picked), url: location.origin + '/' + (activeIl === VARSAYILAN_IL ? '' : '#' + ilHashPart().replace(/&$/, '')), picked, head };
-}
-function renderMonthlySummary(){
-  const box = document.getElementById('cmp-summary');
-  const s = buildMonthlySummary();
-  box.hidden = !s;
-  if(!s) return;
-  document.getElementById('cmp-summary-text').innerHTML =
-    `<b>${esc(s.head)}</b>\n` + s.picked.map(m =>
-      `▲ ${esc(m.name)} %${esc(pctText(Math.round(m.pct*100)/100))} <span style="color:#065F46;font-weight:600">(+${esc(pctText(Math.round(m.delta*10)/10))} puan)</span>`).join('\n');
-}
-document.getElementById('cmp-summary-copy').addEventListener('click', async () => {
-  const s = buildMonthlySummary();
-  if(!s) return;
-  const lbl = document.querySelector('#cmp-summary-copy span');
-  try {
-    await navigator.clipboard.writeText(`${s.text} ${s.url}`);
-    lbl.textContent = 'Kopyalandı ✓';
-  } catch(_){ lbl.textContent = 'Kopyalanamadı'; }
-  setTimeout(() => { lbl.textContent = 'Özeti kopyala'; }, 1800);
-});
-document.getElementById('cmp-summary-x').addEventListener('click', () => {
-  const s = buildMonthlySummary();
-  if(!s) return;
-  window.open('https://x.com/intent/post?text=' + encodeURIComponent(s.text) + '&url=' + encodeURIComponent(s.url),
-              '_blank', 'noopener,noreferrer');
-});
-
-function openCompare(){
-  cmpLastFocused = document.activeElement;
-  cmpBackdrop.classList.add('show');
-  renderCompareChart();
-  const f = getCmpFocusables();
-  (f[0] || cmpModal).focus();
-}
-function closeCompare(){
-  if(!cmpBackdrop.classList.contains('show')) return;
-  cmpBackdrop.classList.remove('show');
-  cmpChartHideTip();
-  if(cmpLastFocused && typeof cmpLastFocused.focus === 'function') cmpLastFocused.focus();
-  cmpLastFocused = null;
-}
-
-chartBtn.addEventListener('click', openCompare);
-document.getElementById('cmp-close').addEventListener('click', closeCompare);
-cmpBackdrop.addEventListener('click', e => { if(e.target === cmpBackdrop) closeCompare(); });
-
-// ──── Grafik üzerinde imleçle gezinme: en yakın noktanın yüzdesini göster ────
-const cmpTooltip = document.getElementById('cmp-tooltip');
-function cmpChartHover(e){
-  if(!cmpMonthsX.length){ cmpChartHideTip(); return; }
-  const ctm = cmpChartSvg.getScreenCTM();
-  if(!ctm) return;
-  const sp = cmpChartSvg.createSVGPoint();
-  sp.x = e.clientX; sp.y = e.clientY;
-  const loc = sp.matrixTransform(ctm.inverse());   // ekran → viewBox koordinatı
-
-  // İmlece en yakın ay sütunu
-  let mo = null, moD = Infinity;
-  for(const m of cmpMonthsX){
-    const d = Math.abs(m.x - loc.x);
-    if(d < moD){ moD = d; mo = m; }
-  }
-  if(!mo){ cmpChartHideTip(); return; }
-  const entries = (cmpByMonth.get(mo.ym) || []).slice().sort((a,b) => b.pct - a.pct);
-  if(!entries.length){ cmpChartHideTip(); return; }
-
-  // Dikey kılavuz çizgisi
-  const guide = document.getElementById('cmp-guide');
-  if(guide){
-    guide.setAttribute('x1', mo.x.toFixed(1));
-    guide.setAttribute('x2', mo.x.toFixed(1));
-    guide.style.display = '';
-  }
-  // Her görünür hattın o aydaki noktasında vurgu halkası
-  const dots = document.getElementById('cmp-hover-dots');
-  if(dots){
-    dots.innerHTML = entries.map(en =>
-      `<circle cx="${mo.x.toFixed(1)}" cy="${en.y.toFixed(1)}" r="4" fill="#fff" stroke="${en.renk}" stroke-width="2"></circle>`
-    ).join('');
-  }
-  // Liste tooltip: ay başlığı + her hat (yüzdeye göre azalan)
-  cmpTooltip.innerHTML =
-    `<div class="cmp-tip-title">${esc(ymLabel(mo.ym))}</div>` +
-    entries.map(en =>
-        `<div class="cmp-tip-line"><span class="sw" style="background:${en.renk}"></span>`
-      + `<span class="nm">${esc(en.label)}</span><span class="pc">%${pctText(en.pct)}</span></div>`
-    ).join('');
-
-  // Konum: kılavuzun sağına (sığmazsa soluna), imlecin dikey hizasında
-  const guideX = ctm.a * mo.x + ctm.e;            // kılavuzun ekran x'i
-  const wr = document.getElementById('cmp-chart-wrap').getBoundingClientRect();
-  cmpTooltip.style.display = 'block';
-  const tw = cmpTooltip.offsetWidth, th = cmpTooltip.offsetHeight;
-  let left = (guideX - wr.left) + 14;
-  if(left + tw > wr.width - 4) left = (guideX - wr.left) - tw - 14;
-  left = Math.max(4, Math.min(Math.max(4, wr.width - tw - 4), left));
-  let top = (e.clientY - wr.top) - th / 2;
-  top = Math.max(4, Math.min(Math.max(4, wr.height - th - 4), top));
-  cmpTooltip.style.left = left.toFixed(0) + 'px';
-  cmpTooltip.style.top  = top.toFixed(0) + 'px';
-}
-function cmpChartHideTip(){
-  cmpTooltip.style.display = 'none';
-  const guide = document.getElementById('cmp-guide'); if(guide) guide.style.display = 'none';
-  const dots  = document.getElementById('cmp-hover-dots'); if(dots) dots.innerHTML = '';
-}
-cmpChartSvg.addEventListener('pointermove', cmpChartHover);
-cmpChartSvg.addEventListener('pointerdown', cmpChartHover);   // dokunmatikte de göster
-cmpChartSvg.addEventListener('pointerleave', cmpChartHideTip);
-
-// Esc kapatır; Tab focus trap (bilgi modali ile aynı desen)
-document.addEventListener('keydown', e => {
-  if(!cmpBackdrop.classList.contains('show')) return;
-  if(e.key === 'Escape'){ e.preventDefault(); closeCompare(); return; }
-  if(e.key === 'Tab'){
-    const f = getCmpFocusables();
-    if(!f.length) return;
-    const first = f[0], last = f[f.length-1];
-    if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
-    else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
-  }
-});
 
 // ═════════════════════════════════════════════════════
 //  BAŞLATMA
