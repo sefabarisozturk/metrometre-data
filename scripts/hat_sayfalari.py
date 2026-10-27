@@ -1677,7 +1677,7 @@ h1 { font-size:24px; letter-spacing:-0.03em; line-height:1.2; }
 <main>
   <div>
     <h1>Raylı sistem projeleri</h1>
-    <p class="lead">Yapımı süren, proje aşamasındaki ve yakın zamanda açılan raylı sistem hatları. Her hattın sayfasında aylık fiziki ilerleme, tahmini açılış tarihinin seyri, güzergâh ve istasyonlar yer almaktadır.</p>
+    <p class="lead">Her hattın sayfasında aylık fiziki ilerleme, tahmini açılış tarihinin seyri, güzergâh ve istasyonlar yer almaktadır.</p>
   </div>
   {{BOLUMLER}}
   <p class="method">metrometre, raylı sistem projelerinin fiziki ilerlemesini bağımsız olarak izleyen bir sivil girişimdir; herhangi bir kurumla bağlantısı bulunmamaktadır. Veriler aylık olarak güncellenmekte ve <a href="https://github.com/sefabarisozturk/metrometre-data">GitHub'da açık veri</a> olarak yayımlanmaktadır.</p>
