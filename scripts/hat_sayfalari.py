@@ -1481,39 +1481,17 @@ def build_bulten_index(repo, hat, manifest):
         meta = bulten_meta(repo, ay) if re.match(r'^\d{4}-\d{2}$', ay) else None
         if meta:
             sayilar.append({**b, **meta})
-    by_id = {str(f['properties']['OBJECTID']): f['properties'] for f in hat}
-
-    def hat_cipleri(ids):
-        out = []
-        for oid in ids or []:
-            q = by_id.get(str(oid))
-            if not q:
-                continue
-            kod = kod_goster(q['KOD'])
-            ad = tire(re.sub(r" (Metro|Tramvay) Hattı$", "", q['AD']))
-            sayfa = manifest['sayfalar'].get(str(oid))
-            ic = f'{icon(q.get("IKON_URL"), kod, q.get("RENK_HEX"), 22)}<span><b>{esc(kod)}</b><span class="hn"> {esc(ad)}</span></span>'
-            out.append(f'<a class="hc" href="/hat/{oid}-{sayfa["slug"]}">{ic}</a>' if sayfa
-                       else f'<span class="hc">{ic}</span>')
-        return ''.join(out)
-
     if not sayilar:
         govde = '<section class="panel empty"><p>Henüz yayımlanmış bülten bulunmamaktadır.</p></section>'
     else:
         son = sayilar[0]
         tarih = f'{date_long(son["tarih"])} tarihinde yayımlandı' if son['tarih'] else ''
-        gorsel = (f'<a class="feat-img" href="/bulten/{son["ay"]}" tabindex="-1" aria-hidden="true">'
-                  f'<img src="/bulten/{son["ay"]}.png" alt="" width="1200" height="630" loading="eager"></a>'
-                  if son['kart'] else '')
-        cips = hat_cipleri(son.get('hatlar'))
-        govde = (f'<article class="panel feat" aria-labelledby="son-sayi">{gorsel}<div class="feat-body">'
-                 f'<div class="feat-meta"><span class="tag">Son sayı</span><span class="feat-ay">{esc(ym_long(son["ay"]))}</span>'
-                 + (f'<span class="feat-date">{esc(tarih)}</span>' if tarih else '') + '</div>'
+        govde = (f'<article class="panel feat" aria-labelledby="son-sayi">'
+                 f'<div class="feat-meta"><span class="tag">Son sayı</span><span class="feat-ay">{esc(ym_long(son["ay"]))}</span></div>'
                  f'<h2 id="son-sayi"><a href="/bulten/{son["ay"]}">{esc(son.get("baslik", ""))}</a></h2>'
                  f'<p class="feat-dek">{esc(son["dek"])}</p>'
-                 + (f'<div class="feat-lines"><span class="fl-lbl">Bu sayıda</span>{cips}</div>' if cips else '')
-                 + f'<a class="cta" href="/bulten/{son["ay"]}">Bülteni oku<span aria-hidden="true">→</span></a>'
-                 f'</div></article>')
+                 f'<div class="feat-foot"><a class="cta" href="/bulten/{son["ay"]}">Bülteni oku<span aria-hidden="true">→</span></a>'
+                 + (f'<span class="feat-date">{esc(tarih)}</span>' if tarih else '') + '</div></article>')
         eskiler = sayilar[1:]
         if eskiler:
             yillar = {}
@@ -1569,33 +1547,21 @@ main { max-width:760px; margin:0 auto; padding:calc(var(--header-h) + 22px) 16px
 .panel { background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
 .intro h1 { font-size:26px; letter-spacing:-0.03em; line-height:1.15; }
 .intro p { font-size:14px; color:var(--text-muted); line-height:1.6; margin-top:6px; max-width:60ch; }
-.follow { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
-.follow a { display:inline-flex; align-items:center; gap:6px; height:30px; padding:0 12px; border:1px solid var(--border-2);
-  border-radius:99px; color:var(--text); font-size:12px; font-weight:600; background:var(--surface); }
-.follow a:hover { border-color:var(--accent); color:var(--accent); }
-.follow svg { width:14px; height:14px; }
-/* Son sayı */
-.feat-img { display:block; background:var(--surface-2); border-bottom:1px solid var(--border); }
-.feat-img img { display:block; width:100%; height:auto; aspect-ratio:1200 / 630; object-fit:cover; }
-.feat-body { padding:20px 24px 22px; display:flex; flex-direction:column; gap:10px; }
-.feat-meta { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-.tag { font-size:10.5px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; padding:3px 8px; border-radius:99px;
-  background:var(--accent); color:#fff; }
-.feat-ay { font-size:15px; font-weight:700; color:var(--text); }
-.feat-date { font-size:12.5px; color:var(--text-dim); }
-.feat-date::before { content:"·"; margin-right:6px; }
-.feat h2 { font-size:26px; line-height:1.2; letter-spacing:-0.03em; text-wrap:balance; }
+.follow { font-size:12.5px; color:var(--text-dim); margin:0 2px; }
+.follow a:hover { text-decoration:underline; }
+/* Son sayı: yalnızca tipografiyle öne çıkar */
+.feat { padding:24px 26px 22px; display:flex; flex-direction:column; gap:10px; }
+.feat-meta { display:flex; align-items:baseline; gap:10px; }
+.tag { font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--accent); }
+.feat-ay { font-size:14px; font-weight:600; color:var(--text); }
+.feat h2 { font-size:26px; line-height:1.22; letter-spacing:-0.03em; text-wrap:balance; }
 .feat h2 a { color:var(--text); }
 .feat h2 a:hover { color:var(--accent); }
 .feat-dek { font-size:15px; line-height:1.65; color:var(--text-muted); max-width:62ch; }
-.feat-lines { display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:2px; }
-.fl-lbl { font-size:10px; font-weight:700; color:var(--text-dim); letter-spacing:.05em; text-transform:uppercase; margin-right:4px; }
-.hc { display:inline-flex; align-items:center; gap:6px; padding:2px 10px 2px 2px; border:1px solid var(--border); border-radius:99px;
-  color:var(--text); font-size:12px; background:var(--surface); }
-a.hc:hover { border-color:var(--border-2); }
-.cta { align-self:flex-start; display:inline-flex; align-items:center; gap:7px; height:38px; padding:0 18px; margin-top:6px; border-radius:99px;
-  background:var(--accent); color:#fff; font-size:13.5px; font-weight:700; }
-.cta:hover { background:#9C1F18; }
+.feat-foot { display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-top:6px; }
+.cta { display:inline-flex; align-items:center; gap:6px; font-size:14px; font-weight:700; color:var(--accent); }
+.cta:hover { text-decoration:underline; }
+.feat-date { font-size:12.5px; color:var(--text-dim); }
 /* Önceki sayılar */
 .sec-lbl { font-size:11px; font-weight:700; color:var(--text-dim); letter-spacing:.05em; text-transform:uppercase; margin:0 2px 10px; }
 .yil + .yil { margin-top:16px; }
@@ -1610,20 +1576,12 @@ a.hc:hover { border-color:var(--border-2); }
   overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
 .row-arrow { font-size:20px; color:var(--text-dim); }
 .empty { padding:22px 24px; color:var(--text-muted); font-size:14px; }
-.line-icon { width:var(--s); height:var(--s); border-radius:50%; overflow:hidden; flex-shrink:0; display:inline-flex;
-  align-items:center; justify-content:center; background:#F0F0F0; border:1.5px solid var(--border); }
-.line-icon img { width:100%; height:100%; object-fit:cover; display:block; }
-.icon-fb { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:8px; font-weight:700; color:#fff; }
-.icon-fb[hidden] { display:none; }
 @media (max-width:640px) {
   main { gap:18px; padding-top:calc(var(--header-h) + 16px); }
   .intro h1 { font-size:22px; }
-  .feat-body { padding:16px 16px 18px; }
+  .feat { padding:18px 18px 18px; }
   .feat h2 { font-size:21px; }
   .feat-dek { font-size:14px; }
-  .feat-date { flex-basis:100%; }
-  .feat-date::before { content:none; }
-  .hc .hn { display:none; }
   .row { grid-template-columns:minmax(0,1fr) auto; padding:12px 14px; gap:8px 10px; }
   .row-ay { grid-column:1 / -1; font-size:13px; color:var(--text-muted); }
 }
@@ -1634,13 +1592,10 @@ a.hc:hover { border-color:var(--border-2); }
 <main>
   <div class="intro">
     <h1>Aylık bülten</h1>
-    <p>İstanbul ve Kocaeli'de yapımı süren raylı sistem hatlarında her ay öne çıkan gelişmeler: geri sayımdaki hatlar, takvimi kayan ve eşik aşan projeler.</p>
-    <div class="follow">
-      <a href="/feed.xml"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 11a8 8 0 0 1 8 8"/><path d="M5 5a14 14 0 0 1 14 14"/><circle cx="6" cy="18" r="1"/></svg>RSS ile takip et</a>
-      <a href="https://x.com/sefabarisozturk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 4l16 16M20 4 4 20"/></svg>X'te takip et</a>
-    </div>
+    <p>İstanbul ve Kocaeli'de yapımı süren raylı sistem hatlarında her ay öne çıkan gelişmeler.</p>
   </div>
   {{GOVDE}}
+  <p class="follow">Yeni sayılardan haberdar olmak için <a href="/feed.xml">RSS beslemesini</a> ya da <a href="https://x.com/sefabarisozturk">X hesabını</a> takip edebilirsiniz.</p>
 </main>
 </body>
 </html>
