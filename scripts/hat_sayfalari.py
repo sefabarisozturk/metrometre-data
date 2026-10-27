@@ -1449,9 +1449,7 @@ def build_hatlar(hat, cards, manifest, overlay):
         bolumler.append(f'<section class="il"><h2>{esc(il)}</h2>{"".join(parcalar)}</section>')
     return (PAGE_HATLAR.replace('{{BOLUMLER}}', ''.join(bolumler))
             .replace('{{HEADER_CSS}}', HEADER_CSS).replace('{{HEADER}}', site_header('hatlar'))
-            .replace('{{ILLER}}', esc(' ve '.join(iller)))
-            .replace('{{ILLER_SIFAT}}', esc(' ve '.join(iller[:-1]) + (' ve ' if len(iller) > 1 else '') + iller[-1] + "'deki")
-                     if iller else ''))
+            )
 
 def bulten_meta(repo, ay):
     """Bir bülten sayısının sayfasından özet, yayım tarihi ve kart görselini okur."""
@@ -1517,14 +1515,14 @@ PAGE_BULTEN_INDEX = """<!DOCTYPE html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Aylık bülten | metrometre</title>
-<meta name="description" content="metrometre aylık bülteni: İstanbul ve Kocaeli'de yapımı süren raylı sistem hatlarında her ay öne çıkan gelişmeler, takvimi kayan ve eşik aşan projeler.">
+<meta name="description" content="metrometre aylık bülteni: yapımı süren raylı sistem hatlarında her ay öne çıkan gelişmeler, takvimi kayan ve eşik aşan projeler.">
 <link rel="canonical" href="https://metrometre.com/bulten/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="metrometre">
 <meta property="og:locale" content="tr_TR">
 <meta property="og:url" content="https://metrometre.com/bulten/">
 <meta property="og:title" content="metrometre aylık bülteni">
-<meta property="og:description" content="İstanbul ve Kocaeli'de yapımı süren raylı sistem hatlarında her ay öne çıkan gelişmeler.">
+<meta property="og:description" content="Yapımı süren raylı sistem hatlarında her ay öne çıkan gelişmeler.">
 <meta property="og:image" content="https://metrometre.com/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@sefabarisozturk">
@@ -1592,7 +1590,7 @@ main { max-width:760px; margin:0 auto; padding:calc(var(--header-h) + 22px) 16px
 <main>
   <div class="intro">
     <h1>Aylık bülten</h1>
-    <p>İstanbul ve Kocaeli'de yapımı süren raylı sistem hatlarında her ay öne çıkan gelişmeler.</p>
+    <p>Yapımı süren raylı sistem hatlarında her ay öne çıkan gelişmeler.</p>
   </div>
   {{GOVDE}}
   <p class="follow">Yeni sayılardan haberdar olmak için <a href="/feed.xml">RSS beslemesini</a> ya da <a href="https://x.com/sefabarisozturk">X hesabını</a> takip edebilirsiniz.</p>
@@ -1624,14 +1622,14 @@ PAGE_HATLAR = """<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{ILLER}} raylı sistem projeleri: yapımı süren ve planlanan hatlar | metrometre</title>
-<meta name="description" content="{{ILLER}}'de yapımı süren, proje aşamasındaki ve yakın zamanda açılan metro, tramvay ve banliyö hatları; fiziki ilerleme, tahmini açılış tarihleri ve hat sayfaları.">
+<title>Raylı sistem projeleri: yapımı süren ve planlanan hatlar | metrometre</title>
+<meta name="description" content="Yapımı süren, proje aşamasındaki ve yakın zamanda açılan metro, tramvay ve banliyö hatları; fiziki ilerleme, tahmini açılış tarihleri ve hat sayfaları.">
 <link rel="canonical" href="https://metrometre.com/hatlar/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="metrometre">
 <meta property="og:locale" content="tr_TR">
 <meta property="og:url" content="https://metrometre.com/hatlar/">
-<meta property="og:title" content="{{ILLER}} raylı sistem projeleri">
+<meta property="og:title" content="Raylı sistem projeleri">
 <meta property="og:image" content="https://metrometre.com/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#B4271F">
@@ -1678,8 +1676,8 @@ h1 { font-size:24px; letter-spacing:-0.03em; line-height:1.2; }
 {{HEADER}}
 <main>
   <div>
-    <h1>{{ILLER}} raylı sistem projeleri</h1>
-    <p class="lead">{{ILLER_SIFAT}} yapımı süren, proje aşamasındaki ve yakın zamanda açılan raylı sistem hatları. Her hattın sayfasında aylık fiziki ilerleme, tahmini açılış tarihinin seyri, güzergâh ve istasyonlar yer almaktadır.</p>
+    <h1>Raylı sistem projeleri</h1>
+    <p class="lead">Yapımı süren, proje aşamasındaki ve yakın zamanda açılan raylı sistem hatları. Her hattın sayfasında aylık fiziki ilerleme, tahmini açılış tarihinin seyri, güzergâh ve istasyonlar yer almaktadır.</p>
   </div>
   {{BOLUMLER}}
   <p class="method">metrometre, raylı sistem projelerinin fiziki ilerlemesini bağımsız olarak izleyen bir sivil girişimdir; herhangi bir kurumla bağlantısı bulunmamaktadır. Veriler aylık olarak güncellenmekte ve <a href="https://github.com/sefabarisozturk/metrometre-data">GitHub'da açık veri</a> olarak yayımlanmaktadır.</p>
