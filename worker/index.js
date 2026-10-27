@@ -33,6 +33,7 @@ export default {
       if(url.pathname === '/feed.xml') return await handleFeed(url, dataBase, env);
       if(url.pathname === '/hat' || url.pathname.startsWith('/hat/')) return await handleHat(request, env, url, dataBase);
       if(url.pathname.startsWith('/hat-sayfalari/')) return await handleRawPage(request, env, url);
+      if(/^\/google[0-9a-f]+\.html$/.test(url.pathname)) return await handleVerification(env, url);
     } catch(err){
       console.warn('worker hatası:', err);
       // Her durumda site açılsın: hat yolunda genel index.html'e düş
@@ -91,6 +92,15 @@ function buildMeta(id, rec, origin, dataBase){
       : `${origin}/og-image.png`,
     imageAlt: rec.card ? `${name} fiziki ilerleme kartı` : 'metrometre — raylı sistem projeleri takip paneli',
   };
+}
+
+// ── Google Search Console doğrulama dosyası (repo kökündeki google<kod>.html)
+// Statik sunucu .html uzantılı istekleri uzantısız adrese 307 ile yönlendirdiği için
+// Google'ın beklediği adreste dosya doğrudan 200 ile verilir.
+async function handleVerification(env, url){
+  const r = await env.ASSETS.fetch(new Request(url.origin + url.pathname.replace(/\.html$/, '')));
+  if(!r.ok) return notFound(env, url.origin);
+  return new Response(r.body, { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
 }
 
 // ── Statik hat sayfaları (hat-sayfalari/, scripts/hat_sayfalari.py üretir)

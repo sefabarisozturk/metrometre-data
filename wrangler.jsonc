@@ -5,7 +5,8 @@
 //    dönüyordu; arama motorları bunu "soft 404" sayıyordu). Harita hash ile
 //    yönlendirdiği için SPA geri dönüşüne ihtiyacı yoktur,
 //  • yalnızca /hat/*, /hat-sayfalari/* ve /feed.xml isteklerinde worker/index.js'i
-//    çalıştırır (hat sayfaları, kanonik yönlendirme, RSS).
+//    çalıştırır (hat sayfaları, kanonik yönlendirme, RSS); ayrıca /google* için
+//    Search Console doğrulama dosyasını yönlendirmesiz sunar.
 // "name", Cloudflare panelindeki Worker adıyla aynı olmalıdır.
 {
   "$schema": "node_modules/wrangler/config-schema.json",
@@ -17,6 +18,6 @@
     "directory": ".",
     "binding": "ASSETS",
     "not_found_handling": "404-page",
-    "run_worker_first": ["/hat", "/hat/*", "/hat-sayfalari/*", "/feed.xml"]
+    "run_worker_first": ["/hat", "/hat/*", "/hat-sayfalari/*", "/feed.xml", "/google*"]
   }
 }
