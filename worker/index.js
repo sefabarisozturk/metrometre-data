@@ -53,10 +53,8 @@ const DURUM_LABEL = {
   '5':'Uygulama projesi tamamlandı','6':'Uygulama projesi sürüyor',
   '7':'Etüt projesi tamamlandı','8':'Etüt projesi sürüyor',
 };
-// Kapsanan iller — yeni il eklendiğinde burası (ve index.html <head>, manifest.json) güncellenir
-const KAPSAM_YER   = "İstanbul ve Kocaeli'de";
-const KAPSAM_SIFAT = "İstanbul ve Kocaeli'deki";
-const SITE_DESC = `${KAPSAM_SIFAT} raylı sistem projelerini bağımsız olarak izleyen panel.`;
+// Site geneli metinler il adı içermez; yeni il eklendiğinde değiştirmek gerekmez.
+const SITE_DESC = 'Raylı sistem projelerini bağımsız olarak izleyen panel.';
 const ymLong = ym => {
   const m = /^(\d{4})-(\d{2})$/.exec(ym || '');
   return m ? `${TR_MONTHS[parseInt(m[2], 10) - 1]} ${m[1]}` : '';
@@ -290,7 +288,7 @@ async function handleFeed(url, dataBase, env){
     const top = entries.find(e => e.delta !== null && e.delta > 0.004);
     const title = `${ymLong(ym)} fiziki ilerleme verileri` + (top ? ` — en çok ilerleyen: ${top.l.ad}` : '');
     const html = (bulletinUrl ? `<p><a href="${xml(bulletinUrl)}"><b>${ymLong(ym)} bültenini okuyun</b></a>: ayın öne çıkan gelişmeleri ve hat hat notlar.</p>` : '')
-      + `<p>${KAPSAM_SIFAT} raylı sistem projelerinin ${ymLong(ym)} sonu itibarıyla fiziki ilerleme değerleri:</p><ul>${li}</ul>`
+      + `<p>Yapımı süren raylı sistem projelerinin ${ymLong(ym)} sonu itibarıyla fiziki ilerleme değerleri:</p><ul>${li}</ul>`
       + `<p><a href="${xml(origin)}">metrometre.com</a> üzerinde haritada inceleyin.</p>`;
     return `<item>
   <title>${xml(title)}</title>
@@ -307,7 +305,7 @@ async function handleFeed(url, dataBase, env){
   <title>metrometre — aylık ilerleme güncellemeleri</title>
   <link>${xml(origin)}/</link>
   <atom:link href="${xml(origin)}/feed.xml" rel="self" type="application/rss+xml"/>
-  <description>${KAPSAM_YER} yapımı süren raylı sistem projelerinin aylık fiziki ilerleme verileri.</description>
+  <description>Yapımı süren raylı sistem projelerinin aylık fiziki ilerleme verileri.</description>
   <language>tr</language>
   ${months.length ? `<lastBuildDate>${pubDate(months[0])}</lastBuildDate>` : ''}
 ${items}

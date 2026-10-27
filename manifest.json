@@ -1,7 +1,7 @@
 {
   "name": "metrometre",
   "short_name": "metrometre",
-  "description": "İstanbul ve Kocaeli raylı sistem projeleri takip paneli",
+  "description": "Raylı sistem projeleri takip paneli",
   "lang": "tr",
   "dir": "ltr",
   "start_url": "/",
