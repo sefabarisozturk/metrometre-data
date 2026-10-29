@@ -163,7 +163,6 @@ NAV_IKON = {
     'hakkinda': '<circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 7.5v.01"/>',
 }
 NAV = [('harita', '/', 'Harita', 'Harita: bütün hatlar'),
-       ('hatlar', '/hatlar/', 'Hatlar', 'Bütün hatlar: ilerleme ve tahmini açılış'),
        ('bulten', '/bulten/', 'Bülten', 'Aylık bülten'),
        ('hakkinda', '/hakkinda/', 'Hakkında', 'metrometre hakkında')]
 
@@ -215,7 +214,7 @@ HEADER_CSS = """/* ── Ortak başlık (scripts/hat_sayfalari.py · site_heade
   #header { padding:0 12px; }
   #logo-tagline { display:none; }
   #logo-link { flex-shrink:1; }
-  #logo-img { height:auto; width:min(184px, calc(100vw - 212px)); }
+  #logo-img { height:auto; width:min(184px, calc(100vw - 170px)); }
   .site-nav { gap:6px; }
   .nav-btn, .nav-btn.icon { width:40px; height:40px; padding:0; justify-content:center; gap:0; }
   .nav-btn .lbl { display:none; }
