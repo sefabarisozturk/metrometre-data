@@ -1427,6 +1427,47 @@ ROBOTS = f"User-agent: *\nAllow: /\n\nSitemap: {SITE}/sitemap.xml\n"
 ASAMA_BASLIK = {'yapim': 'Yapımı süren hatlar', 'isletme': 'Yakın zamanda açılan hatlar',
                 'proje': 'Proje aşamasındaki hatlar'}
 
+# /hatlar/'da yapımı süren hatlar: tahmini açılışa göre takvim (bültendeki düzen). ÖRNEK — onay bekliyor.
+HATLAR_TAKVIM = True
+
+def takvim_yapim(satirlar, cards, manifest, overlay):
+    """Yapımı süren hatları tahmini açılış ayına göre gruplayan dikey takvim."""
+    gruplar = {}
+    for q in satirlar:
+        oid = str(q['OBJECTID'])
+        months, latest = series_for(overlay, oid)
+        iso = latest.get('acilis') or ''
+        if re.match(r'^\d{4}-\d{2}', iso):
+            anahtar, etiket = iso[:7], ym_long(iso[:7])
+        elif re.match(r'^\d{4}$', iso):
+            anahtar, etiket = iso + '-99', iso
+        else:
+            anahtar, etiket = '9999', 'Takvim yok'
+        runs = acilis_runs(months)
+        onceki = acilis_label(runs[-2]['val']) if len(runs) > 1 else ''
+        if onceki and re.match(r'^\d{4}-\d{2}-\d{2}$', runs[-2]['val']):
+            onceki = ym_long(runs[-2]['val'][:7])
+        gruplar.setdefault(anahtar, [etiket, []])[1].append((q, cards.get(oid, {}), onceki))
+    satir_html = []
+    for anahtar in sorted(gruplar):
+        etiket, hatlar = gruplar[anahtar]
+        hatlar.sort(key=lambda x: -(x[1].get('pct') or 0))
+        pills = []
+        for q, c, onceki in hatlar:
+            oid = str(q['OBJECTID'])
+            kod = kod_goster(q['KOD'])
+            ad = tire(re.sub(r" (Metro|Tramvay) Hattı$", "", q['AD']))
+            pct = f'<span class="tl-pct">%{fmt_pct(c["pct"])}</span>' if c.get('pct') is not None else ''
+            was = f'<span class="tl-was">{esc(onceki)} idi</span>' if onceki else ''
+            pills.append(f'<a class="tl-line" href="/hat/{oid}-{manifest["sayfalar"][oid]["slug"]}">'
+                         f'{icon(q.get("IKON_URL"), kod, q.get("RENK_HEX"), 22)}'
+                         f'<span class="tl-ad"><b>{esc(kod)}</b> {esc(ad)}</span><span class="tl-meta">{pct}{was}</span></a>')
+        cls = ' none' if anahtar == '9999' else ''
+        satir_html.append(f'<li class="tl-row{cls}"><div class="tl-when">{esc(etiket)}</div>'
+                          f'<div class="tl-lines">{"".join(pills)}</div></li>')
+    return f'<ol class="timeline">{"".join(satir_html)}</ol>'
+
+
 def build_hatlar(hat, cards, manifest, overlay):
     """/hatlar/ — bütün hat sayfalarının il ve aşamaya göre dizini."""
     by_id = {str(f['properties']['OBJECTID']): f['properties'] for f in hat}
@@ -1467,8 +1508,11 @@ def build_hatlar(hat, cards, manifest, overlay):
                             f'<span class="t"><b>{esc(kod + " " if len(kod) > 1 else "")}</b>{esc(ad)}'
                             f'<span class="s">{esc(alt)}</span></span>{bar}</a></li>')
                 toplam += 1
+            govde = (takvim_yapim(satirlar, cards, manifest, overlay) if asama == 'yapim' and HATLAR_TAKVIM
+                     else f'<ul class="list">{"".join(rows)}</ul>')
+            ek = ' <span class="grp-note">· tahmini açılışa göre</span>' if asama == 'yapim' and HATLAR_TAKVIM else ''
             parcalar.append(f'<section id="{slugify(il)}-{asama}"><h3 class="grp">{ASAMA_BASLIK[asama]} '
-                            f'<span>{len(satirlar)}</span></h3><ul class="list">{"".join(rows)}</ul></section>')
+                            f'<span>{len(satirlar)}</span>{ek}</h3>{govde}</section>')
         bolumler.append(f'<section class="il"><h2>{esc(il)}</h2>{"".join(parcalar)}</section>')
     return (PAGE_HATLAR.replace('{{BOLUMLER}}', ''.join(bolumler))
             .replace('{{HEADER_CSS}}', HEADER_CSS).replace('{{HEADER}}', site_header('hatlar'))
@@ -1692,7 +1736,40 @@ h1 { font-size:24px; letter-spacing:-0.03em; line-height:1.2; }
 .icon-fb { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:700; color:#fff; }
 .icon-fb[hidden] { display:none; }
 .method { font-size:12px; color:var(--text-dim); line-height:1.6; max-width:90ch; }
-@media (max-width:640px) { .list { grid-template-columns:minmax(0,1fr); } h1 { font-size:20px; } }
+/* Yapımı süren hatlar: açılış takvimi (bültendeki düzenin eşi) */
+.grp .grp-note { text-transform:none; letter-spacing:0; font-weight:500; margin-left:2px; }
+.timeline { list-style:none; position:relative; padding:6px 0; background:var(--surface); border:1px solid var(--border); border-radius:10px; }
+.tl-row { display:grid; grid-template-columns:112px minmax(0,1fr); gap:12px; padding:7px 16px; position:relative; }
+.tl-row::before { content:''; position:absolute; left:116px; top:0; bottom:0; width:2px; background:var(--border); }
+.tl-row:first-child::before { top:50%; }
+.tl-row:last-child::before { bottom:50%; }
+.tl-row::after { content:''; position:absolute; left:111px; top:50%; width:12px; height:12px; margin-top:-6px;
+  border-radius:50%; background:var(--surface); border:2px solid var(--border-2); }
+.tl-row:first-child::after { background:var(--text); border-color:var(--text); }
+.tl-row.none::after { border-style:dashed; }
+.tl-when { font-size:12px; font-weight:700; align-self:center; padding-right:14px; font-variant-numeric:tabular-nums; }
+.tl-row.none .tl-when { color:var(--text-dim); font-weight:600; }
+.tl-lines { display:flex; flex-wrap:wrap; gap:6px; padding-left:12px; }
+.tl-line { display:inline-flex; align-items:center; gap:7px; padding:4px 10px 4px 4px; border:1px solid var(--border); border-radius:99px;
+  font-size:12px; color:var(--text); background:var(--surface); max-width:100%; }
+.tl-line:hover { border-color:var(--border-2); box-shadow:0 2px 8px rgba(0,0,0,.06); }
+.tl-ad { min-width:0; }
+.tl-meta { display:inline-flex; align-items:center; gap:7px; }
+.tl-pct { font-size:11px; color:var(--text-dim); font-variant-numeric:tabular-nums; }
+.tl-was { font-size:10px; font-weight:600; color:var(--accent); background:#FEF2F2; padding:1px 6px; border-radius:4px; white-space:nowrap; }
+@media (max-width:640px) { .list { grid-template-columns:minmax(0,1fr); } h1 { font-size:20px; }
+  /* Mobil: tarih kartların üstünde, çizgi solda */
+  .tl-row { grid-template-columns:minmax(0,1fr); gap:6px; padding:9px 12px 9px 36px; }
+  .tl-row::before { left:17px; }
+  .tl-row:first-child::before { top:17px; } .tl-row:last-child::before { bottom:auto; height:17px; }
+  .tl-row::after { left:12px; top:17px; }
+  .tl-when { padding-right:0; line-height:1.3; }
+  .tl-lines { padding-left:0; flex-direction:column; align-items:stretch; }
+  .tl-line { display:grid; grid-template-columns:auto minmax(0,1fr); column-gap:9px; row-gap:1px;
+    border-radius:12px; padding:6px 10px 6px 6px; }
+  .tl-line .line-icon { grid-row:1 / 3; }
+  .tl-meta:empty { display:none; }
+  .tl-line:has(.tl-meta:empty) .line-icon { grid-row:auto; } }
 </style>
 </head>
 <body>
