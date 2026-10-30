@@ -965,12 +965,17 @@ a.src-badge:hover { border-color: currentColor; }
   border-color: var(--text-muted);
   color: var(--text);
 }
-/* Hattın ayrıntılı sayfasına bağlantı (yalnız sayfası olan hatlarda görünür) */
+/* Hattın ayrıntılı sayfasına düğme (yalnız sayfası olan hatlarda görünür).
+   Hat sayfasındaki "Haritada aç" düğmesinin eşi: dolu, yuvarlak, ikonlu. */
 .detail-page-link {
-  display: inline-block; margin-top: 7px;
-  font-size: 11.5px; font-weight: 600; color: var(--accent); text-decoration: none; line-height: 1.35;
+  display: inline-flex; align-items: center; gap: 6px; margin-top: 9px;
+  height: 28px; padding: 0 12px 0 10px; border-radius: 99px;
+  border: 1px solid var(--accent); background: var(--accent); color: #fff;
+  font-family: var(--font); font-size: 12px; font-weight: 600; line-height: 1; text-decoration: none;
+  transition: background .12s, box-shadow .12s;
 }
-.detail-page-link:hover { text-decoration: underline; }
+.detail-page-link:hover { background: #9C1F18; box-shadow: 0 2px 8px rgba(180,39,31,.28); text-decoration: none; }
+.detail-page-link svg { width: 14px; height: 14px; flex-shrink: 0; display: block; }
 .detail-page-link[hidden] { display: none; }
 #detail-share:hover {
   border-color: var(--accent);
@@ -1460,7 +1465,7 @@ a.src-badge:hover { border-color: currentColor; }
               <span id="detail-status" class="card-tag" hidden></span>
               <span id="detail-stats"></span>
             </div>
-            <a id="detail-page" class="detail-page-link" href="/hatlar/" hidden>Hat sayfasını aç →</a>
+            <a id="detail-page" class="detail-page-link" href="/hatlar/" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>Hat sayfasını aç</a>
           </div>
           <div id="detail-actions">
             <button id="detail-share" class="detail-action-btn" type="button" aria-label="Hattı paylaş" aria-haspopup="dialog" title="Paylaş">

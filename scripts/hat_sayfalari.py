@@ -891,6 +891,7 @@ def build_page(oid, hat, durak, overlay, cards, updated):
     for m in reversed(months):
         if not m['not'] or m['not'].startswith('('):
             continue
+        ilk = not gel          # en güncel not açık; eskiler tek satırlık katlanır özet
         chips = []
         chips.append(f'<span class="chip">%{fmt_pct(m["pct"])}</span>' if m['pct'] is not None
                      else '<span class="chip muted">ilerleme verisi bekleniyor</span>')
@@ -898,8 +899,17 @@ def build_page(oid, hat, durak, overlay, cards, updated):
         if a and a[1]:
             chips.append(f'<span class="chip warn">Tahmini açılış {esc(acilis_label(a[0]))} '
                          f'<s>{esc(acilis_label(a[1]))}</s></span>')
-        gel.append(f'<li class="gl-item"><div class="gl-head"><h3><time datetime="{m["ym"]}">{esc(ym_long(m["ym"]))}</time></h3>'
-                   f'{"".join(chips)}</div><p class="prose">{esc(m["not"])}</p></li>')
+        baslik = f'<h3><time datetime="{m["ym"]}">{esc(ym_long(m["ym"]))}</time></h3>'
+        if not ilk and a and a[1]:
+            chips[-1] = (f'<span class="chip warn">Açılış {esc(acilis_label(a[0]))} '
+                         f'<s>{esc(acilis_label(a[1]))}</s></span>')
+        if ilk:
+            gel.append(f'<li class="gl-item"><div class="gl-head">{baslik}{"".join(chips)}</div>'
+                       f'<p class="prose">{esc(m["not"])}</p></li>')
+        else:
+            gel.append(f'<li class="gl-item gl-old"><details><summary>{baslik}{"".join(chips)}'
+                       f'<span class="gl-ozet" aria-hidden="true">{esc(m["not"])}</span></summary>'
+                       f'<p class="prose">{esc(m["not"])}</p></details></li>')
 
     faq_html = ''.join(f'<details class="faq"><summary><h3>{esc(q)}</h3></summary><p class="prose">{esc(a)}</p></details>'
                        for q, a in faq)
@@ -1160,6 +1170,21 @@ h1 {{ font-size:24px; font-weight:700; line-height:1.18; letter-spacing:-0.03em;
 .gl-item + .gl-item {{ border-top:1px solid var(--border); }}
 .gl-head {{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:6px; }}
 .gl-head h3 {{ font-size:14px; font-weight:700; margin-right:4px; }}
+/* Eski aylar: tek satır (ay · yüzde · notun başı), tıklayınca tam metin */
+.gl-old {{ padding:0; }}
+.gl-old summary {{ list-style:none; cursor:pointer; display:flex; align-items:center; gap:8px; min-width:0;
+  padding:11px 40px 11px 18px; position:relative; }}
+.gl-old summary::-webkit-details-marker {{ display:none; }}
+.gl-old summary::after {{ content:"+"; position:absolute; right:18px; top:50%; transform:translateY(-50%); font-size:18px; color:var(--text-dim); }}
+.gl-old details[open] summary::after {{ content:"−"; }}
+.gl-old summary:hover .gl-ozet {{ color:var(--text-muted); }}
+.gl-old h3 {{ font-size:13.5px; font-weight:700; white-space:nowrap; flex:none; width:7.4em; }}
+.gl-old .chip {{ flex:none; white-space:nowrap; }}
+.gl-old .chip.warn {{ flex:0 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; }}
+.gl-ozet {{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; color:var(--text-dim); }}
+.gl-old details[open] .gl-ozet {{ visibility:hidden; }}
+.gl-old .prose {{ padding:0 18px 15px; }}
+@media (max-width:480px) {{ .gl-ozet {{ display:none; }} }}
 .chip {{ font-size:10.5px; font-weight:600; padding:1px 7px; border-radius:99px; background:var(--surface-2); border:1px solid var(--border); }}
 .chip.muted {{ color:var(--text-dim); font-weight:500; }}
 .chip.warn {{ background:#FEF2F2; border-color:#F3C9C6; color:var(--accent); }}
