@@ -335,6 +335,25 @@ html, body {
   text-transform: uppercase; letter-spacing: .06em; line-height: 1.2;
 }
 .list-hd:first-child { padding-top: 0; }
+/* Takvim başlıkları (yapım sekmesi, açılışa göre sıralı) */
+.list-hd.tl-hd {
+  justify-content: flex-start; align-items: center; gap: 8px; padding: 10px 2px 0;
+  font-size: 12.5px; font-weight: 700; color: var(--text); text-transform: none; letter-spacing: -0.01em;
+}
+.tl-hd.is-none { color: var(--text-dim); font-weight: 600; }
+.tl-rule { flex: 1; height: 1px; background: var(--border); }
+.card-was { color: var(--text-dim); font-weight: 500; text-align: right; }
+.card-date-col:has(.card-was) .card-field-lbl { text-align: right; }
+/* Son bülten şeridi (yapım sekmesi liste üstü) */
+.bulten-serit {
+  flex-shrink: 0; display: flex; align-items: center; gap: 8px; min-width: 0;
+  padding: 8px 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface);
+  color: var(--text); text-decoration: none; font-size: 12px; line-height: 1.3;
+}
+.bulten-serit:hover { border-color: var(--border-2); box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+.bs-lbl { flex-shrink: 0; font-size: 10px; font-weight: 700; color: var(--accent); background: #FEF2F2; padding: 2px 7px; border-radius: 99px; }
+.bs-txt { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.bs-ok { flex-shrink: 0; color: var(--text-dim); }
 .list-hd-sub { font-weight: 600; letter-spacing: .02em; text-transform: none; font-size: 10px; }
 
 /* Hat kartı: etap kartından daha kısa — yalnız ad, ölçüler ve açılış aralığı */
@@ -2309,6 +2328,7 @@ function setDetailPageLink(id){
 //  BÜLTEN BAĞLANTISI — bulten/bultenler.json'daki en yeni sayıyı başlığa koyar.
 //  Harita verisinden bağımsızdır; liste okunamazsa düğme gizli kalır.
 // ═════════════════════════════════════════════════════
+let sonBulten = null;   // bultenler.json'daki en yeni sayı (liste üstü şerit için)
 async function initBultenLink(){
   const btn = document.getElementById('bulten-btn');
   if(!btn) return;
@@ -2321,6 +2341,8 @@ async function initBultenLink(){
       .filter(b => /^\d{4}-\d{2}$/.test(String(b?.ay || '')))
       .sort((a, b) => String(b.ay).localeCompare(String(a.ay)))[0];
     if(!latest) return;
+    sonBulten = latest;
+    if(activeTab === 'yapim' && document.querySelector('#cards-list .card')) renderCards();
     // Düğme her sayfada aynı ("Bülten" → /bulten/); son sayı yalnızca ipucunda ve noktada belirtilir
     const label = `${TR_MONTHS[parseInt(latest.ay.slice(5), 10) - 1]} ${latest.ay.slice(0, 4)} bülteni`;
     btn.title = latest.baslik ? `Son sayı · ${label}: ${latest.baslik}` : `Son sayı · ${label}`;
@@ -3801,6 +3823,36 @@ function cardIconHtml(p, renk){
     : `<div class="card-icon-fallback" style="background:${renk};display:flex">${esc((p.KOD||'?').slice(0,3))}</div>`;
   return `<div class="card-icon" style="border-color:${renk}44">${ikon}</div>`;
 }
+// Tahmini açılışın bir önceki (farklı aya düşen) değeri; yoksa null.
+// Overlay'deki aylık TahminiAcilis seyrinden okunur.
+function oncekiAcilis(oid){
+  const rec = progressByOid.get(String(oid));
+  const seri = (rec?.acilis || []).slice().sort((a, b) => a.ym.localeCompare(b.ym));
+  const ayAnahtari = v => (/^\d{4}-\d{2}/.test(v) ? v.slice(0, 7) : v);
+  const kosular = [];
+  seri.forEach(({ v }) => {
+    if(/^[-–—]+$/.test(v) || /belirsiz/i.test(v)) return;
+    if(!kosular.length || ayAnahtari(kosular[kosular.length - 1]) !== ayAnahtari(v)) kosular.push(v);
+  });
+  if(kosular.length < 2) return null;
+  const v = kosular[kosular.length - 2];
+  return fmtTRDate(/^\d{4}-\d{2}-\d{2}$/.test(v) ? v.slice(0, 7) : v);
+}
+// Takvim grubu: tahmini açılışın ay düzeyindeki etiketi ("Aralık 2026"); tarihsizse "Takvim yok".
+function takvimGrubu(raw){
+  const s = String(raw ?? '').trim();
+  if(!s || /^[-–—]+$/.test(s) || /belirsiz/i.test(s)) return 'Takvim yok';
+  const t = fmtTRDate(/^\d{4}-\d{2}-\d{2}$/.test(s) ? s.slice(0, 7) : s);
+  return (!t || t === 'Belirsiz') ? 'Takvim yok' : t.replace(/^\d{1,2} /, '');
+}
+function takvimBasligi(etiket, ilk){
+  const hd = document.createElement('div');
+  hd.className = 'list-hd tl-hd' + (ilk ? ' is-next' : '') + (etiket === 'Takvim yok' ? ' is-none' : '');
+  hd.setAttribute('role', 'presentation');
+  hd.innerHTML = `<span class="tl-tarih">${esc(etiket)}</span><span class="tl-rule" aria-hidden="true"></span>`;
+  return hd;
+}
+
 function listHeader(title, sub){
   const hd = document.createElement('div');
   hd.className = 'list-hd';
@@ -4055,6 +4107,8 @@ function renderCards(){
 
   const opts   = SORT_CONFIG[activeTab];
   const sortFn = opts.find(o => o.key === activeSortKey[activeTab])?.fn;
+  const takvimModu = activeTab === 'yapim' && activeSortKey.yapim === 'acilis';
+  let takvimKart = takvimModu;   // bağlantılı (komşu il) gruplarında kartlar kendi tarihini gösterir
   let wrapped  = getHatlarForTab(activeTab).map(f => ({ f, p:f.properties||{} }));
   if(sortFn) wrapped.sort(sortFn);
 
@@ -4064,6 +4118,15 @@ function renderCards(){
     return;
   }
 
+  // Yapım sekmesinde liste üstünde son bülten şeridi
+  if(activeTab === 'yapim' && sonBulten){
+    const ay = `${TR_MONTHS[parseInt(sonBulten.ay.slice(5), 10) - 1]} bülteni`;
+    const a = document.createElement('a');
+    a.className = 'bulten-serit';
+    a.href = `/bulten/${sonBulten.ay}`;
+    a.innerHTML = `<span class="bs-lbl">${esc(ay)}</span><span class="bs-txt">${esc(sonBulten.baslik || 'Ayın gelişmeleri')}</span><span class="bs-ok" aria-hidden="true">→</span>`;
+    list.appendChild(a);
+  }
   // Yapım sekmesinde verinin hangi döneme ait olduğu liste üstünde belirtilir
   const asof = latestDataYM();
   if(activeTab === 'yapim' && asof){
@@ -4113,12 +4176,20 @@ function renderCards(){
             <span class="card-progress-pct">%${pct}</span>
           </div>
         </div>` : '';
-      bottomHtml = `<div class="card-bottom card-bottom-split">
-        ${progCol}
+      // Takvim görünümünde (açılışa göre sıralı) tarih grup başlığındadır; kartta
+      // yalnızca tahmin kaydıysa bir önceki değer görünür.
+      const onceki = takvimKart ? oncekiAcilis(p.OBJECTID) : null;
+      const dateCol = !takvimKart ? `
         <div class="card-date-col">
           <div class="card-field-lbl">Tahmini Açılış</div>
           <div class="card-field-val">${dateVal}</div>
-        </div>
+        </div>` : onceki ? `
+        <div class="card-date-col">
+          <div class="card-field-lbl">Önceki tahmin</div>
+          <div class="card-field-val card-was">${esc(onceki)}</div>
+        </div>` : '';
+      bottomHtml = `<div class="card-bottom card-bottom-split">
+        ${progCol}${dateCol}
       </div>`;
     } else if(activeTab === 'proje'){
       const dateStr = fmtTRDate(p.PR_ACILIS);
@@ -4199,8 +4270,18 @@ function renderCards(){
     list.appendChild(card);
   };
 
-  // Önce etkin ilin kendi hatları, ardından komşu ilden bağlantılı hatlar
+  // Önce etkin ilin kendi hatları, ardından komşu ilden bağlantılı hatlar.
+  // Takvim modunda kartlar tahmini açılış ayına göre başlıklar altında toplanır.
+  if(takvimModu){
+    let sonGrup = null, grupNo = 0;
+    wrapped.filter(w => hatKendi(w.p)).forEach(w => {
+      const g = takvimGrubu(w.p.PR_ACILIS);
+      if(g !== sonGrup){ list.appendChild(takvimBasligi(g, grupNo++ === 0)); sonGrup = g; }
+      addCard(w);
+    });
+  } else
   wrapped.filter(w => hatKendi(w.p)).forEach(addCard);
+  takvimKart = false;
   appendLinkedGroups(list, wrapped.filter(w => !hatKendi(w.p)), w => w.p, addCard);
 
   // Roving tabindex başlangıcı: seçili kart (yoksa ilk kart) tek Tab durağı olur.
@@ -5119,6 +5200,7 @@ function parseProgressCSV(textContent){
   const headNormP = head.map(sheetNorm);
   const iSrc  = headNormP.findIndex(h => ['kaynak','kaynakturu','kaynaktipi','dayanak'].includes(h));
   const iLink = headNormP.findIndex(h => ['kaynaklink','kaynakurl','kaynakbaglanti','link','url','baglanti'].includes(h));
+  const iAcil = headNormP.findIndex(h => ['tahminiacilis','pracilis'].includes(h));
 
   const byOid    = new Map();
   const monthSet = new Set();
@@ -5128,7 +5210,7 @@ function parseProgressCSV(textContent){
   function ensureRec(key, meta){
     if(!byOid.has(key)){
       byOid.set(key, { oid: meta.oid, kod: meta.kod, hat: meta.hat,
-                       durum: meta.durum, kurum: meta.kurum, series: [], pending: [] });
+                       durum: meta.durum, kurum: meta.kurum, series: [], pending: [], acilis: [] });
     }
     return byOid.get(key);
   }
@@ -5156,6 +5238,13 @@ function parseProgressCSV(textContent){
       const kod    = iKod   >= 0 ? (c[iKod]   || '').trim() : '';
       const oidRaw = iOid   >= 0 ? (c[iOid]   || '').trim() : '';
       if(!ym) continue;
+      // Tahmini açılışın aylık seyri (önceki tahmini göstermek için)
+      const acil = iAcil >= 0 ? (c[iAcil] || '').trim() : '';
+      if(acil && !acil.startsWith('(')){
+        const akey = oidRaw || (kod ? `kod:${kod}` : null);
+        if(akey) ensureRec(akey, { oid: oidRaw, kod, hat: iHat >= 0 ? (c[iHat] || '').trim() : kod,
+                                   durum: '', kurum: '' }).acilis.push({ ym, v: acil });
+      }
       if(pct === null){
         // "(bekleniyor)" gibi parantezli değerler: o ay için veri henüz yok.
         // Detay panelinde "yeni veri bekleniyor" uyarısı için not edilir.
