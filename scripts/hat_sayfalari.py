@@ -866,8 +866,8 @@ def build_page(oid, hat, durak, overlay, cards, updated):
             items.append(f'<li class="sy-row{cls}"><span class="sy-when">{esc(donem)}</span>'
                          f'<span class="sy-val">{esc(acilis_label(r["val"]))}</span></li>')
         seyir_html = (f'<section id="s-sy" aria-labelledby="h-sy"><h2 class="sec-lbl" id="h-sy">Tahmini açılış tarihinin seyri</h2>'
-                      f'<div class="panel pad"><ol class="seyir">{"".join(items)}</ol>'
-                      f'<p class="prose small">{esc(seyir)}</p></div></section>')
+                      f'<div class="panel pad"><ol class="seyir">{"".join(items)}</ol></div></section>')
+    # Seyrin yazılı özeti (seyir) yalnızca SSS ve JSON-LD'de kalır; panelde listeyi tekrar etmez.
 
     st_items = []
     for s in stations:
@@ -1025,7 +1025,6 @@ a:hover {{ text-decoration:underline; }}
 .sec-lbl {{ font-size:10px; font-weight:700; color:var(--text-dim); letter-spacing:.05em; text-transform:uppercase; margin:0 2px 8px; }}
 .sec-note {{ font-weight:500; text-transform:none; letter-spacing:0; }}
 .prose {{ font-size:13.5px; line-height:1.65; color:var(--text-muted); }}
-.prose.small {{ font-size:12.5px; margin-top:12px; }}
 .tag {{ font-size:10px; font-weight:600; padding:1px 6px; border-radius:4px; white-space:nowrap; }}
 .tag-accent {{ background:#FEF2F2; color:var(--accent); }}
 .card-chip {{ font-size:11px; color:var(--text-dim); }}
@@ -1281,7 +1280,7 @@ footer {{ max-width:1100px; margin:0 auto; padding:4px 16px 32px; font-size:11px
   <div class="others">{others}</div>
 </section>
 
-<p class="method">metrometre, raylı sistem projelerinin fiziki ilerlemesini bağımsız olarak izleyen bir sivil girişimdir; herhangi bir kurumla bağlantısı bulunmamaktadır. İlerleme değerleri kurumların resmî açıklamalarına ve bilgi edinme başvurularına verilen yanıtlara dayanmakta, yerinde bağımsız denetim yapılmamaktadır. Aylık veriler <a href="https://github.com/sefabarisozturk/metrometre-data">GitHub'da açık veri</a> olarak yayımlanmaktadır; güncellemeleri <a href="/feed.xml">RSS</a> ya da <a href="https://x.com/sefabarisozturk">X</a> üzerinden takip edebilirsiniz. Veri kaynakları ve yöntem için: <a href="/hakkinda/">metrometre hakkında</a>.</p>
+<p class="method">metrometre bağımsız bir sivil girişimdir; ilerleme değerleri kurumların açıkladığı rakamlara dayanmakta, yerinde denetim yapılmamaktadır. <a href="/hakkinda/">Kaynaklar ve yöntem</a> · <a href="https://github.com/sefabarisozturk/metrometre-data">Açık veri</a> · <a href="/feed.xml">RSS</a></p>
 </main>
 
 <footer>© Barış Öztürk · sbarisozturk@gmail.com · <a href="https://x.com/sefabarisozturk">X</a> · <a href="https://www.linkedin.com/in/sefabarisozturk/">LinkedIn</a> · <a href="/bulten/">Bültenler</a></footer>
@@ -1679,7 +1678,7 @@ h1 { font-size:24px; letter-spacing:-0.03em; line-height:1.2; }
     <p class="lead">Her hattın sayfasında aylık fiziki ilerleme, tahmini açılış tarihinin seyri, güzergâh ve istasyonlar yer almaktadır.</p>
   </div>
   {{BOLUMLER}}
-  <p class="method">metrometre, raylı sistem projelerinin fiziki ilerlemesini bağımsız olarak izleyen bir sivil girişimdir; herhangi bir kurumla bağlantısı bulunmamaktadır. Veriler aylık olarak güncellenmekte ve <a href="https://github.com/sefabarisozturk/metrometre-data">GitHub'da açık veri</a> olarak yayımlanmaktadır.</p>
+  <p class="method">metrometre bağımsız bir sivil girişimdir. <a href="/hakkinda/">Kaynaklar ve yöntem</a> · <a href="https://github.com/sefabarisozturk/metrometre-data">Açık veri</a> · <a href="/feed.xml">RSS</a></p>
 </main>
 </body>
 </html>

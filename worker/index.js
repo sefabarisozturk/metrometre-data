@@ -282,12 +282,14 @@ async function handleFeed(url, dataBase, env){
     const li = entries.map(({ l, cur, delta, newNote }) => {
       const d = delta === null ? '' : delta > 0.004 ? ` (+${num(delta)} puan)` : delta < -0.004 ? ` (${num(delta)} puan)` : ' (değişmedi)';
       const link = l.id ? `${origin}/hat/${encodeURIComponent(l.id)}` : origin;
+      // Bülteni olan ayda hat notları bültende okunur; öğe yalnız rakamları taşır.
+      const note = bulletinUrl ? '' : newNote;
       return `<li><a href="${xml(link)}"><b>${xml(l.ad)}</b></a>: %${num(cur.pct)}${d}${cur.src ? ` <i>· ${xml(cur.src)}</i>` : ''}`
-        + (newNote ? `<br>${xml(newNote)}` : '') + '</li>';
+        + (note ? `<br>${xml(note)}` : '') + '</li>';
     }).join('');
     const top = entries.find(e => e.delta !== null && e.delta > 0.004);
     const title = `${ymLong(ym)} fiziki ilerleme verileri` + (top ? ` — en çok ilerleyen: ${top.l.ad}` : '');
-    const html = (bulletinUrl ? `<p><a href="${xml(bulletinUrl)}"><b>${ymLong(ym)} bültenini okuyun</b></a>: ayın öne çıkan gelişmeleri ve hat hat notlar.</p>` : '')
+    const html = (bulletinUrl ? `<p><a href="${xml(bulletinUrl)}"><b>${ymLong(ym)} bültenini okuyun</b></a>: ayın öne çıkan gelişmeleri ve hat hat notlar bültendedir.</p>` : '')
       + `<p>Yapımı süren raylı sistem projelerinin ${ymLong(ym)} sonu itibarıyla fiziki ilerleme değerleri:</p><ul>${li}</ul>`
       + `<p><a href="${xml(origin)}">metrometre.com</a> üzerinde haritada inceleyin.</p>`;
     return `<item>
