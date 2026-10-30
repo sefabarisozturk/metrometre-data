@@ -337,8 +337,6 @@ html, body {
 }
 .tl-hd.is-none { color: var(--text-dim); font-weight: 600; }
 .tl-rule { flex: 1; height: 1px; background: var(--border); }
-.card-was { color: var(--text-dim); font-weight: 500; text-align: right; }
-.card-date-col:has(.card-was) .card-field-lbl { text-align: right; }
 /* Son bülten şeridi (yapım sekmesi liste üstü) */
 .bulten-serit {
   flex-shrink: 0; display: flex; align-items: center; gap: 8px; min-width: 0;
@@ -3836,21 +3834,6 @@ function cardIconHtml(p, renk){
     : `<div class="card-icon-fallback" style="background:${renk};display:flex">${esc((p.KOD||'?').slice(0,3))}</div>`;
   return `<div class="card-icon" style="border-color:${renk}44">${ikon}</div>`;
 }
-// Tahmini açılışın bir önceki (farklı aya düşen) değeri; yoksa null.
-// Overlay'deki aylık TahminiAcilis seyrinden okunur.
-function oncekiAcilis(oid){
-  const rec = progressByOid.get(String(oid));
-  const seri = (rec?.acilis || []).slice().sort((a, b) => a.ym.localeCompare(b.ym));
-  const ayAnahtari = v => (/^\d{4}-\d{2}/.test(v) ? v.slice(0, 7) : v);
-  const kosular = [];
-  seri.forEach(({ v }) => {
-    if(/^[-–—]+$/.test(v) || /belirsiz/i.test(v)) return;
-    if(!kosular.length || ayAnahtari(kosular[kosular.length - 1]) !== ayAnahtari(v)) kosular.push(v);
-  });
-  if(kosular.length < 2) return null;
-  const v = kosular[kosular.length - 2];
-  return fmtTRDate(/^\d{4}-\d{2}-\d{2}$/.test(v) ? v.slice(0, 7) : v);
-}
 // Takvim grubu: tahmini açılışın ay düzeyindeki etiketi ("Aralık 2026"); tarihsizse "Takvim yok".
 function takvimGrubu(raw){
   const s = String(raw ?? '').trim();
@@ -4190,17 +4173,11 @@ function renderCards(){
             <span class="card-progress-pct">%${pct}</span>
           </div>
         </div>` : '';
-      // Takvim görünümünde (açılışa göre sıralı) tarih grup başlığındadır; kartta
-      // yalnızca tahmin kaydıysa bir önceki değer görünür.
-      const onceki = takvimKart ? oncekiAcilis(p.OBJECTID) : null;
+      // Takvim görünümünde (açılışa göre sıralı) tarih grup başlığındadır; kartta tekrarlanmaz.
       const dateCol = !takvimKart ? `
         <div class="card-date-col">
           <div class="card-field-lbl">Tahmini Açılış</div>
           <div class="card-field-val">${dateVal}</div>
-        </div>` : onceki ? `
-        <div class="card-date-col">
-          <div class="card-field-lbl">Önceki tahmin</div>
-          <div class="card-field-val card-was">${esc(onceki)}</div>
         </div>` : '';
       bottomHtml = `<div class="card-bottom card-bottom-split">
         ${progCol}${dateCol}
@@ -5214,7 +5191,6 @@ function parseProgressCSV(textContent){
   const headNormP = head.map(sheetNorm);
   const iSrc  = headNormP.findIndex(h => ['kaynak','kaynakturu','kaynaktipi','dayanak'].includes(h));
   const iLink = headNormP.findIndex(h => ['kaynaklink','kaynakurl','kaynakbaglanti','link','url','baglanti'].includes(h));
-  const iAcil = headNormP.findIndex(h => ['tahminiacilis','pracilis'].includes(h));
 
   const byOid    = new Map();
   const monthSet = new Set();
@@ -5224,7 +5200,7 @@ function parseProgressCSV(textContent){
   function ensureRec(key, meta){
     if(!byOid.has(key)){
       byOid.set(key, { oid: meta.oid, kod: meta.kod, hat: meta.hat,
-                       durum: meta.durum, kurum: meta.kurum, series: [], pending: [], acilis: [] });
+                       durum: meta.durum, kurum: meta.kurum, series: [], pending: [] });
     }
     return byOid.get(key);
   }
@@ -5252,13 +5228,6 @@ function parseProgressCSV(textContent){
       const kod    = iKod   >= 0 ? (c[iKod]   || '').trim() : '';
       const oidRaw = iOid   >= 0 ? (c[iOid]   || '').trim() : '';
       if(!ym) continue;
-      // Tahmini açılışın aylık seyri (önceki tahmini göstermek için)
-      const acil = iAcil >= 0 ? (c[iAcil] || '').trim() : '';
-      if(acil && !acil.startsWith('(')){
-        const akey = oidRaw || (kod ? `kod:${kod}` : null);
-        if(akey) ensureRec(akey, { oid: oidRaw, kod, hat: iHat >= 0 ? (c[iHat] || '').trim() : kod,
-                                   durum: '', kurum: '' }).acilis.push({ ym, v: acil });
-      }
       if(pct === null){
         // "(bekleniyor)" gibi parantezli değerler: o ay için veri henüz yok.
         // Detay panelinde "yeni veri bekleniyor" uyarısı için not edilir.
