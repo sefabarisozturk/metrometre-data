@@ -4105,7 +4105,6 @@ function renderCards(){
   const opts   = SORT_CONFIG[activeTab];
   const sortFn = opts.find(o => o.key === activeSortKey[activeTab])?.fn;
   const takvimModu = activeTab === 'yapim' && activeSortKey.yapim === 'acilis';
-  let takvimKart = takvimModu;   // bağlantılı (komşu il) gruplarında kartlar kendi tarihini gösterir
   let wrapped  = getHatlarForTab(activeTab).map(f => ({ f, p:f.properties||{} }));
   if(sortFn) wrapped.sort(sortFn);
 
@@ -4173,12 +4172,13 @@ function renderCards(){
             <span class="card-progress-pct">%${pct}</span>
           </div>
         </div>` : '';
-      // Takvim görünümünde (açılışa göre sıralı) tarih grup başlığındadır; kartta tekrarlanmaz.
-      const dateCol = !takvimKart ? `
+      // Takvim başlıkları göz gezdirmek içindir; kart tarihini her zaman kendisi taşır
+      // (kaydırınca başlık ekrandan çıkar, gün düzeyindeki hedef yalnız kartta görünür).
+      const dateCol = `
         <div class="card-date-col">
           <div class="card-field-lbl">Tahmini Açılış</div>
           <div class="card-field-val">${dateVal}</div>
-        </div>` : '';
+        </div>`;
       bottomHtml = `<div class="card-bottom card-bottom-split">
         ${progCol}${dateCol}
       </div>`;
@@ -4272,7 +4272,6 @@ function renderCards(){
     });
   } else
   wrapped.filter(w => hatKendi(w.p)).forEach(addCard);
-  takvimKart = false;
   appendLinkedGroups(list, wrapped.filter(w => !hatKendi(w.p)), w => w.p, addCard);
 
   // Roving tabindex başlangıcı: seçili kart (yoksa ilk kart) tek Tab durağı olur.
