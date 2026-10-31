@@ -330,13 +330,6 @@ html, body {
   text-transform: uppercase; letter-spacing: .06em; line-height: 1.2;
 }
 .list-hd:first-child { padding-top: 0; }
-/* Takvim başlıkları (yapım sekmesi, açılışa göre sıralı) */
-.list-hd.tl-hd {
-  justify-content: flex-start; align-items: center; gap: 8px; padding: 10px 2px 0;
-  font-size: 12.5px; font-weight: 700; color: var(--text); text-transform: none; letter-spacing: -0.01em;
-}
-.tl-hd.is-none { color: var(--text-dim); font-weight: 600; }
-.tl-rule { flex: 1; height: 1px; background: var(--border); }
 /* Son bülten şeridi (yapım sekmesi liste üstü) */
 .bulten-serit {
   flex-shrink: 0; display: flex; align-items: center; gap: 8px; min-width: 0;
@@ -3783,7 +3776,7 @@ function updateMetrics(){
 // ═════════════════════════════════════════════════════
 //  SIRALAMA ÇUBUĞU
 // ═════════════════════════════════════════════════════
-// Her sekmenin listesi tek, anlamlı bir düzende durur: yapım takvim (tahmini açılış),
+// Her sekmenin listesi tek, anlamlı bir düzende durur: yapım tahmini açılış sırasında,
 // proje aşama sırasında. Yalnız işletme sekmesinde iki görünüm arasında seçim kalır:
 // hat türüne göre liste ya da açılış kronolojisi.
 const SABIT_SIRA   = { yapim:'acilis', proje:'asama' };
@@ -3834,21 +3827,6 @@ function cardIconHtml(p, renk){
     : `<div class="card-icon-fallback" style="background:${renk};display:flex">${esc((p.KOD||'?').slice(0,3))}</div>`;
   return `<div class="card-icon" style="border-color:${renk}44">${ikon}</div>`;
 }
-// Takvim grubu: tahmini açılışın ay düzeyindeki etiketi ("Aralık 2026"); tarihsizse "Takvim yok".
-function takvimGrubu(raw){
-  const s = String(raw ?? '').trim();
-  if(!s || /^[-–—]+$/.test(s) || /belirsiz/i.test(s)) return 'Takvim yok';
-  const t = fmtTRDate(/^\d{4}-\d{2}-\d{2}$/.test(s) ? s.slice(0, 7) : s);
-  return (!t || t === 'Belirsiz') ? 'Takvim yok' : t.replace(/^\d{1,2} /, '');
-}
-function takvimBasligi(etiket, ilk){
-  const hd = document.createElement('div');
-  hd.className = 'list-hd tl-hd' + (ilk ? ' is-next' : '') + (etiket === 'Takvim yok' ? ' is-none' : '');
-  hd.setAttribute('role', 'presentation');
-  hd.innerHTML = `<span class="tl-tarih">${esc(etiket)}</span><span class="tl-rule" aria-hidden="true"></span>`;
-  return hd;
-}
-
 function listHeader(title, sub){
   const hd = document.createElement('div');
   hd.className = 'list-hd';
@@ -4104,7 +4082,6 @@ function renderCards(){
 
   const opts   = SORT_CONFIG[activeTab];
   const sortFn = opts.find(o => o.key === activeSortKey[activeTab])?.fn;
-  const takvimModu = activeTab === 'yapim' && activeSortKey.yapim === 'acilis';
   let wrapped  = getHatlarForTab(activeTab).map(f => ({ f, p:f.properties||{} }));
   if(sortFn) wrapped.sort(sortFn);
 
@@ -4172,8 +4149,6 @@ function renderCards(){
             <span class="card-progress-pct">%${pct}</span>
           </div>
         </div>` : '';
-      // Takvim başlıkları göz gezdirmek içindir; kart tarihini her zaman kendisi taşır
-      // (kaydırınca başlık ekrandan çıkar, gün düzeyindeki hedef yalnız kartta görünür).
       const dateCol = `
         <div class="card-date-col">
           <div class="card-field-lbl">Tahmini Açılış</div>
@@ -4261,16 +4236,7 @@ function renderCards(){
     list.appendChild(card);
   };
 
-  // Önce etkin ilin kendi hatları, ardından komşu ilden bağlantılı hatlar.
-  // Takvim modunda kartlar tahmini açılış ayına göre başlıklar altında toplanır.
-  if(takvimModu){
-    let sonGrup = null, grupNo = 0;
-    wrapped.filter(w => hatKendi(w.p)).forEach(w => {
-      const g = takvimGrubu(w.p.PR_ACILIS);
-      if(g !== sonGrup){ list.appendChild(takvimBasligi(g, grupNo++ === 0)); sonGrup = g; }
-      addCard(w);
-    });
-  } else
+  // Önce etkin ilin kendi hatları, ardından komşu ilden bağlantılı hatlar
   wrapped.filter(w => hatKendi(w.p)).forEach(addCard);
   appendLinkedGroups(list, wrapped.filter(w => !hatKendi(w.p)), w => w.p, addCard);
 
