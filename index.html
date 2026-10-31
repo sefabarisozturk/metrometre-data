@@ -379,6 +379,10 @@ html, body {
   font: inherit; color: inherit; cursor: pointer;
 }
 .tl-item:hover { background: var(--surface-2); }
+/* Kapanan hatlarda kapanış satırları (tıklanmaz) */
+.tl-item.tl-kapanis { cursor: default; }
+.tl-item.tl-kapanis:hover { background: none; }
+.tl-item.tl-kapanis .tl-dot { background: var(--surface) !important; border-color: var(--text-dim); }
 .tl-item.active { background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--border-2); }
 .tl-item::before {           /* dikey çizgi */
   content: ''; position: absolute; left: 12px; top: 0; bottom: 0;
@@ -1644,7 +1648,7 @@ const TAB_FILTERS = {
 };
 
 const DURUM_LABEL = {
-  '0':'Devre Dışı','1':'İşletmede',
+  '0':'Kapandı','1':'İşletmede',
   '2':'Test Aşamasında','3':'İnşa Aşamasında','4':'Beklemede',
   '5':'Uygulama projesi tamamlandı','6':'Uygulama projesi sürüyor','7':'Etüt projesi tamamlandı','8':'Etüt projesi sürüyor',
 };
@@ -2005,6 +2009,8 @@ function getIsletmeLines(){
       ist: Math.round(etaplar.reduce((s,e) => s + e.ist, 0)),
       ilk: etaplar[0]?.acilis || '',
       son: etaplar[etaplar.length-1]?.acilis || '',
+      // Kapanan hatlar: en geç kapanış (hat kesim kesim kapanmış olabilir)
+      kapanis: off ? features.map(f => String(f.properties?.TARIH_KAPANIS || '')).filter(Boolean).sort().pop() || '' : '',
     });
   }
   return out;
@@ -2238,6 +2244,7 @@ const SRC_HAT_HOVER      = 'hat-hover';   // imlecin altındaki hat(lar)ın vurg
 const SRC_DURAK_ACTIVE   = 'durak-active';
 const SRC_DURAK_OTHER    = 'durak-other';
 const SRC_HAT_SELECTED   = 'hat-selected';
+const SRC_HAT_KAPANAN    = 'hat-kapanan';     // seçili kapanan hat (kesikli gri, istasyonsuz)
 const SRC_DURAK_SELECTED = 'durak-selected';
 const SRC_SATELLITE      = 'satellite-src';   // uydu görüntüsü raster kaynağı
 
@@ -2516,6 +2523,7 @@ function initMapLayers(){
   upsertSource(SRC_DURAK_OTHER,    EMPTY());
   upsertSource(SRC_HAT_SELECTED,   EMPTY());
   upsertSource(SRC_DURAK_SELECTED, EMPTY());
+  upsertSource(SRC_HAT_KAPANAN,    EMPTY());
   upsertSource(SRC_HAT_HIT,        EMPTY());
   upsertSource(SRC_HAT_HOVER,      EMPTY());
 
@@ -2596,6 +2604,16 @@ function initMapLayers(){
     }, layout:{'line-cap':'round','line-join':'round'} });
 
   durumLines('selected-line', SRC_HAT_SELECTED, { 'line-opacity':1 }, 2);
+
+  // ──── Kapanan hat (yalnız seçildiğinde) ────
+  // Ağın parçası değil, geçmişi: ince kesikli gri çizgi; altında beyaz zemin, aynı
+  // koridordaki işletmedeki hattan (ör. Marmaray) ayrışsın diye.
+  add({ id:'kapanan-zemin', type:'line', source:SRC_HAT_KAPANAN,
+    paint:{ 'line-color':'#FFFFFF', 'line-width':6, 'line-opacity':0.9 },
+    layout:{ 'line-cap':'round', 'line-join':'round' } });
+  add({ id:'kapanan-line', type:'line', source:SRC_HAT_KAPANAN,
+    paint:{ 'line-color':'#6B6B6B', 'line-width':2.5, 'line-dasharray':[2, 1.6] },
+    layout:{ 'line-cap':'butt', 'line-join':'round' } });
 
   // ──── Duraklar ────
   add({ id:'other-stops', type:'circle', source:SRC_DURAK_OTHER,
@@ -2688,15 +2706,20 @@ function renderMap(){
   // Gizli durumlar hiçbir kaynağa girmez.
   const tamTabs   = KATMANLAR.filter(t => modOf(t) === 'tam');
   const solukTabs = KATMANLAR.filter(t => modOf(t) === 'soluk');
-  const hatTam      = allHatlar.filter(f => tamTabs.includes(f.properties?._TAB) && hatGorunur(f));
-  const otherHatlar = allHatlar.filter(f => solukTabs.includes(f.properties?._TAB) && hatGorunur(f));
-  const durakTam      = allDuraklar.filter(f => tamTabs.includes(f.properties?._TAB) && durakGorunur(f));
-  const otherDuraklar = allDuraklar.filter(f => solukTabs.includes(f.properties?._TAB) && durakGorunur(f));
+  // Kapanan hatlar (PR_DURUM 0) ve durakları ağın parçası olarak çizilmez;
+  // yalnızca seçildiklerinde kesikli gri çizgi olarak görünürler.
+  const acik = f => String(f.properties?.PR_DURUM) !== '0';
+  const hatTam      = allHatlar.filter(f => tamTabs.includes(f.properties?._TAB) && hatGorunur(f) && acik(f));
+  const otherHatlar = allHatlar.filter(f => solukTabs.includes(f.properties?._TAB) && hatGorunur(f) && acik(f));
+  const durakTam      = allDuraklar.filter(f => tamTabs.includes(f.properties?._TAB) && durakGorunur(f) && acik(f));
+  const otherDuraklar = allDuraklar.filter(f => solukTabs.includes(f.properties?._TAB) && durakGorunur(f) && acik(f));
 
   // Glow için seçili feature'lar (OBJECTID ile eşleşir; KOD aynı olabilir, OBJECTID benzersiz):
   //  • etap seçiliyse o etap (işletmede aynı açılışın tüm parçaları),
   //  • işletmede yalnız hat seçiliyse hattın bütün etapları.
-  const selectedHatFeatures = selectedHatFeaturesFor(activeHatlar);
+  const seciliTum = selectedHatFeaturesFor(activeHatlar);
+  const selectedHatFeatures = seciliTum.filter(acik);
+  const kapananSecili       = seciliTum.filter(f => !acik(f));
   const selOids = new Set(selectedHatFeatures.map(f => String(f.properties?.OBJECTID)));
 
   // Her seçili parçanın bbox'ına düşen ve aynı KOD'a sahip durakları glow için topla.
@@ -2722,6 +2745,7 @@ function renderMap(){
   upsertSource(SRC_DURAK_OTHER,    { type:'FeatureCollection', features:otherDuraklar });
   upsertSource(SRC_HAT_SELECTED,   { type:'FeatureCollection', features:selectedHatFeatures });
   upsertSource(SRC_DURAK_SELECTED, { type:'FeatureCollection', features:selectedDurakFeatures });
+  upsertSource(SRC_HAT_KAPANAN,    { type:'FeatureCollection', features:kapananSecili });
   hideHatTip();
 
   document.getElementById('empty-state').classList.toggle('show',
@@ -3078,6 +3102,31 @@ function renderLineTimeline(line){
     btn.addEventListener('click', () => selectLine(line.key, on ? null : e.features[0]));
     list.appendChild(btn);
   });
+  wrap.querySelector('.detail-section-lbl').textContent = line.off ? 'Açılış ve kapanış' : 'Açılış kronolojisi';
+  // Kapanan hatlar: kapanış tarihleri (kesim kesim kapandıysa her tarih ayrı satır)
+  if(line.off){
+    const byDate = new Map();
+    line.features.forEach(f => {
+      const d = String(f.properties?.TARIH_KAPANIS || '');
+      if(!d) return;
+      const r = byDate.get(d) || { km:0, ist:0 };
+      r.km  += parseFloat(f.properties?.MESAFE)   || 0;
+      r.ist += parseFloat(f.properties?.ISTASYON) || 0;
+      byDate.set(d, r);
+    });
+    const tarihler = [...byDate.keys()].sort();
+    tarihler.forEach((d, i) => {
+      const r = byDate.get(d);
+      const son = i === tarihler.length - 1;
+      const row = document.createElement('div');
+      row.className = 'tl-item tl-kapanis';
+      row.innerHTML = `<span class="tl-dot"></span>
+        <span class="tl-date">${esc(fmtTRDate(d) || '—')}</span>
+        <span class="tl-name">${tarihler.length > 1 ? (son ? 'Hat tamamen kapandı' : 'Bir kesim kapandı') : 'Hat kapandı'}</span>
+        <span class="tl-meta">${esc([fmtKm(r.km), r.ist ? `${Math.round(r.ist)} istasyon` : null].filter(Boolean).join(' · '))}</span>`;
+      list.appendChild(row);
+    });
+  }
   hint.textContent = line.etaplar.length > 1 ? 'Bir etabı seçince haritada o kesim vurgulanır.' : '';
   wrap.hidden = false;
 
@@ -3085,7 +3134,7 @@ function renderLineTimeline(line){
   const textE  = line.etaplar.find(e => e.key === focusId) || line.etaplar[line.etaplar.length-1];
   const textEl = document.getElementById('detail-text');
   textEl.innerHTML = (textE && textE.text)
-    ? `<span class="detail-text-lbl">${esc(textE.ad)} etabı</span>${esc(textE.text)}`
+    ? (line.off ? esc(textE.text) : `<span class="detail-text-lbl">${esc(textE.ad)} etabı</span>${esc(textE.text)}`)
     : '';
 }
 
@@ -3883,7 +3932,8 @@ function renderIsletmeList(list){
       const mo   = parseInt(e.acilis.slice(5,7), 10);
       const day  = parseInt(e.acilis.slice(8,10), 10);
       const dayTxt = (mo >= 1 && mo <= 12) ? `${day ? day + ' ' : ''}${TR_AY_KISA[mo-1]}` : '';
-      const meta = [e.off ? 'Devre dışı' : null, fmtKm(e.km),
+      const kapanisYili = e.off ? e.features.map(f => String(f.properties?.TARIH_KAPANIS || '')).filter(Boolean).sort().pop()?.slice(0,4) : '';
+      const meta = [e.off ? (kapanisYili ? `Kapanış ${kapanisYili}` : 'Kapandı') : null, fmtKm(e.km),
                     e.ist ? `${Math.round(e.ist)} istasyon` : null].filter(Boolean).join(' · ');
 
       const card = document.createElement('div');
@@ -3933,7 +3983,9 @@ function renderIsletmeList(list){
     const chips = [fmtKm(l.km), l.ist ? `${l.ist} istasyon` : null].filter(Boolean)
       .map((c,i,arr) => `<span class="card-chip">${esc(c)}</span>${i < arr.length-1 ? '<span class="chip-sep">·</span>' : ''}`)
       .join('');
-    const tag = l.off ? `<span class="card-tag st-devre">Devre Dışı</span>` : '';
+    // Kapanan hatlar kendi başlıkları altında durduğu için ayrıca etiket taşımaz
+    const tag = '';
+    const yilBit = l.off ? l.kapanis.slice(0,4) : y2;
 
     const card = document.createElement('div');
     card.className = 'card card-line';
@@ -3949,9 +4001,9 @@ function renderIsletmeList(list){
           <div class="card-name">${esc(l.ad)}</div>
           <div class="card-meta">${tag}${chips}</div>
         </div>
-        <div class="card-line-years" title="İlk açılış – son uzatma">
-          ${y1 && y2 && y1 !== y2 ? `${y1}–${y2}` : esc(y1 || '—')}
-          <small>${n > 1 ? `${n} etap` : 'tek etap'}</small>
+        <div class="card-line-years" title="${l.off ? 'Açılış – kapanış' : 'İlk açılış – son uzatma'}">
+          ${y1 && yilBit && y1 !== yilBit ? `${y1}–${yilBit}` : esc(y1 || '—')}
+          <small>${l.off ? 'kapandı' : (n > 1 ? `${n} etap` : 'tek etap')}</small>
         </div>
       </div>`;
     wireCard(card, list, () => {
@@ -3981,7 +4033,7 @@ function renderIsletmeList(list){
   }
   appendLinkedGroups(list, linked, l => l.rep, addLine);
   if(off.length){
-    list.appendChild(listHeader('Devre dışı', `${off.length} hat`));
+    list.appendChild(listHeader('Kapanan hatlar', `${off.length} hat`));
     off.forEach(addLine);
   }
 }
@@ -4839,7 +4891,7 @@ function hatTipRowHtml(g, asButton){
   if(g.tab === 'isletme'){
     const l = g.line;
     renk = l.renk; kod = l.off ? (l.rep.KOD || '•') : l.kod; ad = l.ad;
-    tag  = l.off ? `<span class="card-tag st-devre">Devre dışı</span>` : `<span class="card-tag st-isletme">İşletmede</span>`;
+    tag  = l.off ? `<span class="card-tag st-devre">Kapandı</span>` : `<span class="card-tag st-isletme">İşletmede</span>`;
     olcu = [fmtKm(l.km), l.ist ? `${l.ist} istasyon` : null];
     const yil = /^\d{4}/.test(l.ilk) ? l.ilk.slice(0, 4) : '';
     if(yil && !l.off) alt = `<div class="tip-prog">${esc(yil + ilkAcilisEki(yil))} hizmette</div>`;
