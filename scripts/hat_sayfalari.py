@@ -157,6 +157,27 @@ def icon(url, kod, color, size):
 # ───────────────────────── ortak başlık ─────────────────────────
 # Bütün sayfalarda aynı başlık: logo + slogan, sağda sabit sırayla Harita · Hatlar · Bülten · Hakkında.
 # Bulunulan bölüm dolu (kırmızı) görünür; dar ekranda hepsi simgeli yuvarlak düğmeye döner.
+# ── Google Analytics 4 ── index.html ve elle hazırlanan bülten sayfaları da aynı etiketi taşır;
+# ölçüm kimliği değişirse orayı da güncelleyin. Etiket içerik özetine (lastmod) dahil edilmez.
+GA_ID = 'G-8YYPWE57WM'
+GA_TAG = (f'<!-- Google tag (gtag.js) -->\n'
+          f'<script async src="https://www.googletagmanager.com/gtag/js?id={GA_ID}"></script>\n'
+          '<script>\n'
+          '  window.dataLayer = window.dataLayer || [];\n'
+          '  function gtag(){dataLayer.push(arguments);}\n'
+          "  gtag('js', new Date());\n\n"
+          f"  gtag('config', '{GA_ID}');\n"
+          '</script>\n')
+
+def ga_ekle(html_):
+    """Etiketi yoksa <head> içine, viewport satırının hemen ardına ekler."""
+    if GA_ID in html_:
+        return html_
+    vp = re.search(r'<meta name="viewport"[^>]*>\n?', html_)
+    i = vp.end() if vp else html_.find('<head>') + len('<head>\n')
+    return html_[:i] + GA_TAG + html_[i:]
+
+
 # index.html (harita) aynı işaretlemeyi elle taşır; burayı değiştirirseniz orayı da güncelleyin.
 NAV_IKON = {
     'harita':   '<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/>',
@@ -237,6 +258,7 @@ def bulten_basliklari(repo):
         stil = f'<style id="site-header">\n{HEADER_CSS}\n</style>\n'
         yeni = re.sub(r'<style id="site-header">.*?</style>\n', '', yeni, flags=re.S)
         yeni = yeni.replace('</head>', stil + '</head>', 1)
+        yeni = ga_ekle(yeni)
         if yeni != s:
             f.write_text(yeni, encoding='utf-8')
 
@@ -1021,7 +1043,7 @@ def build_page(oid, hat, durak, overlay, cards, updated):
         seyir=seyir_html,
         map_svg=build_map(feat, stations, hat, durak), stations=''.join(st_items),
         faq=faq_html, others=oth_html, il=esc(il), il_hash=esc(il_hash), il_slug=slugify(il),
-        header_css=HEADER_CSS, site_header=site_header('hatlar'),
+        header_css=HEADER_CSS, site_header=site_header('hatlar'), ga=GA_TAG,
     )
 
 
@@ -1030,7 +1052,7 @@ TEMPLATE = r'''<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{title}</title>
+{ga}<title>{title}</title>
 <meta name="description" content="{desc}">
 <link rel="canonical" href="{url}">
 <meta property="og:type"         content="article">
@@ -1437,6 +1459,7 @@ def secili_hatlar(hat, overlay):
     return sayfa, takma
 
 def icerik_ozeti(html_):
+    html_ = html_.replace(GA_TAG, '')
     return hashlib.sha1(re.sub(r'<!--v-->.*?<!--/v-->', '', html_, flags=re.S).encode()).hexdigest()[:12]
 
 SITEMAP_HEAD = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
@@ -1482,7 +1505,7 @@ def build_hakkinda(repo, overlay):
     body = body.replace(' target="_blank" rel="noopener"', '')
     body = re.sub(r'<p style="margin-top:8px">', '<p>', body)
     ozet = re.sub(r'<[^>]+>', '', re.search(r'<p>(.*?)</p>', body, re.S)[1]).strip()
-    return (PAGE_HAKKINDA.replace('{{BODY}}', body).replace('{{DESC}}', esc(ozet[:300]))
+    return (PAGE_HAKKINDA.replace('{{GA}}', GA_TAG).replace('{{BODY}}', body).replace('{{DESC}}', esc(ozet[:300]))
             .replace('{{HEADER_CSS}}', HEADER_CSS).replace('{{HEADER}}', site_header('hakkinda')))
 
 ROBOTS = f"User-agent: *\nAllow: /\n\nSitemap: {SITE}/sitemap.xml\n"
@@ -1533,7 +1556,7 @@ def build_hatlar(hat, cards, manifest, overlay):
             parcalar.append(f'<section id="{slugify(il)}-{asama}"><h3 class="grp">{ASAMA_BASLIK[asama]} '
                             f'<span>{len(satirlar)}</span></h3><ul class="list">{"".join(rows)}</ul></section>')
         bolumler.append(f'<section class="il"><h2>{esc(il)}</h2>{"".join(parcalar)}</section>')
-    return (PAGE_HATLAR.replace('{{BOLUMLER}}', ''.join(bolumler))
+    return (PAGE_HATLAR.replace('{{GA}}', GA_TAG).replace('{{BOLUMLER}}', ''.join(bolumler))
             .replace('{{HEADER_CSS}}', HEADER_CSS).replace('{{HEADER}}', site_header('hatlar'))
             )
 
@@ -1592,7 +1615,7 @@ def build_bulten_index(repo, hat, manifest):
                     f'<span class="row-arrow" aria-hidden="true">›</span></a></li>' for b in bs)
                 arsiv += f'<div class="yil"><h3>{yil}</h3><ul class="panel rows">{rows}</ul></div>'
             govde += f'<section aria-labelledby="h-arsiv"><h2 class="sec-lbl" id="h-arsiv">Önceki sayılar</h2>{arsiv}</section>'
-    return (PAGE_BULTEN_INDEX.replace('{{GOVDE}}', govde)
+    return (PAGE_BULTEN_INDEX.replace('{{GA}}', GA_TAG).replace('{{GOVDE}}', govde)
             .replace('{{HEADER_CSS}}', HEADER_CSS).replace('{{HEADER}}', site_header('bulten')))
 
 PAGE_BULTEN_INDEX = """<!DOCTYPE html>
@@ -1600,7 +1623,7 @@ PAGE_BULTEN_INDEX = """<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Aylık bülten | metrometre</title>
+{{GA}}<title>Aylık bülten | metrometre</title>
 <meta name="description" content="metrometre aylık bülteni: yapımı süren raylı sistem hatlarında her ay öne çıkan gelişmeler, takvimi kayan ve eşik aşan projeler.">
 <link rel="canonical" href="https://metrometre.com/bulten/">
 <meta property="og:type" content="website">
@@ -1700,7 +1723,7 @@ def build_404(hat, cards, manifest):
         f'<span class="oth-txt"><b>{esc(kod_goster(q["KOD"]))}</b> '
         f'{esc(tire(re.sub(r" (Metro|Tramvay) Hattı$", "", q["AD"])))}</span></a>'
         for _, _, q, oid in yapim)
-    return (PAGE_404.replace('{{LINKS}}', links)
+    return (PAGE_404.replace('{{GA}}', GA_TAG).replace('{{LINKS}}', links)
             .replace('{{HEADER_CSS}}', HEADER_CSS).replace('{{HEADER}}', site_header(None)))
 
 PAGE_HATLAR = """<!DOCTYPE html>
@@ -1708,7 +1731,7 @@ PAGE_HATLAR = """<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Raylı sistem projeleri: yapımı süren ve planlanan hatlar | metrometre</title>
+{{GA}}<title>Raylı sistem projeleri: yapımı süren ve planlanan hatlar | metrometre</title>
 <meta name="description" content="Yapımı süren, proje aşamasındaki ve yakın zamanda açılan metro, tramvay ve banliyö hatları; fiziki ilerleme, tahmini açılış tarihleri ve hat sayfaları.">
 <link rel="canonical" href="https://metrometre.com/hatlar/">
 <meta property="og:type" content="website">
@@ -1777,7 +1800,7 @@ PAGE_HAKKINDA = """<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>metrometre hakkında: veri kaynakları ve yöntem | metrometre</title>
+{{GA}}<title>metrometre hakkında: veri kaynakları ve yöntem | metrometre</title>
 <meta name="description" content="{{DESC}}">
 <link rel="canonical" href="https://metrometre.com/hakkinda/">
 <meta property="og:type" content="website">
@@ -1842,7 +1865,7 @@ PAGE_404 = """<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sayfa bulunamadı | metrometre</title>
+{{GA}}<title>Sayfa bulunamadı | metrometre</title>
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#B4271F">
 <link rel="icon" href="/icon-192.png">
@@ -1936,7 +1959,8 @@ if __name__ == '__main__':
         hedef_dosya = out / f"{oid}.html"
         # içerik aynıysa dosyaya dokunma: yalnız gün sayısı gibi değişken parçalar için commit oluşmasın
         # (sayfadaki geri sayımı tarayıcı zaten güncel hesaplar)
-        if not (prev.get('ozet') == ozet and hedef_dosya.exists()):
+        if not (prev.get('ozet') == ozet and hedef_dosya.exists()
+                and GA_ID in hedef_dosya.read_text(encoding='utf-8')):
             hedef_dosya.write_text(build_page(oid, hat, durak, overlay, cards, lastmod), encoding='utf-8')
         manifest['sayfalar'][oid] = {'slug': slug, 'lastmod': lastmod, 'ozet': ozet}
     # artık sayfası olmayan hatların eski dosyalarını kaldır
