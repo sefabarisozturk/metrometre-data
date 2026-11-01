@@ -601,14 +601,15 @@ def months_between(a, b):
 def hero_side(p, durum_kod, durum, hedef, latest, months, runs):
     """Geri sayımın yerine, açılış bilgisinin kesinliğine göre değişen kutu:
        A) kesin hedef tarih    → gün geri sayımı
-       B) ay / yıl düzeyinde   → tahmini ay + "yaklaşık N ay", varsa önceki tahmin
+       B) ay / yıl düzeyinde   → tahmini ay (alt satırsız)
        C) tarih yok, yapımda   → son aylardaki ilerleme hızı (puan)
        D) işletmede            → hizmet süresi
        E) proje aşamasında     → aşama göstergesi"""
     today = BUGUN
     box = lambda cls, head, num, unit, foot, extra='': (
         f'<aside class="side {cls}"{extra}><div class="cd-head">{head}</div>'
-        f'<div class="cd-num"><b>{num}</b><span>{unit}</span></div><div class="cd-foot">{foot}</div></aside>')
+        f'<div class="cd-num"><b>{num}</b><span>{unit}</span></div>'
+        + (f'<div class="cd-foot">{foot}</div>' if foot else '') + '</aside>')
 
     # A
     if hedef:
@@ -622,13 +623,9 @@ def hero_side(p, durum_kod, durum, hedef, latest, months, runs):
     m = re.match(r'^(\d{4})-(\d{2})$', acilis or '')
     if durum_kod in YAPIM and m:
         y, mo = int(m[1]), int(m[2])
-        kalan = months_between(today, dt.date(y, mo, 1))
         prev = runs[-2]['val'] if len(runs) > 1 else None
-        foot = (f'Önceki tahmin <s>{esc(acilis_label(prev))}</s>' if prev
-                else 'Kesin tarih açıklanmadı')
-        if kalan > 0:
-            foot = f'<!--v-->Yaklaşık {kalan} ay sonra<!--/v--> · {foot}'
-        return box('month' + (' moved' if prev else ''), 'Tahmini açılış', TR_MONTHS[mo - 1], str(y), foot)
+        # Alt satır yok: önceki tahminler "Tahmini açılış tarihinin seyri" bölümünde
+        return box('month' + (' moved' if prev else ''), 'Tahmini açılış', TR_MONTHS[mo - 1], str(y), '')
     # C
     if durum_kod in YAPIM:
         vals = [x for x in months if x['pct'] is not None]
@@ -1287,7 +1284,7 @@ footer {{ max-width:1100px; margin:0 auto; padding:4px 16px 32px; font-size:11px
   <div class="panel route">
     <div class="route-map">{map_svg}</div>
     <ol class="stations">{stations}</ol>
-    <div class="route-foot"><span>Aktarma: işletmedeki hatla ~350 m içinde · yapımda / planlanan: henüz işletmede olmayan hatlar</span><a href="{harita_url}">Haritada ayrıntılı incele →</a></div>
+    <div class="route-foot"><a href="{harita_url}">Haritada ayrıntılı incele →</a></div>
   </div>
 </section>
 
