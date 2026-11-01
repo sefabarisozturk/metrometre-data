@@ -441,6 +441,22 @@ def chart_table(months):
     return table
 
 
+def map_icon(cx, cy, t, r):
+    """Güzergâh haritasında aktarma hattı simgesi; simge yüklenmezse hat renginde daire + kod."""
+    kod = kod_goster(t['kod'])
+    fs = 6.4 if len(kod) <= 2 else 5.4
+    yedek = (f'<g class="fb"{" style=\"display:none\"" if t.get("ikon") else ""}>'
+             f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{r}" fill="{esc(t.get("renk") or "#888")}"/>'
+             f'<text x="{cx:.1f}" y="{cy + fs * 0.36:.1f}" text-anchor="middle" font-size="{fs}">{esc(kod)}</text></g>')
+    img = ''
+    if t.get('ikon'):
+        img = (f'<image href="{esc(t["ikon"])}" x="{cx - r:.1f}" y="{cy - r:.1f}" width="{2 * r}" height="{2 * r}" '
+               f'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'\'"/>')
+    ad = KOD_AD.get(t['kod'], kod) + (' (yapımda)' if t['durum'] in YAPIM else ' (planlanan)' if t['planli'] else '')
+    return (f'<g class="akt-ic{" plan" if t["planli"] else ""}"><title>{esc(ad)}</title>'
+            f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{r + 1.5}" fill="#fff"/>{img}{yedek}</g>')
+
+
 def build_map(feat, stations, hat_feats, durak_feats):
     parts = line_parts(feat['geometry'])
     allc = [c for p in parts for c in p]
@@ -468,7 +484,7 @@ def build_map(feat, stations, hat_feats, durak_feats):
 
     g = [f'<rect width="{W}" height="{H}" fill="#F7F7F7"/>']
     # Bağlam: harita alanına giren işletmedeki diğer hatlar
-    ctx_lbl, placed = {}, []
+    placed = []
     # Yapımda / planlanan hatlar: yalnız bu hatla aktarması olanlar, kesikli ve açık gri (en altta)
     plan_kods = {t['kod'] for s in stations for t in s['aktarma'] if t['planli']}
     for f in hat_feats:
@@ -490,35 +506,40 @@ def build_map(feat, stations, hat_feats, durak_feats):
              f'fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>')
     g.append(f'<path d="{" ".join(path(x) for x in parts)}" fill="none" stroke="{esc(me["RENK_HEX"])}" '
              f'stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>')
-    # Aktarma yapılan hatların istasyonlarına küçük etiket (önce işletmedekiler, sonra planlananlar)
-    for s, t in [(s, t) for planli in (False, True) for s in stations for t in s['aktarma'] if t['planli'] == planli]:
-        x, y = P(t['coord'])
+    # Aktarma yapılan hatların simgeleri: her hat bir kez, işletmedekiler önce; aynı istasyondakiler yan yana
+    grup, atandi = {}, set()
+    for planli in (False, True):
+        for j, s in enumerate(stations):
+            for t in s['aktarma']:
+                if t['planli'] == planli and t['kod'] not in atandi:
+                    atandi.add(t['kod'])
+                    grup.setdefault(j, []).append(t)
+    R, ARA = 7, 15.5                        # simge yarıçapı, simgeler arası
+    for j, ts in sorted(grup.items()):
+        s = stations[j]
         sx, sy = P(s['coord'])
-        key = t['kod']
-        if key in ctx_lbl:
-            continue
-        ctx_lbl[key] = 1
-        # Etiketi hattın dış tarafına koy: M12 güzergâhının yerel yönüne dik, istasyondan uzağa
-        j = stations.index(s)
+        # Simgeleri hattın dış tarafına koy: güzergâhın yerel yönüne dik, istasyondan uzağa
         a = P(stations[max(0, j - 1)]['coord']); b = P(stations[min(len(stations) - 1, j + 1)]['coord'])
         tx, ty = b[0] - a[0], b[1] - a[1]
-        L = math.hypot(tx, ty) or 1
-        nx, ny = -ty / L, tx / L
-        if (x - sx) * nx + (y - sy) * ny < 0 or math.hypot(x - sx, y - sy) < 4:
-            nx, ny = (-nx, -ny) if (x - sx) * nx + (y - sy) * ny < 0 else (nx, ny)
-        if math.hypot(x - sx, y - sy) > 12:
-            g.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="3" fill="{"#BDBDBD" if t["planli"] else "#8A8A8A"}" stroke="#fff" stroke-width="1.5"/>')
-        lx, ly = sx + nx * 17, sy + ny * 17
-        anchor = 'start' if nx > 0.3 else 'end' if nx < -0.3 else 'middle'
-        txt = KOD_AD.get(key, kod_goster(key))
-        tw = 6.2 * len(txt)
-        x0 = lx if anchor == 'start' else lx - tw if anchor == 'end' else lx - tw / 2
-        ty = ly + 3.5 + (ny * 4 if abs(nx) <= 0.3 else 0)
-        kutu = (x0 - 2, ty - 10, x0 + tw + 2, ty + 3)
-        if any(not (kutu[2] < b[0] or kutu[0] > b[2] or kutu[3] < b[1] or kutu[1] > b[3]) for b in placed):
-            continue        # başka bir etiketle çakışıyorsa yazma
+        L_ = math.hypot(tx, ty) or 1
+        nx, ny = -ty / L_, tx / L_
+        x, y = P(ts[0]['coord'])
+        if (x - sx) * nx + (y - sy) * ny < 0:
+            nx, ny = -nx, -ny
+        cx0, cy0 = sx + nx * 19, sy + ny * 19
+        n = len(ts)
+        dx = 1 if nx > 0.3 else -1 if nx < -0.3 else 0
+        xs_ = ([cx0 + dx * k * ARA for k in range(n)] if dx
+               else [cx0 + (k - (n - 1) / 2) * ARA for k in range(n)])
+        kutu = (min(xs_) - R - 1, cy0 - R - 1, max(xs_) + R + 1, cy0 + R + 1)
+        if any(not (kutu[2] < q[0] or kutu[0] > q[2] or kutu[3] < q[1] or kutu[1] > q[3]) for q in placed):
+            continue        # başka bir simge grubuyla çakışıyorsa koyma
         placed.append(kutu)
-        g.append(f'<text x="{lx:.1f}" y="{ty:.1f}" class="ctx-lbl{" plan" if t["planli"] else ""}" text-anchor="{anchor}">{esc(txt)}</text>')
+        for t, cx in zip(ts, xs_):
+            x, y = P(t['coord'])
+            if math.hypot(x - sx, y - sy) > 12:
+                g.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="3" fill="{"#BDBDBD" if t["planli"] else "#8A8A8A"}" stroke="#fff" stroke-width="1.5"/>')
+            g.append(map_icon(cx, cy0, t, R))
     pts = [P(s['coord']) for s in stations]
     min_gap = min((math.hypot(a[0] - b[0], a[1] - b[1]) for a, b in zip(pts, pts[1:])), default=99)
     numbered = min_gap >= 18
@@ -1143,9 +1164,9 @@ h1 {{ font-size:24px; font-weight:700; line-height:1.18; letter-spacing:-0.03em;
 .route-map {{ background:var(--surface-2); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:center; }}
 .mini-map {{ width:100%; height:auto; display:block; max-height:340px; }}
 .mini-map .ctx {{ fill:none; stroke:#C9C9C9; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }}
-.mini-map .ctx-lbl {{ font-size:10px; font-weight:600; fill:var(--text-dim); paint-order:stroke; stroke:#F7F7F7; stroke-width:3px; }}
 .mini-map .ctx.plan {{ stroke:#D4D4D4; stroke-width:1.5; stroke-dasharray:4 3; }}
-.mini-map .ctx-lbl.plan {{ font-weight:500; fill:#A8A8A8; }}
+.mini-map .akt-ic.plan {{ opacity:.55; }}
+.mini-map .akt-ic .fb text {{ font-weight:700; fill:#fff; letter-spacing:-0.04em; }}
 .mini-map .st-n {{ font-size:9.5px; font-weight:700; fill:var(--text); }}
 .mini-map .st.on circle {{ fill:var(--line); }}
 .stations {{ list-style:none; padding:4px 0; }}
