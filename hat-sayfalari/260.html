@@ -209,7 +209,9 @@ h1 { font-size:24px; font-weight:700; line-height:1.18; letter-spacing:-0.03em; 
 .route-map { background:var(--surface-2); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:center; }
 .mini-map { width:100%; height:auto; display:block; max-height:340px; }
 .mini-map .ctx { fill:none; stroke:#C9C9C9; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
-.mini-map .ctx-lbl { font-size:10px; font-weight:600; fill:var(--text-dim); paint-order:stroke; stroke:#F7F7F7; stroke-width:3px; }
+.mini-map .ctx.plan { stroke:#D4D4D4; stroke-width:1.5; stroke-dasharray:4 3; }
+.mini-map .akt-ic.plan { opacity:.55; }
+.mini-map .akt-ic .fb text { font-weight:700; fill:#fff; letter-spacing:-0.04em; }
 .mini-map .st-n { font-size:9.5px; font-weight:700; fill:var(--text); }
 .mini-map .st.on circle { fill:var(--line); }
 .stations { list-style:none; padding:4px 0; }
