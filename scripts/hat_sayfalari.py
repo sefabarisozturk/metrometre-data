@@ -56,6 +56,8 @@ VARSAYILAN_IL = 'İstanbul'
 
 # Hat kodundan okunur ad (B1 → Marmaray gibi)
 KOD_AD = {'B1': 'Marmaray', 'T': 'Tramvay'}
+GENEL_KOD = {'M', 'T', 'F', 'B'}   # birbiriyle ilgisiz hatlarda ortak kullanılan kodlar
+BIRLESME_M = 300                  # aynı kodlu kesimlerin birleşme sayılacağı uzaklık (m)
 
 def tire(s):
     """Hat adındaki ayırıcı tireyi uzun tireye çevirir; 'Mescid-i Selam' gibi eklere dokunmaz."""
@@ -491,13 +493,30 @@ def build_map(feat, stations, hat_feats, durak_feats):
     for s in stations:
         for t in s['aktarma']:
             merkez_by.setdefault(t['kod'], []).append(P(s['coord']))
+    # Aynı hattın öncülü / ardılı (aynı kodlu, bu hatla uç uca ya da kol olarak birleşen kesimler):
+    # birleşme noktası çevresinde çizilir. Genel kodlar (M, T, F, B) ilgisiz hatlarda ortak, hariç.
+    kod = feat['properties'].get('KOD')
+    uclar = [c for part in parts for c in (part[0], part[-1])]
+    sira_merkez = {}
+    if kod and kod not in GENEL_KOD:
+        for f in hat_feats:
+            q = f['properties']
+            if f is feat or q.get('KOD') != kod or str(q.get('PR_DURUM')) == '0':
+                continue
+            qparts = line_parts(f['geometry'])
+            birlesme = [c for c in uclar if project_on(qparts, c)[0] < BIRLESME_M]
+            birlesme += [c for qp in qparts for c in (qp[0], qp[-1]) if project_on(parts, c)[0] < BIRLESME_M]
+            if birlesme:
+                sira_merkez[id(f)] = [P(c) for c in birlesme]
     ctx_plan, ctx_isl = [], []
     for f in hat_feats:
         p = f['properties']
         durum = str(p.get('PR_DURUM'))
-        if f is feat or p.get('KOD') not in merkez_by or durum == '0':
+        if f is feat or durum == '0':
             continue
-        merkez = merkez_by[p['KOD']]
+        merkez = sira_merkez.get(id(f)) or (merkez_by.get(p['KOD']) if p.get('KOD') != kod else None)
+        if not merkez:
+            continue
         for part in line_parts(f['geometry']):
             # seyrek köşeli hatta kırpma sınırı kaymasın: ~4 px'te bir ara nokta
             yogun = part[:1]

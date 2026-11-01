@@ -4,17 +4,17 @@
   "1": {
    "slug": "m1b-kirazli-halkali-universite",
    "lastmod": "2026-11-01",
-   "ozet": "8441028545c6"
+   "ozet": "e8e2e49d7876"
   },
   "2": {
    "slug": "m7-hastane-esenyurt-meydan-uzatmasi",
    "lastmod": "2026-11-01",
-   "ozet": "eb9138ab0f4e"
+   "ozet": "9a405581a286"
   },
   "3": {
    "slug": "m7-yildiz-kabatas",
    "lastmod": "2026-11-01",
-   "ozet": "c1f6d2644ff1"
+   "ozet": "5020e2053952"
   },
   "6": {
    "slug": "m12-goztepe-umraniye-metro-hatti",
@@ -29,12 +29,12 @@
   "30": {
    "slug": "m7-esenyurt-meydan-saadetdere-uzatmasi",
    "lastmod": "2026-11-01",
-   "ozet": "af84f500aa46"
+   "ozet": "a072f8341664"
   },
   "31": {
    "slug": "m5-sultanbeyli-kurtkoy-uzatmasi",
    "lastmod": "2026-11-01",
-   "ozet": "c8d226eb8fdb"
+   "ozet": "a24da07b61f7"
   },
   "34": {
    "slug": "t-uskudar-harem-tramvay-hatti",
@@ -44,7 +44,7 @@
   "35": {
    "slug": "m2-haciosman-sariyer-uzatmasi",
    "lastmod": "2026-11-01",
-   "ozet": "8fce602686c0"
+   "ozet": "2d165c9ef173"
   },
   "36": {
    "slug": "m20-sefakoy-tuyap-metro-hatti",
@@ -104,12 +104,12 @@
   "50": {
    "slug": "m13-emek-sogutlucesme-uzatmasi",
    "lastmod": "2026-11-01",
-   "ozet": "bd309de9a2ac"
+   "ozet": "1318d9f1b71b"
   },
   "51": {
    "slug": "t4-mescid-i-selam-pirincci-uzatmasi",
    "lastmod": "2026-11-01",
-   "ozet": "0ee57fe18340"
+   "ozet": "900c07f9336c"
   },
   "53": {
    "slug": "t-uskudar-kadikoy-maltepe-tramvay-hatti",
@@ -129,17 +129,17 @@
   "56": {
    "slug": "m2-yenikapi-incirli-uzatmasi",
    "lastmod": "2026-11-01",
-   "ozet": "e72bfd16c216"
+   "ozet": "e00fc97c1c24"
   },
   "57": {
    "slug": "m3-kocaeli-sgh-cayirova-metro-hatti",
    "lastmod": "2026-11-01",
-   "ozet": "e1d0b2dd4287"
+   "ozet": "48ec82301661"
   },
   "60": {
    "slug": "m11-arnavutkoy-halkali",
    "lastmod": "2026-11-01",
-   "ozet": "e9a0a6907a30"
+   "ozet": "098571f85ff6"
   },
   "61": {
    "slug": "m1-kocaeli-darica-sahil-gebze-osb-metro-hatti",
@@ -159,17 +159,17 @@
   "64": {
    "slug": "m14-altunizade-bosna-bulvari-metro-hatti",
    "lastmod": "2026-11-01",
-   "ozet": "c677719439ce"
+   "ozet": "d7d46ddf86fa"
   },
   "66": {
    "slug": "m13-yenidogan-emek-metro-hatti",
    "lastmod": "2026-11-01",
-   "ozet": "179ce937bff3"
+   "ozet": "71adf06af76f"
   },
   "67": {
    "slug": "m5-samandira-merkez-sultanbeyli",
    "lastmod": "2026-11-01",
-   "ozet": "6cb4c5825c3a"
+   "ozet": "caf66a1ebb05"
   },
   "68": {
    "slug": "f-avcilar-merkez-avcilar-sahil-funikuler-hatti",
@@ -179,32 +179,32 @@
   "69": {
    "slug": "m7-mahmutbey-hastane",
    "lastmod": "2026-11-01",
-   "ozet": "2f5db1e46264"
+   "ozet": "eff2e5cf88b2"
   },
   "70": {
    "slug": "m4-tavsantepe-kaynarca-merkez",
    "lastmod": "2026-11-01",
-   "ozet": "7e32d8905441"
+   "ozet": "53f2dbd7530f"
   },
   "71": {
    "slug": "m1b-halkali-universite-halkali-uzatmasi",
    "lastmod": "2026-11-01",
-   "ozet": "51566ac05a3a"
+   "ozet": "20b1c9d72fbd"
   },
   "83": {
    "slug": "m4-kaynarca-merkez-icmeler-uzatmasi",
    "lastmod": "2026-11-01",
-   "ozet": "c28e0e8f4552"
+   "ozet": "69e32bd52a57"
   },
   "91": {
    "slug": "m4-m10-sgh-kurtkoy-uzatmasi",
    "lastmod": "2026-11-01",
-   "ozet": "ff36b8f8521b"
+   "ozet": "12f42c96a151"
   },
   "93": {
    "slug": "m2-incirli-sefakoy-uzatmasi",
    "lastmod": "2026-11-01",
-   "ozet": "10c5b747e855"
+   "ozet": "50fd6da03b53"
   },
   "160": {
    "slug": "m-kavacik-cengelkoy-altunizade-metro-hatti",
@@ -214,7 +214,7 @@
   "178": {
    "slug": "m14-altunizade-yavuzturk-umraniye-spor-koyu-metro-hatti",
    "lastmod": "2026-11-01",
-   "ozet": "acb5e51bf02e"
+   "ozet": "586a941b2ae7"
   },
   "182": {
    "slug": "m-umraniye-kavacik-beykoz-metro-hatti",
@@ -224,7 +224,7 @@
   "193": {
    "slug": "m3-kocaeli-gebze-adliye-birlik-osb-metro-hatti",
    "lastmod": "2026-11-01",
-   "ozet": "83dca6691b76"
+   "ozet": "b661c9f380b3"
   },
   "227": {
    "slug": "m4-kocaeli-kocaeli-guney-hrs-hatti",
@@ -234,17 +234,17 @@
   "259": {
    "slug": "m2-kocaeli-kocaeli-kuzey-hrs-hatti-1-asama",
    "lastmod": "2026-11-01",
-   "ozet": "65e6e02b7bb5"
+   "ozet": "b03091a50fdc"
   },
   "260": {
    "slug": "m2-kocaeli-kocaeli-kuzey-hrs-hatti-2-asama-izmit-dogu-cengiz",
    "lastmod": "2026-11-01",
-   "ozet": "20b23543988a"
+   "ozet": "68894910d97d"
   },
   "262": {
    "slug": "m2-kocaeli-kocaeli-kuzey-hrs-hatti-2-asama-tupras-petkim-ata",
    "lastmod": "2026-11-01",
-   "ozet": "a934f6ea1b5d"
+   "ozet": "26080dd0bf80"
   }
  },
  "takma": {
