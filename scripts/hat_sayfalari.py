@@ -485,15 +485,38 @@ def build_map(feat, stations, hat_feats, durak_feats):
     g = [f'<rect width="{W}" height="{H}" fill="#F7F7F7"/>']
     # Bağlam: harita alanına giren işletmedeki diğer hatlar
     placed = []
-    # Yapımda / planlanan hatlar: yalnız bu hatla aktarması olanlar, kesikli ve açık gri (en altta)
-    plan_kods = {t['kod'] for s in stations for t in s['aktarma'] if t['planli']}
+    # Yapımda / planlanan hatlar: yalnız bu hatla aktarması olanlar, kesikli ve açık gri (en altta).
+    # Haritayı kalabalıklaştırmasın diye yalnız aktarma istasyonu çevresindeki kesim çizilir.
+    YAKIN = 70                              # px (harita genişliği 320)
+    plan_merkez = {}
+    for s in stations:
+        for t in s['aktarma']:
+            if t['planli']:
+                plan_merkez.setdefault(t['kod'], []).append(P(s['coord']))
     for f in hat_feats:
         p = f['properties']
-        if f is feat or p.get('KOD') not in plan_kods or str(p.get('PR_DURUM')) in ('0', '1'):
+        if f is feat or p.get('KOD') not in plan_merkez or str(p.get('PR_DURUM')) in ('0', '1'):
             continue
+        merkez = plan_merkez[p['KOD']]
         for part in line_parts(f['geometry']):
-            if any(inside(c) for c in part):
-                g.append(f'<path d="{path(part)}" class="ctx plan"/>')
+            # seyrek köşeli hatta kırpma sınırı kaymasın: ~4 px'te bir ara nokta
+            yogun = part[:1]
+            for c0, c1 in zip(part, part[1:]):
+                (x0, y0), (x1, y1) = P(c0), P(c1)
+                k = max(1, int(math.hypot(x1 - x0, y1 - y0) // 4))
+                yogun += [(c0[0] + (c1[0] - c0[0]) * i / k, c0[1] + (c1[1] - c0[1]) * i / k) for i in range(1, k + 1)]
+            runs, cur = [], []
+            for c in yogun:
+                x, y = P(c)
+                if any(math.hypot(x - mx, y - my) <= YAKIN for mx, my in merkez):
+                    cur.append(c)
+                elif cur:
+                    runs.append(cur); cur = []
+            if cur:
+                runs.append(cur)
+            for r in runs:
+                if len(r) >= 2:
+                    g.append(f'<path d="{path(r)}" class="ctx plan"/>')
     for f in hat_feats:
         p = f['properties']
         if f is feat or str(p.get('PR_DURUM')) != '1':
