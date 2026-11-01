@@ -476,28 +476,28 @@ def build_map(feat, stations, hat_feats, durak_feats):
     W = 320
     H = round(W * hm / wm)
     P = lambda c: ((c[0] - minx) / (maxx - minx) * W, (1 - (c[1] - miny) / (maxy - miny)) * H)
-    inside = lambda c: minx <= c[0] <= maxx and miny <= c[1] <= maxy
 
     def path(coords):
         px = simplify([P(c) for c in coords], 0.6)
         return 'M' + ' L'.join(f"{x:.1f},{y:.1f}" for x, y in px)
 
     g = [f'<rect width="{W}" height="{H}" fill="#F7F7F7"/>']
-    # Bağlam: harita alanına giren işletmedeki diğer hatlar
+    # Bağlam: yalnız bu hatla aktarması olan hatlar, aktarma istasyonu çevresindeki kesimiyle.
+    # Ağın bütünü için sayfada "Haritada ayrıntılı incele" bağlantısı var.
+    # İşletmedekiler düz gri, yapımda / planlananlar kesikli açık gri.
     placed = []
-    # Yapımda / planlanan hatlar: yalnız bu hatla aktarması olanlar, kesikli ve açık gri (en altta).
-    # Haritayı kalabalıklaştırmasın diye yalnız aktarma istasyonu çevresindeki kesim çizilir.
     YAKIN = 70                              # px (harita genişliği 320)
-    plan_merkez = {}
+    merkez_by = {}
     for s in stations:
         for t in s['aktarma']:
-            if t['planli']:
-                plan_merkez.setdefault(t['kod'], []).append(P(s['coord']))
+            merkez_by.setdefault(t['kod'], []).append(P(s['coord']))
+    ctx_plan, ctx_isl = [], []
     for f in hat_feats:
         p = f['properties']
-        if f is feat or p.get('KOD') not in plan_merkez or str(p.get('PR_DURUM')) in ('0', '1'):
+        durum = str(p.get('PR_DURUM'))
+        if f is feat or p.get('KOD') not in merkez_by or durum == '0':
             continue
-        merkez = plan_merkez[p['KOD']]
+        merkez = merkez_by[p['KOD']]
         for part in line_parts(f['geometry']):
             # seyrek köşeli hatta kırpma sınırı kaymasın: ~4 px'te bir ara nokta
             yogun = part[:1]
@@ -516,14 +516,9 @@ def build_map(feat, stations, hat_feats, durak_feats):
                 runs.append(cur)
             for r in runs:
                 if len(r) >= 2:
-                    g.append(f'<path d="{path(r)}" class="ctx plan"/>')
-    for f in hat_feats:
-        p = f['properties']
-        if f is feat or str(p.get('PR_DURUM')) != '1':
-            continue
-        for part in line_parts(f['geometry']):
-            if any(inside(c) for c in part):
-                g.append(f'<path d="{path(part)}" class="ctx"/>')
+                    (ctx_isl if durum == '1' else ctx_plan).append(
+                        f'<path d="{path(r)}" class="ctx{"" if durum == "1" else " plan"}"/>')
+    g += ctx_plan + ctx_isl                 # kesikliler altta
     me = feat['properties']
     g.append(f'<path d="{path(parts[0]) if len(parts) == 1 else " ".join(path(x) for x in parts)}" '
              f'fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>')
