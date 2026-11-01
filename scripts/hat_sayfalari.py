@@ -389,6 +389,15 @@ def acilis_label(v):
     return ym_long(v) if re.match(r'^\d{4}-\d{2}$', v or '') else (v or '')
 
 
+def is_ara(src):
+    """Kaynak sütununda 'Ara değer' yazan ay: resmî yanıt yok ya da tutarsız, komşu aylardan hesaplandı."""
+    return 'ara değer' in tr_lower(src or '') or 'ara deger' in tr_lower(src or '')
+
+
+ARA_NOT = ('İçi boş noktalar ara değerdir: o ay için resmî oran açıklanmamış ya da açıklanan oran '
+           'önceki ve sonraki yanıtlarla tutarsız olduğundan komşu ayların ortalaması kullanılmıştır.')
+
+
 # ───────────────────────── bölümler ─────────────────────────
 def build_chart(months, color, note=''):
     vals = [m for m in months if m['pct'] is not None]
@@ -400,8 +409,10 @@ def build_chart(months, color, note=''):
                 f'<div class="op-txt"><b>%{fmt_pct(v["pct"])}</b> · {esc(ym_long(v["ym"]))}</div></div>'
                 f'<p class="chart-note">Hat {esc(ym_long(v["ym"]))} itibarıyla izlenmektedir; aylık seri sonraki '
                 f'güncellemelerle oluşacaktır. {note}.</p>')
+    ara = any(m['pct'] is not None and is_ara(m['src']) for m in months)
+    note_html = f'{note}' + (f'. {ARA_NOT}' if ara and note else ARA_NOT if ara else '')
     return (chart_svg(months, color, 640, 168, 'c-desk') + chart_svg(months, color, 360, 150, 'c-mob')
-            + f'<div class="chart-foot"><span class="chart-note">{note}</span>{chart_table(months)}</div>')
+            + f'<div class="chart-foot"><span class="chart-note">{note_html}</span>{chart_table(months)}</div>')
 
 
 def chart_svg(months, color, W, H, cls):
@@ -430,7 +441,10 @@ def chart_svg(months, color, W, H, cls):
     d = ' '.join(f"{'M' if k == 0 else 'L'}{xs(i):.1f},{ys(months[i]['pct']):.1f}" for k, i in enumerate(idx))
     g.append(f'<path d="{d}" fill="none" stroke="{stroke}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>')
     for i in idx:
-        g.append(f'<circle cx="{xs(i):.1f}" cy="{ys(months[i]["pct"]):.1f}" r="4.5" fill="{stroke}" stroke="#fff" stroke-width="2"/>')
+        if is_ara(months[i]['src']):   # ara değer: içi boş nokta
+            g.append(f'<circle cx="{xs(i):.1f}" cy="{ys(months[i]["pct"]):.1f}" r="3.8" fill="#fff" stroke="{stroke}" stroke-width="1.8"/>')
+        else:
+            g.append(f'<circle cx="{xs(i):.1f}" cy="{ys(months[i]["pct"]):.1f}" r="4.5" fill="{stroke}" stroke="#fff" stroke-width="2"/>')
     last = idx[-1]
     pend_after = any(m['pending'] for m in months[last + 1:])
     if pend_after:   # sağda "bekleniyor" işareti var → değer etiketi noktanın altına
