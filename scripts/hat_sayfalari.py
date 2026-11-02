@@ -1499,8 +1499,7 @@ def build_sitemap(repo, manifest):
 
 def build_hakkinda(repo, overlay):
     """/hakkinda/ — metin scripts/hakkinda_icerik.html dosyasından okunur (tek kaynak; sitede
-    yayımlanmaz). İki parça burada üretilir: kaynak rozetleri (index.html'deki SOURCE_TYPES)
-    ve veri dönemi cümlesi (overlay.csv'deki en son ilerleme ayı)."""
+    yayımlanmaz). Kaynak rozetleri burada üretilir (index.html'deki SOURCE_TYPES)."""
     src = (repo / 'index.html').read_text(encoding='utf-8')
     body = (repo / 'scripts' / 'hakkinda_icerik.html').read_text(encoding='utf-8')
     body = re.sub(r'<!--.*?-->', '', body, flags=re.S).strip()
@@ -1510,10 +1509,6 @@ def build_hakkinda(repo, overlay):
     legend = ''.join(f'<div class="src-legend-row"><span class="src-badge src-{k}"><span class="src-dot"></span>{esc(l)}</span>'
                      f'<span>{esc(d)}</span></div>' for k, l, d in turler)
     body = body.replace('<div id="src-legend" class="src-legend"></div>', f'<div class="src-legend">{legend}</div>')
-    # veri dönemi
-    yms = sorted({r['YilAy'].strip() for r in overlay if parse_pct(r.get('Ilerleme')) is not None})
-    asof = f" Paneldeki en güncel fiziki ilerleme verisi {ym_long(yms[-1])} dönemine aittir." if yms else ''
-    body = body.replace('<span id="modal-asof"></span>', esc(asof))
     # bölüm başlıkları sayfada gerçek başlık olsun; yeni sekme açtırmayalım
     body = re.sub(r'<div class="modal-section-title">(.*?)</div>', r'<h2>\1</h2>', body)
     body = body.replace(' target="_blank" rel="noopener"', '')
@@ -1855,7 +1850,7 @@ strong { color:var(--text); }
   border-radius:99px; white-space:nowrap; flex-shrink:0; margin-top:1px; }
 .src-dot { width:6px; height:6px; border-radius:50%; background:currentColor; flex-shrink:0; }
 .src-bilgi { background:#ECFDF5; color:#065F46; } .src-resmi { background:#EFF6FF; color:#1E40AF; }
-.src-saha { background:#FFFBEB; color:#92400E; } .src-tahmin { background:#F5F5F5; color:#525252; }
+.src-tahmin { background:#F5F5F5; color:#525252; }
 .src-diger { background:#F5F3FF; color:#5B21B6; }
 footer { max-width:680px; margin:0 auto; padding:0 16px 32px; font-size:11px; color:var(--text-dim); }
 @media (max-width:640px) { .panel { padding:20px 18px; } .src-legend-row { flex-direction:column; gap:4px; } }

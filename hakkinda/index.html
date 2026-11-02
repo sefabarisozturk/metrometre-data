@@ -88,7 +88,7 @@ strong { color:var(--text); }
   border-radius:99px; white-space:nowrap; flex-shrink:0; margin-top:1px; }
 .src-dot { width:6px; height:6px; border-radius:50%; background:currentColor; flex-shrink:0; }
 .src-bilgi { background:#ECFDF5; color:#065F46; } .src-resmi { background:#EFF6FF; color:#1E40AF; }
-.src-saha { background:#FFFBEB; color:#92400E; } .src-tahmin { background:#F5F5F5; color:#525252; }
+.src-tahmin { background:#F5F5F5; color:#525252; }
 .src-diger { background:#F5F3FF; color:#5B21B6; }
 footer { max-width:680px; margin:0 auto; padding:0 16px 32px; font-size:11px; color:var(--text-dim); }
 @media (max-width:640px) { .panel { padding:20px 18px; } .src-legend-row { flex-direction:column; gap:4px; } }
@@ -114,15 +114,15 @@ footer { max-width:680px; margin:0 auto; padding:0 16px 32px; font-size:11px; co
 <h2>Veri kaynakları</h2>
 <p>İlerleme yüzdeleri ve tahmini açılış tarihleri, kurumların kamuoyuyla paylaştığı en güncel resmî açıklamalar esas alınarak derlenmektedir. Resmî açıklamaların yanı sıra CİMER'e, İBB Çözüm Merkezi'ne ve ilgili belediyelere yapılan bilgi edinme başvurularından elde edilen veriler de kullanılmaktadır. Veriler; X, YouTube ve çeşitli sosyal medya platformlarındaki bağımsız saha paylaşımlarıyla çapraz kontrol edilmektedir.</p>
 <p>Her hattın detay panelinde, güncel ilerleme değerinin dayanağı aşağıdaki rozetlerden biriyle belirtilmektedir. Kaynağın bağlantısı varsa rozete tıklanarak açılabilmektedir.</p>
-<div class="src-legend"><div class="src-legend-row"><span class="src-badge src-bilgi"><span class="src-dot"></span>Bilgi edinme yanıtı</span><span>CİMER veya İBB Çözüm Merkezi başvurusuna kurumun verdiği yazılı yanıt</span></div><div class="src-legend-row"><span class="src-badge src-resmi"><span class="src-dot"></span>Resmî açıklama</span><span>Kurumun web sitesi, basın bülteni, sosyal medya hesabı veya yetkili açıklaması</span></div><div class="src-legend-row"><span class="src-badge src-saha"><span class="src-dot"></span>Saha gözlemi</span><span>Bağımsız saha paylaşımları (X, YouTube, forumlar) üzerinden yapılan değerlendirme</span></div><div class="src-legend-row"><span class="src-badge src-tahmin"><span class="src-dot"></span>Tahmin</span><span>Resmî veri olmayan ay için metrometre tarafından komşu aylardan hesaplanan ara değer</span></div></div>
+<div class="src-legend"><div class="src-legend-row"><span class="src-badge src-bilgi"><span class="src-dot"></span>Bilgi edinme yanıtı</span><span>CİMER veya İBB Çözüm Merkezi başvurusuna kurumun verdiği yazılı yanıt</span></div><div class="src-legend-row"><span class="src-badge src-resmi"><span class="src-dot"></span>Resmî açıklama</span><span>Kurumun web sitesi, basın bülteni, sosyal medya hesabı veya yetkili açıklaması</span></div><div class="src-legend-row"><span class="src-badge src-tahmin"><span class="src-dot"></span>Tahmin</span><span>Resmî veri olmayan ay için metrometre tarafından komşu aylardan hesaplanan ara değer</span></div></div>
 <h2>Açık veri</h2>
 <p>Paneldeki hat ve istasyon geometrileri ile aylık ilerleme tablosu <a href="https://github.com/sefabarisozturk/metrometre-data">GitHub'da herkese açık</a> olarak yayımlanmaktadır; her değişiklik sürüm geçmişinde izlenebilmektedir.</p>
 <h2>Takip et</h2>
-<p>Aylık veriler yayımlandığında haberdar olmak için <a href="/feed.xml">RSS beslemesini</a> Feedly, Inoreader gibi bir okuyucuya ekleyebilir ya da <a href="https://x.com/sefabarisozturk">X hesabını</a> takip edebilirsiniz.</p>
+<p>Aylık veriler yayımlandığında haberdar olmak için <a href="/feed.xml">RSS beslemesini</a> Feedly, Inoreader gibi bir okuyucuya ekleyebilirsiniz.</p>
 <h2>Güncelleme sıklığı</h2>
-<p>Panel aylık olarak güncellenmektedir. Açılış, test başlangıcı veya takvim değişikliği gibi önemli gelişmeler tespit edildiğinde ara güncelleme yapılmaktadır. Paneldeki en güncel fiziki ilerleme verisi Ekim 2026 dönemine aittir.</p>
+<p>Panel aylık olarak güncellenmektedir. Açılış, test başlangıcı veya takvim değişikliği gibi önemli gelişmeler tespit edildiğinde ara güncelleme yapılmaktadır.</p>
 <h2>Sınırlılıklar</h2>
-<p>Fiziksel ilerleme yüzdeleri, kurumların kamuoyuyla paylaştığı bilgileri yansıtmaktadır. Yerinde bağımsız denetim yapılmamaktadır. Tahmini açılış tarihleri resmî açıklamalara dayalıdır ve değişime tabidir. Resmî verinin açıklanmadığı aylar ya boş bırakılmakta ya da komşu aylardan hesaplanan ara değerle doldurularak "Tahmin" olarak işaretlenmektedir.</p>
+<p>Fiziksel ilerleme yüzdeleri, kurumların kamuoyuyla paylaştığı bilgileri yansıtmaktadır. Tahmini açılış tarihleri resmî açıklamalara dayalıdır ve değişime tabidir. Resmî verinin açıklanmadığı aylar ya boş bırakılmakta ya da komşu aylardan hesaplanan ara değerle doldurularak "Tahmin" olarak işaretlenmektedir.</p>
   </article>
 </main>
 <footer>© Barış Öztürk · <a href="mailto:sbarisozturk@gmail.com">sbarisozturk@gmail.com</a> · <a href="https://x.com/sefabarisozturk">X</a> · <a href="https://www.linkedin.com/in/sefabarisozturk/">LinkedIn</a></footer>
