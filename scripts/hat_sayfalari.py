@@ -1404,7 +1404,7 @@ footer {{ max-width:1100px; margin:0 auto; padding:4px 16px 32px; font-size:11px
   <div class="others">{others}</div>
 </section>
 
-<p class="method">metrometre bağımsız bir sivil girişimdir; ilerleme değerleri kurumların açıkladığı rakamlara dayanmakta, yerinde denetim yapılmamaktadır. <a href="/hakkinda/">Kaynaklar ve yöntem</a> · <a href="https://github.com/sefabarisozturk/metrometre-data">Açık veri</a> · <a href="/feed.xml">RSS</a></p>
+<p class="method">metrometre bağımsız bir sivil girişimdir; ilerleme değerleri kurumların açıkladığı rakamlara dayanmaktadır. <a href="/hakkinda/">Kaynaklar ve yöntem</a> · <a href="https://github.com/sefabarisozturk/metrometre-data">Açık veri</a> · <a href="/feed.xml">RSS</a></p>
 </main>
 
 <footer>© Barış Öztürk · sbarisozturk@gmail.com · <a href="https://x.com/sefabarisozturk">X</a> · <a href="https://www.linkedin.com/in/sefabarisozturk/">LinkedIn</a></footer>
