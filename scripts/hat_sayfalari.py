@@ -1407,7 +1407,7 @@ footer {{ max-width:1100px; margin:0 auto; padding:4px 16px 32px; font-size:11px
 <p class="method">metrometre bağımsız bir sivil girişimdir; ilerleme değerleri kurumların açıkladığı rakamlara dayanmakta, yerinde denetim yapılmamaktadır. <a href="/hakkinda/">Kaynaklar ve yöntem</a> · <a href="https://github.com/sefabarisozturk/metrometre-data">Açık veri</a> · <a href="/feed.xml">RSS</a></p>
 </main>
 
-<footer>© Barış Öztürk · sbarisozturk@gmail.com · <a href="https://x.com/sefabarisozturk">X</a> · <a href="https://www.linkedin.com/in/sefabarisozturk/">LinkedIn</a> · <a href="/bulten/">Bültenler</a></footer>
+<footer>© Barış Öztürk · sbarisozturk@gmail.com · <a href="https://x.com/sefabarisozturk">X</a> · <a href="https://www.linkedin.com/in/sefabarisozturk/">LinkedIn</a></footer>
 
 <script>
 (function(){{
@@ -1869,7 +1869,7 @@ footer { max-width:680px; margin:0 auto; padding:0 16px 32px; font-size:11px; co
     {{BODY}}
   </article>
 </main>
-<footer>© Barış Öztürk · <a href="mailto:sbarisozturk@gmail.com">sbarisozturk@gmail.com</a> · <a href="https://x.com/sefabarisozturk">X</a> · <a href="https://www.linkedin.com/in/sefabarisozturk/">LinkedIn</a> · <a href="/hatlar/">Hatlar</a> · <a href="/bulten/">Bültenler</a></footer>
+<footer>© Barış Öztürk · <a href="mailto:sbarisozturk@gmail.com">sbarisozturk@gmail.com</a> · <a href="https://x.com/sefabarisozturk">X</a> · <a href="https://www.linkedin.com/in/sefabarisozturk/">LinkedIn</a></footer>
 </body>
 </html>
 """
