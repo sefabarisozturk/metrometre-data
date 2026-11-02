@@ -519,11 +519,11 @@
   "38": {
    "acilis": "Haziran 2028",
    "ad": "Feshane-Bayrampaşa Tramvay Hattı",
-   "card": "65c6edd1de",
+   "card": "56266e87f4",
    "durum": "3",
    "kod": "T7",
    "pct": 42.55,
-   "ym": "2026-09"
+   "ym": "2026-08"
   },
   "39": {
    "acilis": "2030 sonrası",
@@ -655,9 +655,9 @@
    "kod": "M11"
   },
   "6": {
-   "acilis": "Aralık 2026",
+   "acilis": "19 Aralık 2026",
    "ad": "Göztepe-Ümraniye Metro Hattı",
-   "card": "ed83f432d7",
+   "card": "1f98dc5431",
    "durum": "3",
    "kod": "M12",
    "pct": 96.0,
@@ -702,11 +702,11 @@
   "66": {
    "acilis": "Belirsiz",
    "ad": "Yenidoğan-Emek Metro Hattı",
-   "card": "36ec2589c3",
+   "card": "3620265123",
    "durum": "4",
    "kod": "M13",
    "pct": 8.25,
-   "ym": "2026-09"
+   "ym": "2026-10"
   },
   "67": {
    "acilis": "22 Mayıs 2026",
@@ -721,9 +721,9 @@
    "kod": "F"
   },
   "69": {
-   "acilis": "Haziran 2028",
+   "acilis": "Aralık 2028",
    "ad": "Mahmutbey-Hastane",
-   "card": "2e5074dbd8",
+   "card": "8b94fff0e4",
    "durum": "3",
    "kod": "M7",
    "pct": 56.0,
@@ -781,5 +781,5 @@
    "kod": "M2"
   }
  },
- "veri_donemi": "2026-09"
+ "veri_donemi": "2026-10"
 }
