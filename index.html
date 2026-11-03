@@ -1712,7 +1712,7 @@ const SORT_CONFIG = {
     { key:'kronoloji', label:'Kronoloji' },
   ],
   yapim: [
-    { key:'acilis',   label:'Tahmini açılış', fn:(a,b) => acilisCompare(a.p, b.p) },
+    { key:'acilis',   label:'Açılış hedefi', fn:(a,b) => acilisCompare(a.p, b.p) },
     { key:'ilerleme', label:'İlerleme',        fn:(a,b) => numDesc(a.p.PR_ILERLEME, b.p.PR_ILERLEME) },
     { key:'mesafe',   label:'Uzunluk',         fn:(a,b) => numDesc(a.p.MESAFE, b.p.MESAFE) },
     { key:'istasyon', label:'İstasyon',        fn:(a,b) => numDesc(a.p.ISTASYON, b.p.ISTASYON) },
@@ -3071,7 +3071,7 @@ function openDetailPopup(p){
   } else if(TAB_FILTERS.yapim.includes(durum) || TAB_FILTERS.proje.includes(durum)){
     const dateStr = fmtTRDate(p.PR_ACILIS) || p.PR_ACILIS;
     const resmi   = TAB_FILTERS.yapim.includes(durum) ? resmiAcilis(p) : null;
-    lblEl.textContent = resmi ? 'Açılış Hedefi' : 'Tahmini Açılış';
+    lblEl.textContent = 'Açılış Hedefi';
     valEl.innerHTML = esc(dateStr || '—') + (resmi ? resmiGunRozet(resmi) : '');
     bottomEl.hidden = false;
   } else {
@@ -4244,7 +4244,7 @@ function renderCards(){
         </div>` : '';
       const dateCol = `
         <div class="card-date-col">
-          <div class="card-field-lbl">${resmi ? 'Açılış Hedefi' : 'Tahmini Açılış'}</div>
+          <div class="card-field-lbl">Açılış Hedefi</div>
           <div class="card-field-val">${dateVal}</div>
         </div>`;
       bottomHtml = `<div class="card-bottom card-bottom-split">
@@ -4253,7 +4253,7 @@ function renderCards(){
     } else if(activeTab === 'proje'){
       const dateStr = fmtTRDate(p.PR_ACILIS);
       bottomHtml = `<div class="card-bottom"><div>
-        <div class="card-field-lbl">Tahmini Açılış</div>
+        <div class="card-field-lbl">Açılış Hedefi</div>
         <div class="card-field-val">${esc(dateStr || p.PR_ACILIS || '—')}</div>
       </div></div>`;
     } else if(activeTab === 'isletme'){
@@ -4946,7 +4946,7 @@ function hatTipRowHtml(g, asButton){
     const parts = [];
     if(pct != null && isFinite(pct)) parts.push(`<span class="tip-bar"><i style="width:${Math.max(0, Math.min(100, pct))}%;background:${renk}"></i></span><span class="tip-pct">%${pct}</span>`);
     const resmi = resmiAcilis(p);
-    if(acilis) parts.push(`<span>${resmi ? 'Açılış hedefi' : 'Tahmini açılış'} <b style="color:var(--text);font-weight:600">${esc(acilis)}</b>`
+    if(acilis) parts.push(`<span>Açılış hedefi <b style="color:var(--text);font-weight:600">${esc(acilis)}</b>`
                           + (resmi ? ` · <b style="color:${resmi.gun >= 0 ? 'var(--accent)' : 'var(--text-dim)'};font-weight:700">${esc(resmiGunMetni(resmi).replace(' kaldı', ''))}</b>` : '') + `</span>`);
     if(parts.length) alt = `<div class="tip-prog">${parts.join(sep)}</div>`;
   } else {
@@ -4956,7 +4956,7 @@ function hatTipRowHtml(g, asButton){
     olcu = [pr.km ? fmtKm(pr.km) : null];
     const acilis = fmtTRDate(pr.acilis) || pr.acilis.replace(/^-$/, '');
     const parts = [pr.kurum !== 'Kurum belirtilmemiş' ? esc(pr.kurum) : null,
-                   acilis ? `Tahmini açılış ${esc(acilis)}` : null].filter(Boolean);
+                   acilis ? `Açılış hedefi ${esc(acilis)}` : null].filter(Boolean);
     if(parts.length) alt = `<div class="tip-prog">${parts.join(sep)}</div>`;
   }
   const meta = [tag, ...olcu.filter(Boolean).map(esc)].join(sep);

@@ -70,7 +70,7 @@ function buildMeta(id, rec, origin, dataBase){
   if(['2','3','4'].includes(durum) && pct !== null){
     title = `${name} · %${pct} fiziki ilerleme`;
     desc  = [`${label}.`, `Fiziki ilerleme %${pct}${rec.ym ? ` (${ymLong(rec.ym)} itibarıyla)` : ''}.`,
-             rec.acilis ? `Tahmini açılış: ${rec.acilis}.` : ''].filter(Boolean).join(' ');
+             rec.acilis ? `Açılış hedefi: ${rec.acilis}.` : ''].filter(Boolean).join(' ');
   } else if(durum === '1'){
     title = name; desc = rec.acilis ? `${rec.acilis} tarihinde hizmete açıldı.` : 'İşletmede.';
   } else if(durum === '0'){
@@ -78,7 +78,7 @@ function buildMeta(id, rec, origin, dataBase){
   } else {
     title = name;
     desc  = `Proje aşamasında${label ? ` (${label.toLocaleLowerCase('tr-TR')})` : ''}.`
-          + (rec.acilis ? ` Tahmini açılış: ${rec.acilis}.` : '');
+          + (rec.acilis ? ` Açılış hedefi: ${rec.acilis}.` : '');
   }
   return {
     title: `${title} | metrometre`,

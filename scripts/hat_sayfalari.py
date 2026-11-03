@@ -738,8 +738,8 @@ def hero_side(p, durum_kod, durum, hedef, latest, months, runs):
     if durum_kod in YAPIM and m:
         y, mo = int(m[1]), int(m[2])
         prev = runs[-2]['val'] if len(runs) > 1 else None
-        # Alt satır yok: önceki tahminler "Tahmini açılış tarihinin seyri" bölümünde
-        return box('month' + (' moved' if prev else ''), 'Tahmini açılış', TR_MONTHS[mo - 1], str(y), '')
+        # Alt satır yok: önceki tahminler "Açılış hedefinin seyri" bölümünde
+        return box('month' + (' moved' if prev else ''), 'Açılış hedefi', TR_MONTHS[mo - 1], str(y), '')
     # C
     if durum_kod in YAPIM:
         vals = [x for x in months if x['pct'] is not None]
@@ -956,12 +956,11 @@ def build_page(oid, hat, durak, overlay, cards, updated):
         dlt = vals[-1]['pct'] - vals[0]['pct']
         metrics.append((('+' if dlt > 0 else '') + fmt_pct(dlt) + ' puan', f'Son {n} ayda', f'ayda ~{fmt_pct(dlt / n)} puan'))
     elif acilis:
-        metrics.append((ym_long(latest['acilis'][:7]) if hedef else acilis, 'Tahmini açılış',
-                        f"hedef {date_long(hedef[0]).rsplit(' ', 1)[0]}" if hedef else ''))
+        metrics.append((date_long(hedef[0]) if hedef else acilis, 'Açılış hedefi', ''))
     elif durum_kod in YAPIM:
-        metrics.append(('Açıklanmadı', 'Tahmini açılış', ''))
+        metrics.append(('Açıklanmadı', 'Açılış hedefi', ''))
     if asama == 'isletme' and acilis_tarihi:
-        metrics = [m for m in metrics if m[1] != 'Tahmini açılış']
+        metrics = [m for m in metrics if m[1] != 'Açılış hedefi']
         metrics.insert(1 if pct is not None else 0, (date_long(acilis_tarihi), 'Açılış', ''))
     metrics.append((f"{fmt_km(p['MESAFE'])} km", 'Uzunluk', tur))
     if stations: metrics.append((str(len(stations)), 'İstasyon', f"{len({id(x[0]) for x in akt_now})} aktarma istasyonu" if akt_now else ''))
@@ -979,7 +978,7 @@ def build_page(oid, hat, durak, overlay, cards, updated):
             cls = ' moved' if i > 0 else ''
             items.append(f'<li class="sy-row{cls}"><span class="sy-when">{esc(donem)}</span>'
                          f'<span class="sy-val">{esc(acilis_label(r["val"]))}</span></li>')
-        seyir_html = (f'<section id="s-sy" aria-labelledby="h-sy"><h2 class="sec-lbl" id="h-sy">Tahmini açılış tarihinin seyri</h2>'
+        seyir_html = (f'<section id="s-sy" aria-labelledby="h-sy"><h2 class="sec-lbl" id="h-sy">Açılış hedefinin seyri</h2>'
                       f'<div class="panel pad"><ol class="seyir">{"".join(items)}</ol></div></section>')
     # Seyrin yazılı özeti (seyir) yalnızca SSS ve JSON-LD'de kalır; panelde listeyi tekrar etmez.
 
@@ -1011,7 +1010,7 @@ def build_page(oid, hat, durak, overlay, cards, updated):
                      else '<span class="chip muted">ilerleme verisi bekleniyor</span>')
         a = acilis_by_ym.get(m['ym'])
         if a and a[1]:
-            chips.append(f'<span class="chip warn">Tahmini açılış {esc(acilis_label(a[0]))} '
+            chips.append(f'<span class="chip warn">Açılış hedefi {esc(acilis_label(a[0]))} '
                          f'<s>{esc(acilis_label(a[1]))}</s></span>')
         baslik = f'<h3><time datetime="{m["ym"]}">{esc(ym_long(m["ym"]))}</time></h3>'
         if not ilk and a and a[1]:
@@ -1571,7 +1570,7 @@ def build_hatlar(hat, cards, manifest, overlay):
                 ad = tire(re.sub(r" (Metro|Tramvay) Hattı$", "", q['AD']))
                 if asama == 'yapim':
                     alt = ' · '.join(x for x in [f"%{fmt_pct(c['pct'])}" if c.get('pct') is not None else '',
-                                                 f"Tahmini açılış: {c['acilis']}" if c.get('acilis') else ''] if x)
+                                                 f"Açılış hedefi: {c['acilis']}" if c.get('acilis') else ''] if x)
                 elif asama == 'isletme':
                     alt = f"Açılış: {c['acilis']}" if c.get('acilis') else 'İşletmede'
                 else:

@@ -341,7 +341,7 @@ body{{width:{W}px;height:{H}px;background:#fff;font-family:Inter,sans-serif;posi
   </div>
   <div class="prog"><i></i></div>
   <div class="foot">
-    <div class="ac">Tahmini açılış<b>{esc(acilis)}</b></div>
+    <div class="ac">Açılış hedefi<b>{esc(acilis)}</b></div>
     <div class="brand">{f'<img src="{logo_uri}">' if logo_uri else '<b>metrometre</b>'}<span>metrometre.com</span></div>
   </div>
 </div>
