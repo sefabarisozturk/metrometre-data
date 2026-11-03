@@ -876,8 +876,14 @@ button.tip-row:active { background: var(--surface-2); }
   text-transform: uppercase; letter-spacing: .05em; margin-bottom: 3px; line-height: 1;
 }
 #detail-acilis-val { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.2; }
-/* Resmî açılış günü: tarihin altında kalan gün (sade, ikincil) */
-.acilis-gun { display: block; margin-top: 3px; font-size: 11px; font-weight: 500; color: var(--text-dim); }
+/* Resmî açılış günü: tarihin altında vurgulu geri sayım rozeti */
+.acilis-gun {
+  display: flex; width: fit-content; align-items: baseline; gap: 4px; margin-top: 6px;
+  padding: 3px 9px 3px 8px; border-radius: 999px; background: var(--accent); color: #fff;
+  font-size: 11px; font-weight: 600; line-height: 1.2; white-space: nowrap;
+}
+.acilis-gun b { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; }
+.acilis-gun.gecti { background: transparent; color: var(--text-dim); border: 1px solid var(--border-2); padding: 2px 8px; }
 
 /* ──── DETAY FİZİKİ İLERLEME (donut) ──── */
 #detail-donut-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
@@ -2212,7 +2218,13 @@ function resmiAcilis(p){
   return { iso, gun };
 }
 function resmiGunMetni(r){
-  return r.gun > 0 ? `${r.gun} gün kaldı` : r.gun === 0 ? 'Bugün' : 'Duyurulan tarih geçti';
+  return r.gun > 0 ? `${r.gun} gün kaldı` : r.gun === 0 ? 'Bugün açılıyor' : 'Duyurulan tarih geçti';
+}
+// Kart ve detay panelindeki geri sayım rozeti (vurgulu); tarih geçtiyse sönük
+function resmiGunRozet(r){
+  if(r.gun > 0)   return `<span class="acilis-gun"><b>${r.gun}</b> gün kaldı</span>`;
+  if(r.gun === 0) return `<span class="acilis-gun"><b>Bugün</b> açılıyor</span>`;
+  return `<span class="acilis-gun gecti">Duyurulan tarih geçti</span>`;
 }
 
 // ──── Genel yardımcılar ────
@@ -3060,7 +3072,7 @@ function openDetailPopup(p){
     const dateStr = fmtTRDate(p.PR_ACILIS) || p.PR_ACILIS;
     const resmi   = TAB_FILTERS.yapim.includes(durum) ? resmiAcilis(p) : null;
     lblEl.textContent = resmi ? 'Açılış Hedefi' : 'Tahmini Açılış';
-    valEl.innerHTML = esc(dateStr || '—') + (resmi ? `<span class="acilis-gun">${esc(resmiGunMetni(resmi))}</span>` : '');
+    valEl.innerHTML = esc(dateStr || '—') + (resmi ? resmiGunRozet(resmi) : '');
     bottomEl.hidden = false;
   } else {
     bottomEl.hidden = true;
@@ -4219,7 +4231,7 @@ function renderCards(){
       const dateStr = fmtTRDate(p.PR_ACILIS);
       const resmi   = resmiAcilis(p);
       const dateVal = esc(dateStr || p.PR_ACILIS || '—')
-                    + (resmi ? `<span class="acilis-gun">${esc(resmiGunMetni(resmi))}</span>` : '');
+                    + (resmi ? resmiGunRozet(resmi) : '');
       const progCol = (pct !== null) ? `
         <div class="card-prog-col">
           <div class="card-field-lbl">Fiziki İlerleme</div>
@@ -4935,7 +4947,7 @@ function hatTipRowHtml(g, asButton){
     if(pct != null && isFinite(pct)) parts.push(`<span class="tip-bar"><i style="width:${Math.max(0, Math.min(100, pct))}%;background:${renk}"></i></span><span class="tip-pct">%${pct}</span>`);
     const resmi = resmiAcilis(p);
     if(acilis) parts.push(`<span>${resmi ? 'Açılış hedefi' : 'Tahmini açılış'} <b style="color:var(--text);font-weight:600">${esc(acilis)}</b>`
-                          + (resmi ? ` · ${esc(resmiGunMetni(resmi).replace(' kaldı', ''))}` : '') + `</span>`);
+                          + (resmi ? ` · <b style="color:${resmi.gun >= 0 ? 'var(--accent)' : 'var(--text-dim)'};font-weight:700">${esc(resmiGunMetni(resmi).replace(' kaldı', ''))}</b>` : '') + `</span>`);
     if(parts.length) alt = `<div class="tip-prog">${parts.join(sep)}</div>`;
   } else {
     const pr = g.pr;
@@ -5489,8 +5501,9 @@ function applySheetOverlay(text){
     if(!rec){ rec = { _ord: {} }; byKey.set(key, rec); }
     if(pct    != null && (rec._ord.pct    == null || order >= rec._ord.pct))   { rec.PR_ILERLEME = pct;    rec._ord.pct    = order; }
     if(detay  !== ''  && (rec._ord.detay  == null || order >= rec._ord.detay)) { rec.PR_DETAY    = detay;  rec._ord.detay  = order; }
-    if(acilis !== ''  && (rec._ord.acilis == null || order >= rec._ord.acilis)){ rec.PR_ACILIS   = acilis; rec._ord.acilis = order; }
-    if(tur    !== ''  && (rec._ord.tur    == null || order >= rec._ord.tur))   { rec.PR_ACILIS_TURU = tur; rec._ord.tur = order; }
+    // Açılış türü, tarihin yazıldığı satıra bağlıdır: boş hücre "Tahmini" sayılır ve
+    // önceki aylardaki "Resmi" sonraki tarihe taşınmaz.
+    if(acilis !== ''  && (rec._ord.acilis == null || order >= rec._ord.acilis)){ rec.PR_ACILIS = acilis; rec.PR_ACILIS_TURU = tur; rec._ord.acilis = order; }
   }
 
   // Feature'lara uygula (yalnızca öznitelik; geometri korunur)

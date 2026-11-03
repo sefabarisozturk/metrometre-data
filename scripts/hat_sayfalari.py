@@ -348,11 +348,12 @@ def series_for(overlay, oid):
     # Alan bazlı birikim: her alan için en son dolu değer
     latest = {}
     for m in months:
-        for k in ('src', 'durum', 'not', 'tur'):
+        for k in ('src', 'durum', 'not'):
             if m[k] and not m[k].startswith('('):
                 latest[k] = m[k]
         if m['acilis'] and not m['acilis'].startswith('('):
             latest['acilis'] = m['acilis'] if known(m['acilis']) else ''
+            latest['tur'] = m['tur'] or ''    # tür, tarihin yazıldığı satıra bağlı (boş = Tahmini)
         if m['pct'] is not None:
             latest['pct'], latest['pct_ym'], latest['pct_src'] = m['pct'], m['ym'], m['src']
     if months and months[-1]['tur'] is None:
