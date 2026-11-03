@@ -876,6 +876,8 @@ button.tip-row:active { background: var(--surface-2); }
   text-transform: uppercase; letter-spacing: .05em; margin-bottom: 3px; line-height: 1;
 }
 #detail-acilis-val { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.2; }
+/* Resmî açılış günü: tarihin altında kalan gün (sade, ikincil) */
+.acilis-gun { display: block; margin-top: 3px; font-size: 11px; font-weight: 500; color: var(--text-dim); }
 
 /* ──── DETAY FİZİKİ İLERLEME (donut) ──── */
 #detail-donut-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
@@ -2194,6 +2196,25 @@ function fmtTRDate(raw){
   return s;
 }
 
+// ──── Resmî açılış günü (geri sayım) ────
+// Yalnızca tablodaki AcilisTuru = "Resmi" ve TahminiAcilis gün düzeyinde
+// (2026-12-19 ya da 19.12.2026) ise döner: { iso, gun } — gun: İstanbul saatine
+// göre bugünden kalan gün (0 = bugün, eksi = duyurulan tarih geçti).
+function resmiAcilis(p){
+  if(!p || trFold(p.PR_ACILIS_TURU || '') !== 'resmi') return null;
+  const s = String(p.PR_ACILIS || '').trim();
+  let m, iso = null;
+  if((m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/)))      iso = `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+  else if((m = s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/))) iso = `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+  if(!iso) return null;
+  const bugun = new Intl.DateTimeFormat('en-CA', { timeZone:'Europe/Istanbul' }).format(new Date());  // YYYY-MM-DD
+  const gun = Math.round((Date.parse(iso + 'T00:00:00Z') - Date.parse(bugun + 'T00:00:00Z')) / 864e5);
+  return { iso, gun };
+}
+function resmiGunMetni(r){
+  return r.gun > 0 ? `${r.gun} gün kaldı` : r.gun === 0 ? 'Bugün' : 'Duyurulan tarih geçti';
+}
+
 // ──── Genel yardımcılar ────
 function normHex(h){
   if(!h) return null;
@@ -3037,8 +3058,9 @@ function openDetailPopup(p){
     bottomEl.hidden = false;
   } else if(TAB_FILTERS.yapim.includes(durum) || TAB_FILTERS.proje.includes(durum)){
     const dateStr = fmtTRDate(p.PR_ACILIS) || p.PR_ACILIS;
-    lblEl.textContent = 'Tahmini Açılış';
-    valEl.textContent = dateStr || '—';
+    const resmi   = TAB_FILTERS.yapim.includes(durum) ? resmiAcilis(p) : null;
+    lblEl.textContent = resmi ? 'Açılış Hedefi' : 'Tahmini Açılış';
+    valEl.innerHTML = esc(dateStr || '—') + (resmi ? `<span class="acilis-gun">${esc(resmiGunMetni(resmi))}</span>` : '');
     bottomEl.hidden = false;
   } else {
     bottomEl.hidden = true;
@@ -4195,7 +4217,9 @@ function renderCards(){
     if(activeTab === 'yapim'){
       // Solda ilerleme (varsa), sağda tahmini açılış — tek iki sütunlu satır
       const dateStr = fmtTRDate(p.PR_ACILIS);
-      const dateVal = esc(dateStr || p.PR_ACILIS || '—');
+      const resmi   = resmiAcilis(p);
+      const dateVal = esc(dateStr || p.PR_ACILIS || '—')
+                    + (resmi ? `<span class="acilis-gun">${esc(resmiGunMetni(resmi))}</span>` : '');
       const progCol = (pct !== null) ? `
         <div class="card-prog-col">
           <div class="card-field-lbl">Fiziki İlerleme</div>
@@ -4208,7 +4232,7 @@ function renderCards(){
         </div>` : '';
       const dateCol = `
         <div class="card-date-col">
-          <div class="card-field-lbl">Tahmini Açılış</div>
+          <div class="card-field-lbl">${resmi ? 'Açılış Hedefi' : 'Tahmini Açılış'}</div>
           <div class="card-field-val">${dateVal}</div>
         </div>`;
       bottomHtml = `<div class="card-bottom card-bottom-split">
@@ -4909,7 +4933,9 @@ function hatTipRowHtml(g, asButton){
     const acilis = fmtTRDate(p.PR_ACILIS) || (String(p.PR_ACILIS || '').trim().replace(/^-$/, ''));
     const parts = [];
     if(pct != null && isFinite(pct)) parts.push(`<span class="tip-bar"><i style="width:${Math.max(0, Math.min(100, pct))}%;background:${renk}"></i></span><span class="tip-pct">%${pct}</span>`);
-    if(acilis) parts.push(`<span>Tahmini açılış <b style="color:var(--text);font-weight:600">${esc(acilis)}</b></span>`);
+    const resmi = resmiAcilis(p);
+    if(acilis) parts.push(`<span>${resmi ? 'Açılış hedefi' : 'Tahmini açılış'} <b style="color:var(--text);font-weight:600">${esc(acilis)}</b>`
+                          + (resmi ? ` · ${esc(resmiGunMetni(resmi).replace(' kaldı', ''))}` : '') + `</span>`);
     if(parts.length) alt = `<div class="tip-prog">${parts.join(sep)}</div>`;
   } else {
     const pr = g.pr;
@@ -5395,6 +5421,7 @@ const SHEET_COLS = {
   pct:    ['ilerleme','fizikiilerleme','yuzde','oran','pct'],
   detay:  ['aciklama','detay','aciklamametni','not','metin','pr_detay'],
   acilis: ['acilis','tahminiacilis','acilistarihi','pr_acilis'],
+  tur:    ['acilisturu','acilistur'],
   period: ['yilay','yil_ay','donem','ay'],
 };
 
@@ -5421,6 +5448,7 @@ function applySheetOverlay(text){
   const iPct    = sheetFindCol(headNorm, SHEET_COLS.pct);
   const iDetay  = sheetFindCol(headNorm, SHEET_COLS.detay);
   const iAcilis = sheetFindCol(headNorm, SHEET_COLS.acilis);
+  const iTur    = sheetFindCol(headNorm, SHEET_COLS.tur);
   const iPeriod = sheetFindCol(headNorm, SHEET_COLS.period);
   // Geniş format: başlığı ay olan sütunlar ("Şubat 2026" / "2026-02" …)
   const monthCols = rows[0].map((h,i) => ({ i, ym: headerToYM(h) })).filter(o => o.ym);
@@ -5455,12 +5483,14 @@ function applySheetOverlay(text){
 
     const detay  = iDetay  >= 0 ? (c[iDetay] ||'').trim() : '';
     const acilis = iAcilis >= 0 ? (c[iAcilis]||'').trim() : '';
+    const tur    = iTur    >= 0 ? (c[iTur]   ||'').trim() : '';
 
     let rec = byKey.get(key);
     if(!rec){ rec = { _ord: {} }; byKey.set(key, rec); }
     if(pct    != null && (rec._ord.pct    == null || order >= rec._ord.pct))   { rec.PR_ILERLEME = pct;    rec._ord.pct    = order; }
     if(detay  !== ''  && (rec._ord.detay  == null || order >= rec._ord.detay)) { rec.PR_DETAY    = detay;  rec._ord.detay  = order; }
     if(acilis !== ''  && (rec._ord.acilis == null || order >= rec._ord.acilis)){ rec.PR_ACILIS   = acilis; rec._ord.acilis = order; }
+    if(tur    !== ''  && (rec._ord.tur    == null || order >= rec._ord.tur))   { rec.PR_ACILIS_TURU = tur; rec._ord.tur = order; }
   }
 
   // Feature'lara uygula (yalnızca öznitelik; geometri korunur)

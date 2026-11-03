@@ -44,8 +44,9 @@ DURUM_LABEL = {
 YAPIM = {'2', '3', '4'}
 TUR_LABEL = {'1': 'Banliyö', '2': 'Metro', '3': 'Tramvay', '4': 'Füniküler', '5': 'Teleferik'}
 
-# Kesin hedef tarih ayrı bir sütunda tutulmaz: TahminiAcilis gün düzeyinde girildiğinde
-# (2026-12-19 ya da Sheets'in yayımladığı 19.12.2026) sayfa geri sayım gösterir.
+# Geri sayım yalnızca kurumca açıklanmış kesin gün için gösterilir: AcilisTuru = "Resmi"
+# ve TahminiAcilis gün düzeyinde (2026-12-19 ya da Sheets'in yayımladığı 19.12.2026).
+# AcilisTuru sütunu hiç yoksa (eski overlay) gün düzeyindeki tarih resmî sayılır.
 
 # Halk arasında kullanılan adlar (başlık, açıklama ve SSS'de geçer; aramada eşleşme için)
 TAKMA_AD = {'61': 'Gebze–Darıca Metrosu', '259': 'Körfezray'}
@@ -341,18 +342,21 @@ def series_for(overlay, oid):
             'src': (r.get('Kaynak') or '').strip(),
             'durum': (r.get('Durum') or '').strip(),
             'acilis': norm_tarih(r.get('TahminiAcilis')),
+            'tur': (r.get('AcilisTuru') or '').strip() if 'AcilisTuru' in r else None,
             'not': (r.get('Aciklama') or '').strip(),
         })
     # Alan bazlı birikim: her alan için en son dolu değer
     latest = {}
     for m in months:
-        for k in ('src', 'durum', 'not'):
+        for k in ('src', 'durum', 'not', 'tur'):
             if m[k] and not m[k].startswith('('):
                 latest[k] = m[k]
         if m['acilis'] and not m['acilis'].startswith('('):
             latest['acilis'] = m['acilis'] if known(m['acilis']) else ''
         if m['pct'] is not None:
             latest['pct'], latest['pct_ym'], latest['pct_src'] = m['pct'], m['ym'], m['src']
+    if months and months[-1]['tur'] is None:
+        latest['tur_yok'] = True
     return months, latest
 
 def acilis_runs(months):
@@ -714,13 +718,22 @@ def hero_side(p, durum_kod, durum, hedef, latest, months, runs):
     # A
     if hedef:
         days = (dt.date.fromisoformat(hedef[0]) - today).days
+        tarih = f"<strong>{esc(date_long(hedef[0]))}</strong>"
         if days > 0:
             return box('countdown', 'Açılış hedefine', f'<span id="cd-days"><!--v-->{days}<!--/v--></span>', 'gün',
-                       f"Açıklanan hedef tarih <strong>{esc(date_long(hedef[0]))}</strong>",
+                       f"Açıklanan hedef tarih {tarih}",
                        f' data-hedef="{hedef[0]}"')
+        if durum_kod in YAPIM:
+            if days == 0:
+                return box('countdown', 'Açılış hedefi', 'Bugün', '', f"Açıklanan hedef tarih {tarih}",
+                           f' data-hedef="{hedef[0]}"')
+            # Duyurulan gün geçti, hat açılmadı: sessizce kaybolmak yerine bunu söyler
+            return box('pace flat', 'Açıklanan tarih geçti', f'<!--v-->{-days}<!--/v-->', 'gün',
+                       f"Açıklanan hedef tarih {tarih} · hat henüz açılmadı")
     acilis = latest.get('acilis', '')
     # B
-    m = re.match(r'^(\d{4})-(\d{2})$', acilis or '')
+    # Resmî olmayan gün düzeyindeki tarih de ay düzeyinde tahmin olarak gösterilir
+    m = re.match(r'^(\d{4})-(\d{2})(?:-\d{2})?$', acilis or '')
     if durum_kod in YAPIM and m:
         y, mo = int(m[1]), int(m[2])
         prev = runs[-2]['val'] if len(runs) > 1 else None
@@ -797,8 +810,11 @@ def build_page(oid, hat, durak, overlay, cards, updated):
         latest['acilis'] = norm_tarih(p['PR_ACILIS'])      # proje hatları: geojson'daki öngörü
     acilis = acilis_label(latest.get('acilis', ''))
     acilis_tarihi = str(p.get('ACILIS') or '')[:10] if re.match(r'^\d{4}-\d{2}-\d{2}', str(p.get('ACILIS') or '')) else ''
-    hedef = ((latest['acilis'], kurum) if re.match(r'^\d{4}-\d{2}-\d{2}$', latest.get('acilis', ''))
+    resmi = latest.get('tur_yok') or tr_lower(latest.get('tur', '')).replace('î', 'i') == 'resmi'
+    hedef = ((latest['acilis'], kurum) if resmi and re.match(r'^\d{4}-\d{2}-\d{2}$', latest.get('acilis', ''))
              else None)
+    if not hedef and re.match(r'^\d{4}-\d{2}-\d{2}$', latest.get('acilis', '')):
+        acilis = ym_long(latest['acilis'][:7])   # resmî olmayan gün → ay düzeyinde tahmin
     data_ym = months[-1]['ym'] if months else ''
     stroke = darken_for_contrast(color)
     card = cards.get(oid, {}).get('card')
@@ -933,7 +949,7 @@ def build_page(oid, hat, durak, overlay, cards, updated):
     if pct is not None:
         metrics.append((f"%{fmt_pct(pct)}", 'Fiziki ilerleme', f"{ym_long(pct_ym)} · {latest.get('pct_src', '')}"))
     vals = [x for x in months if x['pct'] is not None][-7:]
-    side_is_month = acilis and not hedef and durum_kod in YAPIM and re.match(r'^\d{4}-\d{2}$', latest.get('acilis', ''))
+    side_is_month = acilis and not hedef and durum_kod in YAPIM and re.match(r'^\d{4}-\d{2}(?:-\d{2})?$', latest.get('acilis', ''))
     if side_is_month and len(vals) >= 2:
         n = months_between(dt.date.fromisoformat(vals[0]['ym'] + '-01'), dt.date.fromisoformat(vals[-1]['ym'] + '-01'))
         dlt = vals[-1]['pct'] - vals[0]['pct']
@@ -1416,7 +1432,11 @@ footer {{ max-width:1100px; margin:0 auto; padding:4px 16px 32px; font-size:11px
   if(cd){{
     var t = new Date(cd.dataset.hedef + 'T00:00:00+03:00'), now = new Date();
     var d = Math.ceil((t - now) / 864e5);
-    if(d > 0) document.getElementById('cd-days').textContent = d; else cd.remove();
+    var num = cd.querySelector('.cd-num'), head = cd.querySelector('.cd-head');
+    if(d > 0){{ var el = document.getElementById('cd-days'); if(el) el.textContent = d; }}
+    else if(d === 0){{ head.textContent = 'Açılış hedefi'; num.innerHTML = '<b>Bugün</b><span></span>'; }}
+    else {{ cd.className = 'side pace flat'; head.textContent = 'Açıklanan tarih geçti';
+           num.innerHTML = '<b>' + (-d) + '</b><span>gün</span>'; }}
   }}
   // Bağlantıyı kopyala
   var cp = document.getElementById('copy');
