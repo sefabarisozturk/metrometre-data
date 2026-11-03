@@ -876,14 +876,14 @@ button.tip-row:active { background: var(--surface-2); }
   text-transform: uppercase; letter-spacing: .05em; margin-bottom: 3px; line-height: 1;
 }
 #detail-acilis-val { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.2; }
-/* Resmî açılış günü: tarihin altında vurgulu geri sayım rozeti */
+/* Resmî açılış günü: tarihin altında geri sayım — buton gibi görünmesin diye dolgusuz,
+   hat sayfasındaki geri sayımla aynı dil: büyük vurgu rengi sayı + gri birim */
 .acilis-gun {
-  display: flex; width: fit-content; align-items: baseline; gap: 4px; margin-top: 6px;
-  padding: 3px 9px 3px 8px; border-radius: 999px; background: var(--accent); color: #fff;
-  font-size: 11px; font-weight: 600; line-height: 1.2; white-space: nowrap;
+  display: flex; align-items: baseline; gap: 4px; margin-top: 4px;
+  font-size: 11px; font-weight: 600; color: var(--text-muted); line-height: 1; white-space: nowrap;
 }
-.acilis-gun b { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; }
-.acilis-gun.gecti { background: transparent; color: var(--text-dim); border: 1px solid var(--border-2); padding: 2px 8px; }
+.acilis-gun b { font-size: 24px; font-weight: 700; letter-spacing: -0.04em; color: var(--accent); }
+.acilis-gun.gecti { color: var(--text-dim); font-weight: 500; margin-top: 3px; }
 
 /* ──── DETAY FİZİKİ İLERLEME (donut) ──── */
 #detail-donut-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
