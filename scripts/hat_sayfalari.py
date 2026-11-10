@@ -315,14 +315,14 @@ def simplify(pts, tol):
 
 # ───────────────────────── veri ─────────────────────────
 # ───────────────────────── 15 dk yürüme erişimi ─────────────────────────
-# erisim.json, ADNKS yapı verisiyle yerelde çalıştırılan erişim betiğinin çıktısıdır (yalnız
-# hat bazında toplamlar; bina verisi repoya girmez). Dosya yoksa sayfalar eskisi gibi üretilir.
+# erisim.json, kamuya açık verilerle (TÜİK mahalle nüfusu + OpenStreetMap) yerelde çalıştırılan erişim
+# betiklerinin çıktısıdır; yalnız hat bazında toplamlar içerir. Dosya yoksa sayfalar eskisi gibi üretilir.
 ERISIM_DOSYA = Path(__file__).resolve().parent.parent / 'erisim.json'
 try:
     _E = json.loads(ERISIM_DOSYA.read_text(encoding='utf-8'))
-    ERISIM, ERISIM_YIL = _E.get('hatlar', {}), _E.get('veri_yili')
+    ERISIM, ERISIM_KAYNAK = _E.get('hatlar', {}), _E.get('kaynak_kisa', '')
 except Exception:
-    ERISIM, ERISIM_YIL = {}, None
+    ERISIM, ERISIM_KAYNAK = {}, ''
 
 def kac_kisi(v):
     """Nüfusu okunur yuvarlar → (sayı, birim): 183.095 → ('185', 'bin'), 2.850 → ('2.900', '')."""
@@ -365,7 +365,6 @@ def erisim_bolumu(e, color):
         return f'<span class="er-num"><b>{esc(n)}</b><span>{esc((b + " kişi").strip())}</span></span>'
     pay = max(0.0, min(1.0, e['yeni'] / e['top']))
     ile = (' · ' + ', '.join(kod_goster(q['KOD']) for q in e['ile']) + ' ile birlikte') if e['ile'] else ''
-    kaynak = 'ADNKS yapı verisi' + (f" ({ERISIM_YIL})" if ERISIM_YIL else '')
     return (f'<section id="s-er" aria-labelledby="h-er">'
             f'<h2 class="sec-lbl" id="h-er">Yürüme erişimi <span class="sec-note">· 15 dakika{esc(ile)}</span></h2>'
             f'<div class="panel er" style="--er:{esc(color)}">'
@@ -377,7 +376,7 @@ def erisim_bolumu(e, color):
             f'</div>'
             f'<div class="er-bar" role="img" aria-label="Toplam erişecek nüfus içinde ilk kez erişecekler">'
             f'<i style="width:{pay * 100:.1f}%"></i></div>'
-            f'<div class="er-foot">{esc(kaynak)} · OpenStreetMap yaya ağı · <a href="/hakkinda/#erisim">Nasıl hesaplandı?</a></div>'
+            f'<div class="er-foot">{esc(ERISIM_KAYNAK)} · <a href="/hakkinda/#erisim">Nasıl hesaplandı?</a></div>'
             f'</div></section>')
 
 

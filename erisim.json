@@ -1,57 +1,58 @@
 {
- "aciklama": "etap_erisim.py üretir. kapsayici: istasyonlara 15 dk yürüme mesafesindeki nüfus; yeni: bunlardan bugün işletmedeki hiçbir istasyona 15 dk içinde ulaşamayanlar.",
- "kaynak": "ADNKS yapı bazlı nüfus",
- "veri_yili": null,
+ "aciklama": "Yerel erişim betiklerinin çıktısı (bina verisi içermez). kapsayici: istasyonlara 15 dk yürüme mesafesinde yaşayan nüfus; yeni: bunlardan bugün işletmedeki hiçbir istasyona 15 dk içinde ulaşamayanlar.",
+ "kaynak": "TÜİK ADNKS 2025 mahalle nüfusu, OpenStreetMap mahalle sınırları içindeki konut binalarına taban alanıyla dağıtılmıştır; yürüme ağı OpenStreetMap",
+ "kaynak_kisa": "TÜİK ADNKS 2025 mahalle nüfusu · © OpenStreetMap katkıcıları",
+ "veri_yili": 2025,
  "esik_dk": 15,
  "hatlar": {
-  "1": {
-   "kapsayici": 364099,
-   "yeni": 169785,
-   "birlikte": []
-  },
-  "3": {
-   "kapsayici": 69681,
-   "yeni": 2850,
-   "birlikte": []
-  },
   "6": {
-   "kapsayici": 453041,
-   "yeni": 196411,
+   "kapsayici": 454621,
+   "yeni": 190835,
    "birlikte": []
   },
-  "38": {
-   "kapsayici": 126112,
-   "yeni": 294,
+  "66": {
+   "kapsayici": 286198,
+   "yeni": 182121,
+   "birlikte": []
+  },
+  "1": {
+   "kapsayici": 325689,
+   "yeni": 140516,
+   "birlikte": []
+  },
+  "64": {
+   "kapsayici": 123060,
+   "yeni": 59039,
+   "birlikte": []
+  },
+  "69": {
+   "kapsayici": 182935,
+   "yeni": 39181,
    "birlikte": []
   },
   "49": {
-   "kapsayici": 155215,
-   "yeni": 29887,
+   "kapsayici": 158665,
+   "yeni": 30607,
    "birlikte": [
     "70"
    ]
   },
-  "64": {
-   "kapsayici": 115096,
-   "yeni": 53348,
-   "birlikte": []
-  },
-  "66": {
-   "kapsayici": 286471,
-   "yeni": 183095,
-   "birlikte": []
-  },
-  "69": {
-   "kapsayici": 202695,
-   "yeni": 32386,
-   "birlikte": []
-  },
   "70": {
-   "kapsayici": 155215,
-   "yeni": 29887,
+   "kapsayici": 158665,
+   "yeni": 30607,
    "birlikte": [
     "49"
    ]
+  },
+  "3": {
+   "kapsayici": 75579,
+   "yeni": 3660,
+   "birlikte": []
+  },
+  "38": {
+   "kapsayici": 132222,
+   "yeni": 1228,
+   "birlikte": []
   }
  }
 }
