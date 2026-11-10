@@ -1,32 +1,32 @@
 {
  "aciklama": "Yerel erişim betiklerinin çıktısı (bina verisi içermez). kapsayici: istasyonlara 15 dk yürüme mesafesinde yaşayan nüfus; yeni: bunlardan bugün işletmedeki hiçbir istasyona 15 dk içinde ulaşamayanlar.",
- "kaynak": "TÜİK ADNKS 2025 mahalle nüfusu, OpenStreetMap mahalle sınırları içindeki konut binalarına taban alanıyla dağıtılmıştır; yürüme ağı OpenStreetMap",
+ "kaynak": "TÜİK ADNKS 2025 mahalle nüfusu, OpenStreetMap mahalle sınırları (Kasım 2026) içindeki konut binalarına taban alanıyla dağıtılmıştır; yürüme ağı OpenStreetMap",
  "kaynak_kisa": "TÜİK ADNKS 2025 mahalle nüfusu · © OpenStreetMap katkıcıları",
  "veri_yili": 2025,
  "esik_dk": 15,
  "hatlar": {
   "6": {
-   "kapsayici": 454621,
-   "yeni": 190835,
+   "kapsayici": 448997,
+   "yeni": 190455,
    "birlikte": []
   },
   "66": {
-   "kapsayici": 286198,
-   "yeni": 182121,
+   "kapsayici": 275750,
+   "yeni": 171783,
    "birlikte": []
   },
   "1": {
-   "kapsayici": 325689,
-   "yeni": 140516,
+   "kapsayici": 325747,
+   "yeni": 140570,
    "birlikte": []
   },
   "64": {
-   "kapsayici": 123060,
+   "kapsayici": 123063,
    "yeni": 59039,
    "birlikte": []
   },
   "69": {
-   "kapsayici": 182935,
+   "kapsayici": 182928,
    "yeni": 39181,
    "birlikte": []
   },
@@ -45,13 +45,13 @@
    ]
   },
   "3": {
-   "kapsayici": 75579,
-   "yeni": 3660,
+   "kapsayici": 75085,
+   "yeni": 3509,
    "birlikte": []
   },
   "38": {
-   "kapsayici": 129717,
-   "yeni": 1219,
+   "kapsayici": 130184,
+   "yeni": 1253,
    "birlikte": []
   }
  }
