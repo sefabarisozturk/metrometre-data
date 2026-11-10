@@ -314,6 +314,73 @@ def simplify(pts, tol):
 
 
 # ───────────────────────── veri ─────────────────────────
+# ───────────────────────── 15 dk yürüme erişimi ─────────────────────────
+# erisim.json, ADNKS yapı verisiyle yerelde çalıştırılan erişim betiğinin çıktısıdır (yalnız
+# hat bazında toplamlar; bina verisi repoya girmez). Dosya yoksa sayfalar eskisi gibi üretilir.
+ERISIM_DOSYA = Path(__file__).resolve().parent.parent / 'erisim.json'
+try:
+    _E = json.loads(ERISIM_DOSYA.read_text(encoding='utf-8'))
+    ERISIM, ERISIM_YIL = _E.get('hatlar', {}), _E.get('veri_yili')
+except Exception:
+    ERISIM, ERISIM_YIL = {}, None
+
+def kac_kisi(v):
+    """Nüfusu okunur yuvarlar → (sayı, birim): 183.095 → ('185', 'bin'), 2.850 → ('2.900', '')."""
+    if v >= 100_000:
+        return f"{round(v / 5000) * 5}", 'bin'
+    if v >= 10_000:
+        return f"{round(v / 1000)}", 'bin'
+    return f"{round(v, -2):,.0f}".replace(',', '.'), ''
+
+def kac_kisi_metin(v):
+    n, b = kac_kisi(v)
+    return f"{n} {b}".strip()
+
+def erisim_verisi(oid, hat):
+    """Yapım etabının 15 dk erişim değerleri (yoksa None). 'ile': birlikte hesaplanan hat(lar)."""
+    e = ERISIM.get(oid)
+    if not e or not e.get('kapsayici'):
+        return None
+    ile = []
+    if e.get('birlikte'):
+        ile = [f['properties'] for f in hat if str(f['properties']['OBJECTID']) in e['birlikte']]
+    yeni, top = e['yeni'], e['kapsayici']
+    ile_ad = ', '.join(f"{kod_goster(q['KOD'])} {tire(re.sub(r' (Metro|Tramvay) Hattı$', '', q['AD']))}" for q in ile)
+    acilinca = f"Hat, {ile_ad} ile birlikte açıldığında" if ile else 'Hat açıldığında'
+    alan = 'iki hattın istasyonlarının' if ile else 'istasyonlarının'
+    if yeni >= 5000 and yeni / top >= 0.05:
+        sss = (f"{acilinca} yaklaşık {kac_kisi_metin(yeni)} kişi, ilk kez bir raylı sistem istasyonuna 15 dakika "
+               f"yürüme mesafesinde olacaktır. Hattın {alan} 15 dakikalık yürüme alanında toplam yaklaşık "
+               f"{kac_kisi_metin(top)} kişi yaşamaktadır.").replace('Hattın iki', 'İki')
+    else:
+        sss = (f"Hattın {alan} 15 dakikalık yürüme alanında yaklaşık {kac_kisi_metin(top)} kişi yaşamaktadır; "
+               f"bu nüfusun neredeyse tamamı bugün de başka bir istasyona 15 dakika mesafededir. Hattın katkısı "
+               f"yeni erişimden çok ağ bağlantısı tarafındadır.").replace('Hattın iki', 'İki')
+    return {'yeni': yeni, 'top': top, 'ile': ile, 'sss': sss}
+
+def erisim_bolumu(e, color):
+    """Hat sayfasındaki 'Yürüme erişimi' bölümü: iki sayı + oran çubuğu."""
+    def sayi(v):
+        n, b = kac_kisi(v)
+        return f'<span class="er-num"><b>{esc(n)}</b><span>{esc((b + " kişi").strip())}</span></span>'
+    pay = max(0.0, min(1.0, e['yeni'] / e['top']))
+    ile = (' · ' + ', '.join(kod_goster(q['KOD']) for q in e['ile']) + ' ile birlikte') if e['ile'] else ''
+    kaynak = 'ADNKS yapı verisi' + (f" ({ERISIM_YIL})" if ERISIM_YIL else '')
+    return (f'<section id="s-er" aria-labelledby="h-er">'
+            f'<h2 class="sec-lbl" id="h-er">Yürüme erişimi <span class="sec-note">· 15 dakika{esc(ile)}</span></h2>'
+            f'<div class="panel er" style="--er:{esc(color)}">'
+            f'<div class="er-stats">'
+            f'<div class="er-stat new">{sayi(e["yeni"])}<span class="er-lbl"><i></i>İlk kez erişecek</span>'
+            f'<span class="er-sub">Bugün hiçbir istasyona 15 dk yürüme mesafesinde değil</span></div>'
+            f'<div class="er-stat">{sayi(e["top"])}<span class="er-lbl">Toplam erişecek</span>'
+            f'<span class="er-sub">İstasyonlara 15 dk yürüme mesafesinde yaşayan</span></div>'
+            f'</div>'
+            f'<div class="er-bar" role="img" aria-label="Toplam erişecek nüfus içinde ilk kez erişecekler">'
+            f'<i style="width:{pay * 100:.1f}%"></i></div>'
+            f'<div class="er-foot">{esc(kaynak)} · OpenStreetMap yaya ağı · <a href="/hakkinda/#erisim">Nasıl hesaplandı?</a></div>'
+            f'</div></section>')
+
+
 def load(repo):
     hat = json.loads((repo / 'RAYLI_SISTEM_HAT_LN.geojson').read_text(encoding='utf-8'))['features']
     durak = json.loads((repo / 'RAYLI_SISTEM_DURAK_PT.geojson').read_text(encoding='utf-8'))['features']
@@ -896,6 +963,9 @@ def build_page(oid, hat, durak, overlay, cards, updated):
           "bağımsız paylaşımlar derlenerek hazırlanmaktadır.") if latest.get('pct_src') else
          "Proje bilgileri kurumların kamuoyuyla paylaştığı açıklamalara ve plan belgelerine dayanmaktadır."),
     ]
+    erisim = erisim_verisi(oid, hat) if asama == 'yapim' else None
+    if erisim:
+        faq.insert(3, (f"{kod_ref} açıldığında kaç kişi raylı sisteme yürüme mesafesinde olacak?", erisim['sss']))
     faq = [(q, a.strip()) for q, a in faq if a.strip()]
 
     # ── Diğer yapımı süren hatlar (iç bağlantı)
@@ -969,6 +1039,7 @@ def build_page(oid, hat, durak, overlay, cards, updated):
         f'{f"<div class=metric-sub>{esc(s)}</div>" if s else ""}</div>' for v, l, s in metrics)
 
     countdown = hero_side(p, durum_kod, durum, hedef, latest, months, runs)
+    erisim_html = erisim_bolumu(erisim, stroke) if erisim else ''
 
     seyir_html = ''
     if runs and not (len(runs) == 1 and runs[0]['start'] == runs[0]['end']):
@@ -1065,7 +1136,7 @@ def build_page(oid, hat, durak, overlay, cards, updated):
         icon_hero=ic(44), h1=esc(h1_txt),
         sub=esc(' · '.join(x for x in [takma, il if il != VARSAYILAN_IL else '', durum, f"Yürütücü: {kurum}" if kurum else ''] if x)),
         durum=esc(durum), kurum=esc(kurum), dek=esc(dek), countdown=countdown,
-        hero_cls=' has-cd' if countdown else '', metrics=metrics_html,
+        hero_cls=' has-cd' if countdown else '', metrics=metrics_html, erisim=erisim_html,
         harita_url=esc(harita_url),
         wa=esc('https://wa.me/?text=' + quote(f"{share_text} {url}")),
         xshare=esc(f"https://x.com/intent/post?text={quote(share_text)}&url={quote(url, safe='')}"),
@@ -1165,11 +1236,8 @@ main {{ max-width:1100px; margin:0 auto; padding:calc(var(--header-h) + 12px) 16
   display:grid; grid-template-columns:minmax(0,1fr) 340px; column-gap:18px; row-gap:18px; align-items:start; }}
 .crumbs  {{ grid-column:1 / -1; }}
 .hero    {{ grid-column:1; grid-row:2; }}
-#s-il    {{ grid-column:1; grid-row:3; }}
-#s-gz    {{ grid-column:2; grid-row:2 / span 5; }}
-#s-sy    {{ grid-column:1; grid-row:4; }}
-#s-gl    {{ grid-column:1; grid-row:5; }}
-#s-sss   {{ grid-column:1; grid-row:6; }}
+#s-gz    {{ grid-column:2; grid-row:2 / span 6; }}
+#s-il, #s-er, #s-sy, #s-gl, #s-sss {{ grid-column:1; }}   /* satır yok: sırayla yerleşir */
 #s-ot, .method {{ grid-column:1 / -1; }}
 
 /* ── Künye ── */
@@ -1209,6 +1277,19 @@ h1 {{ font-size:24px; font-weight:700; line-height:1.18; letter-spacing:-0.03em;
 .metric-val {{ font-size:16px; font-weight:700; line-height:1.15; }}
 .metric-lbl {{ font-size:9px; font-weight:600; color:var(--text-dim); letter-spacing:.04em; text-transform:uppercase; }}
 .metric-sub {{ font-size:10.5px; color:var(--text-dim); line-height:1.3; }}
+.er-stats {{ display:grid; grid-template-columns:1fr 1fr; }}
+.er-stat {{ padding:14px 18px 12px; display:flex; flex-direction:column; gap:4px; min-width:0; }}
+.er-stat + .er-stat {{ border-left:1px solid var(--border); }}
+.er-num {{ display:flex; align-items:baseline; gap:6px; }}
+.er-num b {{ font-size:30px; font-weight:700; line-height:1; letter-spacing:-0.04em; }}
+.er-num span {{ font-size:13px; font-weight:600; color:var(--text-muted); }}
+.er-lbl {{ display:flex; align-items:center; gap:6px; font-size:9px; font-weight:600; color:var(--text-dim); letter-spacing:.04em; text-transform:uppercase; }}
+.er-lbl i {{ width:8px; height:8px; border-radius:2px; background:var(--er); flex-shrink:0; }}
+.er-sub {{ font-size:11px; color:var(--text-dim); line-height:1.35; }}
+.er-bar {{ height:6px; margin:2px 18px 0; border-radius:3px; background:var(--border); overflow:hidden; }}
+.er-bar i {{ display:block; height:100%; min-width:2px; background:var(--er); border-radius:3px 0 0 3px; }}
+.er-foot {{ padding:10px 18px 11px; font-size:11px; color:var(--text-dim); }}
+.er-foot a {{ color:var(--text-muted); text-decoration:underline; text-underline-offset:2px; white-space:nowrap; }}
 
 /* ── Grafik ── */
 .chart-panel {{ padding:12px 16px 10px; }}
@@ -1332,7 +1413,7 @@ footer {{ max-width:1100px; margin:0 auto; padding:4px 16px 32px; font-size:11px
 /* ── Tablet: tek sütun; sıra künye → grafik → güzergâh → diğerleri ── */
 @media (max-width:1000px) {{
   main {{ grid-template-columns:minmax(0,1fr); max-width:760px; }}
-  .hero, #s-il, #s-gz, #s-sy, #s-gl, #s-sss {{ grid-column:1; grid-row:auto; }}
+  .hero, #s-il, #s-er, #s-gz, #s-sy, #s-gl, #s-sss {{ grid-column:1; grid-row:auto; }}
   .route {{ display:grid; grid-template-columns:minmax(0,300px) minmax(0,1fr); }}
   .route-map {{ border-bottom:0; border-right:1px solid var(--border); }}
   .route-foot {{ grid-column:1 / -1; }}
@@ -1342,6 +1423,11 @@ footer {{ max-width:1100px; margin:0 auto; padding:4px 16px 32px; font-size:11px
 @media (max-width:640px) {{
   main {{ row-gap:14px; padding-top:calc(var(--header-h) + 10px); }}
   .hero-main {{ padding:14px 16px 12px; gap:8px; }}
+  .er-stat {{ padding:12px 14px 10px; }}
+  .er-num b {{ font-size:24px; }}
+  .er-sub {{ display:none; }}
+  .er-bar {{ margin:0 14px; }}
+  .er-foot {{ padding:9px 14px 10px; }}
   h1 {{ font-size:20px; }}
   .title-row .line-icon {{ --s:36px !important; }}
   .dek {{ display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; font-size:13px; }}
@@ -1396,6 +1482,8 @@ footer {{ max-width:1100px; margin:0 auto; padding:4px 16px 32px; font-size:11px
 </article>
 
 {chart_section}
+
+{erisim}
 
 <section id="s-gz" aria-labelledby="h-gz">
   <h2 class="sec-lbl" id="h-gz">Güzergâh ve istasyonlar <span class="sec-note">· {st_note}</span></h2>
