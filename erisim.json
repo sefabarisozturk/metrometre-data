@@ -1,6 +1,6 @@
 {
  "aciklama": "Yerel erişim betiklerinin çıktısı (bina verisi içermez). kapsayici: istasyonlara 15 dk yürüme mesafesinde yaşayan nüfus; yeni: bunlardan bugün işletmedeki hiçbir istasyona 15 dk içinde ulaşamayanlar.",
- "kaynak": "TÜİK ADNKS 2025 mahalle nüfusu, OpenStreetMap mahalle sınırları (Kasım 2026) içindeki konut binalarına taban alanıyla dağıtılmıştır; yürüme ağı OpenStreetMap",
+ "kaynak": "TÜİK ADNKS 2025 mahalle nüfusu, OpenStreetMap mahalle sınırları (Kasım 2026) içindeki konut binalarına taban alanıyla dağıtılmıştır; yürüme ağı OpenStreetMap. İstanbul ve Kocaeli birlikte hesaplanmıştır.",
  "kaynak_kisa": "TÜİK ADNKS 2025 mahalle nüfusu · © OpenStreetMap katkıcıları",
  "veri_yili": 2025,
  "esik_dk": 15,
@@ -52,6 +52,21 @@
   "38": {
    "kapsayici": 130184,
    "yeni": 1253,
+   "birlikte": []
+  },
+  "61": {
+   "kapsayici": 323054,
+   "yeni": 285468,
+   "birlikte": []
+  },
+  "193": {
+   "kapsayici": 124965,
+   "yeni": 124965,
+   "birlikte": []
+  },
+  "259": {
+   "kapsayici": 342350,
+   "yeni": 183891,
    "birlikte": []
   }
  }
