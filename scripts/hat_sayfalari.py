@@ -1007,7 +1007,8 @@ def build_page(oid, hat, durak, overlay, cards, updated):
          "inLanguage": "tr-TR", "dateModified": updated, "image": og_img, "mainEntityOfPage": url,
          "author": {"@type": "Person", "name": "Barış Öztürk", "url": "https://x.com/sefabarisozturk"},
          "publisher": {"@type": "Organization", "name": "metrometre", "url": SITE + "/",
-                       "logo": {"@type": "ImageObject", "url": SITE + "/icon-512.png"}},
+                       "logo": {"@type": "ImageObject", "url": SITE + "/icon-512.png"},
+                       "sameAs": ["https://x.com/metrometrecom", "https://www.instagram.com/metrometrecom/"]},
          "about": {"@type": "Thing", "name": f"{on}{ad}"}},
         {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [
             {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faq]},
@@ -1167,7 +1168,8 @@ TEMPLATE = r'''<!DOCTYPE html>
 <meta property="og:image:alt"    content="{og_alt}">
 <meta property="article:modified_time" content="{updated}">
 <meta name="twitter:card"        content="summary_large_image">
-<meta name="twitter:site"        content="@sefabarisozturk">
+<meta name="twitter:site"        content="@metrometrecom">
+<meta name="twitter:creator"        content="@sefabarisozturk">
 <meta name="twitter:title"       content="{og_title}">
 <meta name="twitter:description" content="{desc}">
 <meta name="twitter:image"       content="{og_img}">
@@ -1507,7 +1509,7 @@ footer {{ max-width:1100px; margin:0 auto; padding:4px 16px 32px; font-size:11px
   <div class="others">{others}</div>
 </section>
 
-<p class="method">metrometre bağımsız bir sivil girişimdir; ilerleme değerleri kurumların açıkladığı rakamlara dayanmaktadır. <a href="/hakkinda/">Kaynaklar ve yöntem</a> · <a href="https://github.com/sefabarisozturk/metrometre-data">Açık veri</a> · <a href="/feed.xml">RSS</a></p>
+<p class="method">metrometre bağımsız bir sivil girişimdir; ilerleme değerleri kurumların açıkladığı rakamlara dayanmaktadır. <a href="/hakkinda/">Kaynaklar ve yöntem</a> · <a href="https://github.com/sefabarisozturk/metrometre-data">Açık veri</a> · <a href="/feed.xml">RSS</a> · <a href="https://x.com/metrometrecom" rel="me">X</a> · <a href="https://www.instagram.com/metrometrecom/" rel="me">Instagram</a></p>
 </main>
 
 <footer>© Barış Öztürk · sbarisozturk@gmail.com · <a href="https://x.com/sefabarisozturk">X</a> · <a href="https://www.linkedin.com/in/sefabarisozturk/">LinkedIn</a></footer>
@@ -1750,7 +1752,8 @@ PAGE_BULTEN_INDEX = """<!DOCTYPE html>
 <meta property="og:description" content="Yapımı süren raylı sistem hatlarında her ay öne çıkan gelişmeler.">
 <meta property="og:image" content="https://metrometre.com/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:site" content="@sefabarisozturk">
+<meta name="twitter:site" content="@metrometrecom">
+<meta name="twitter:creator" content="@sefabarisozturk">
 <link rel="alternate" type="application/rss+xml" title="metrometre — aylık ilerleme güncellemeleri" href="/feed.xml">
 <meta name="theme-color" content="#B4271F">
 <link rel="icon" href="/icon-192.png">
@@ -1818,7 +1821,7 @@ main { max-width:760px; margin:0 auto; padding:calc(var(--header-h) + 22px) 16px
     <p>Yapımı süren raylı sistem hatlarında her ay öne çıkan gelişmeler.</p>
   </div>
   {{GOVDE}}
-  <p class="follow">Yeni sayılardan haberdar olmak için <a href="/feed.xml">RSS beslemesini</a> ya da <a href="https://x.com/sefabarisozturk">X hesabını</a> takip edebilirsiniz.</p>
+  <p class="follow">Yeni sayılardan haberdar olmak için metrometre'yi <a href="https://x.com/metrometrecom">X</a> ve <a href="https://www.instagram.com/metrometrecom/">Instagram</a> hesaplarından ya da <a href="/feed.xml">RSS beslemesinden</a> takip edebilirsiniz.</p>
 </main>
 </body>
 </html>
@@ -1905,7 +1908,7 @@ h1 { font-size:24px; letter-spacing:-0.03em; line-height:1.2; }
     <p class="lead">Her hattın sayfasında aylık fiziki ilerleme, tahmini açılış tarihinin seyri, güzergâh ve istasyonlar yer almaktadır.</p>
   </div>
   {{BOLUMLER}}
-  <p class="method">metrometre bağımsız bir sivil girişimdir. <a href="/hakkinda/">Kaynaklar ve yöntem</a> · <a href="https://github.com/sefabarisozturk/metrometre-data">Açık veri</a> · <a href="/feed.xml">RSS</a></p>
+  <p class="method">metrometre bağımsız bir sivil girişimdir. <a href="/hakkinda/">Kaynaklar ve yöntem</a> · <a href="https://github.com/sefabarisozturk/metrometre-data">Açık veri</a> · <a href="/feed.xml">RSS</a> · <a href="https://x.com/metrometrecom" rel="me">X</a> · <a href="https://www.instagram.com/metrometrecom/" rel="me">Instagram</a></p>
 </main>
 </body>
 </html>
@@ -1934,7 +1937,7 @@ PAGE_HAKKINDA = """<!DOCTYPE html>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"AboutPage","url":"https://metrometre.com/hakkinda/","inLanguage":"tr-TR","name":"metrometre hakkında","isPartOf":{"@type":"WebSite","name":"metrometre","url":"https://metrometre.com/"},"author":{"@type":"Person","name":"Barış Öztürk","url":"https://x.com/sefabarisozturk","sameAs":["https://www.linkedin.com/in/sefabarisozturk/","https://github.com/sefabarisozturk"]}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"AboutPage","url":"https://metrometre.com/hakkinda/","inLanguage":"tr-TR","name":"metrometre hakkında","isPartOf":{"@type":"WebSite","name":"metrometre","url":"https://metrometre.com/"},"publisher":{"@type":"Organization","name":"metrometre","url":"https://metrometre.com/","sameAs":["https://x.com/metrometrecom","https://www.instagram.com/metrometrecom/"]},"author":{"@type":"Person","name":"Barış Öztürk","url":"https://x.com/sefabarisozturk","sameAs":["https://www.linkedin.com/in/sefabarisozturk/","https://github.com/sefabarisozturk"]}}</script>
 <style>
 *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
 :root { --bg:#F0F0F0; --surface:#FFFFFF; --border:#E4E4E4; --border-2:#D1D1D1; --text:#111111;
