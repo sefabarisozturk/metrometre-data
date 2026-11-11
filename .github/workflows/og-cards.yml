@@ -10,6 +10,7 @@ on:
       - scripts/og_cards.py
       - scripts/hat_sayfalari.py
       - scripts/hakkinda_icerik.html
+      - erisim.json
       - index.html
       - scripts/bulten_kart.py
       - bulten/bultenler.json
