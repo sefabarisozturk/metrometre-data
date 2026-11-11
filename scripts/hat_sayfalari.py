@@ -1008,6 +1008,7 @@ def build_page(oid, hat, durak, overlay, cards, updated):
          "author": {"@type": "Person", "name": "Barış Öztürk", "url": "https://x.com/sefabarisozturk"},
          "publisher": {"@type": "Organization", "name": "metrometre", "url": SITE + "/",
                        "logo": {"@type": "ImageObject", "url": SITE + "/icon-512.png"},
+                       "email": "iletisim@metrometre.com",
                        "sameAs": ["https://x.com/metrometrecom", "https://www.instagram.com/metrometrecom/"]},
          "about": {"@type": "Thing", "name": f"{on}{ad}"}},
         {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [
@@ -1512,7 +1513,7 @@ footer {{ max-width:1100px; margin:0 auto; padding:4px 16px 32px; font-size:11px
 <p class="method">metrometre bağımsız bir sivil girişimdir; ilerleme değerleri kurumların açıkladığı rakamlara dayanmaktadır. <a href="/hakkinda/">Kaynaklar ve yöntem</a> · <a href="https://github.com/sefabarisozturk/metrometre-data">Açık veri</a> · <a href="/feed.xml">RSS</a> · <a href="https://x.com/metrometrecom" rel="me">X</a> · <a href="https://www.instagram.com/metrometrecom/" rel="me">Instagram</a></p>
 </main>
 
-<footer>© Barış Öztürk · sbarisozturk@gmail.com · <a href="https://x.com/sefabarisozturk">X</a> · <a href="https://www.linkedin.com/in/sefabarisozturk/">LinkedIn</a></footer>
+<footer>© Barış Öztürk · <a href="mailto:iletisim@metrometre.com">iletisim@metrometre.com</a> · <a href="https://x.com/sefabarisozturk">X</a> · <a href="https://www.linkedin.com/in/sefabarisozturk/">LinkedIn</a></footer>
 
 <script>
 (function(){{
@@ -1908,7 +1909,7 @@ h1 { font-size:24px; letter-spacing:-0.03em; line-height:1.2; }
     <p class="lead">Her hattın sayfasında aylık fiziki ilerleme, tahmini açılış tarihinin seyri, güzergâh ve istasyonlar yer almaktadır.</p>
   </div>
   {{BOLUMLER}}
-  <p class="method">metrometre bağımsız bir sivil girişimdir. <a href="/hakkinda/">Kaynaklar ve yöntem</a> · <a href="https://github.com/sefabarisozturk/metrometre-data">Açık veri</a> · <a href="/feed.xml">RSS</a> · <a href="https://x.com/metrometrecom" rel="me">X</a> · <a href="https://www.instagram.com/metrometrecom/" rel="me">Instagram</a></p>
+  <p class="method">metrometre bağımsız bir sivil girişimdir. <a href="/hakkinda/">Kaynaklar ve yöntem</a> · <a href="https://github.com/sefabarisozturk/metrometre-data">Açık veri</a> · <a href="/feed.xml">RSS</a> · <a href="https://x.com/metrometrecom" rel="me">X</a> · <a href="https://www.instagram.com/metrometrecom/" rel="me">Instagram</a> · <a href="mailto:iletisim@metrometre.com">İletişim</a></p>
 </main>
 </body>
 </html>
@@ -1937,7 +1938,7 @@ PAGE_HAKKINDA = """<!DOCTYPE html>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"AboutPage","url":"https://metrometre.com/hakkinda/","inLanguage":"tr-TR","name":"metrometre hakkında","isPartOf":{"@type":"WebSite","name":"metrometre","url":"https://metrometre.com/"},"publisher":{"@type":"Organization","name":"metrometre","url":"https://metrometre.com/","sameAs":["https://x.com/metrometrecom","https://www.instagram.com/metrometrecom/"]},"author":{"@type":"Person","name":"Barış Öztürk","url":"https://x.com/sefabarisozturk","sameAs":["https://www.linkedin.com/in/sefabarisozturk/","https://github.com/sefabarisozturk"]}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"AboutPage","url":"https://metrometre.com/hakkinda/","inLanguage":"tr-TR","name":"metrometre hakkında","isPartOf":{"@type":"WebSite","name":"metrometre","url":"https://metrometre.com/"},"publisher":{"@type":"Organization","name":"metrometre","url":"https://metrometre.com/","email":"iletisim@metrometre.com","sameAs":["https://x.com/metrometrecom","https://www.instagram.com/metrometrecom/"]},"author":{"@type":"Person","name":"Barış Öztürk","url":"https://x.com/sefabarisozturk","sameAs":["https://www.linkedin.com/in/sefabarisozturk/","https://github.com/sefabarisozturk"]}}</script>
 <style>
 *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
 :root { --bg:#F0F0F0; --surface:#FFFFFF; --border:#E4E4E4; --border-2:#D1D1D1; --text:#111111;
@@ -1974,7 +1975,7 @@ footer { max-width:680px; margin:0 auto; padding:0 16px 32px; font-size:11px; co
     {{BODY}}
   </article>
 </main>
-<footer>© Barış Öztürk · <a href="mailto:sbarisozturk@gmail.com">sbarisozturk@gmail.com</a> · <a href="https://x.com/sefabarisozturk">X</a> · <a href="https://www.linkedin.com/in/sefabarisozturk/">LinkedIn</a></footer>
+<footer>© Barış Öztürk · <a href="mailto:iletisim@metrometre.com">iletisim@metrometre.com</a> · <a href="https://x.com/sefabarisozturk">X</a> · <a href="https://www.linkedin.com/in/sefabarisozturk/">LinkedIn</a></footer>
 </body>
 </html>
 """
