@@ -1690,7 +1690,10 @@ const KATMAN_DASH  = { isletme:null, yapim:null, proje:[0, 2.5] };
 const KATMAN_CAP   = { isletme:'round', yapim:'round', proje:'round' };
 const SOLUK_OPAK   = 0.32;   // soluk hatların opaklığı (kendi renginde)
 const TAM_EK_KALINLIK = 0.5; // tam görünen hatlar soluklardan biraz kalın çizilir (öne çıksın)
-const katmanSecili = { isletme:false, yapim:false, proje:false };   // lejantta işaretli olanlar
+// İlk açılışta bütün durumlar işaretli gelir (harita dolu görünsün); kullanıcı
+// lejanttan kapattıkça o durumlar silik ya da gizli kalır.
+const KATMAN_VARSAYILAN = { isletme:true, yapim:true, proje:true };
+const katmanSecili = { ...KATMAN_VARSAYILAN };   // lejantta işaretli olanlar
 let digerSilik     = true;   // işaretlenmeyen durumlar: true = silik, false = gizli
 // Haritadaki görünüm: 'tam' | 'soluk' | 'gizli'
 function modOf(tab){
@@ -4740,20 +4743,33 @@ document.getElementById('lejant-body').addEventListener('click', e => {
     try { localStorage.setItem(KEY, kapali ? '1' : '0'); } catch(_){}
   });
 })();
-// Adres biçimi: lejantta işaretli durumlar; diğerleri gizliyse "-diger"
-//   #tab=yapim&sort=acilis&katman=isletme,-diger
+// Adres biçimi: varsayılan durum (hepsi işaretli, diğerleri silik) adrese yazılmaz.
+// Aksi halde lejantta işaretli durumlar; hiçbiri işaretli değilse "yok";
+// diğerleri gizliyse "-diger".   #tab=yapim&sort=acilis&katman=isletme,-diger
+// (Etkin sekme her zaman görünür olduğundan karşılaştırma onu dışarıda bırakır;
+//  böylece sekme değişince adres gereksiz yere değişmez.)
+function katmanVarsayilanMi(){
+  return digerSilik && KATMANLAR.every(t => t === activeTab || katmanSecili[t] === KATMAN_VARSAYILAN[t]);
+}
 function katmanHashPart(){
+  if(katmanVarsayilanMi()) return '';
   const parts = KATMANLAR.filter(t => katmanSecili[t]);
+  if(!parts.length) parts.push('yok');
   if(!digerSilik) parts.push('-diger');
-  return parts.length ? 'katman=' + parts.join(',') : '';
+  return 'katman=' + parts.join(',');
 }
 function applyKatmanHash(raw){
-  KATMANLAR.forEach(t => { katmanSecili[t] = false; });
+  const tokens = String(raw || '').split(',').map(s => s.trim()).filter(Boolean);
   digerSilik = true;
-  String(raw || '').split(',').map(s => s.trim()).filter(Boolean).forEach(s => {
-    if(s === '-diger') digerSilik = false;
-    else if(KATMANLAR.includes(s)) katmanSecili[s] = true;   // eski "-proje" biçimi yok sayılır
-  });
+  if(!tokens.length){
+    Object.assign(katmanSecili, KATMAN_VARSAYILAN);   // adreste katman yok → varsayılan
+  } else {
+    KATMANLAR.forEach(t => { katmanSecili[t] = false; });
+    tokens.forEach(s => {
+      if(s === '-diger') digerSilik = false;
+      else if(KATMANLAR.includes(s)) katmanSecili[s] = true;   // "yok" ve eski "-proje" biçimi yok sayılır
+    });
+  }
   renderKatmanBar();
 }
 renderKatmanBar();   // veri gelmeden de lejant görünsün
