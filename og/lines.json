@@ -680,7 +680,7 @@
   },
   "62": {
    "acilis": "2030 sonrası",
-   "ad": "İncirli-Gayrettepe-Söğütlüçeşme Metro Hattı",
+   "ad": "Halkalı-Gayrettepe-Söğütlüçeşme Metro Hattı",
    "durum": "8",
    "kod": "M"
   },
@@ -773,12 +773,6 @@
    "ad": "Kadıköy-Kartal",
    "durum": "1",
    "kod": "M4"
-  },
-  "93": {
-   "acilis": "2030 sonrası",
-   "ad": "İncirli-Sefaköy Uzatması",
-   "durum": "5",
-   "kod": "M2"
   }
  },
  "veri_donemi": "2026-10"
