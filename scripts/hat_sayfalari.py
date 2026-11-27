@@ -711,6 +711,10 @@ def find_stations(feat, durak_feats, hat_feats):
         dp = d['properties']
         if dp.get('KOD') != p['KOD']:
             continue
+        # Numarasız kodlar (M, T, F, B) birbirinden bağımsız projelerce paylaşılır: başka
+        # aşamadaki bir projenin yakındaki durağı bu hatta sayılmasın (ör. 62'ye Ayvansaray)
+        if p['KOD'] in ('M', 'T', 'F', 'B') and str(dp.get('PR_DURUM')) != str(p.get('PR_DURUM')):
+            continue
         off, along = project_on(parts, d['geometry']['coordinates'])
         if off < 150:   # aynı kodlu başka etapların istasyonlarını dışarıda bırak
             mine.append((along, d))
